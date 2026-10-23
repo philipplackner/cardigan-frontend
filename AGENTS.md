@@ -120,10 +120,6 @@ Page node IDs are stable. Frame IDs inside pages change as designs change, so lo
 6. Look at **every size** of a screen before building it. Responsive behavior comes from comparing the phone, tablet and desktop frames.
 7. Copy text in the designs is the source for the English translation strings.
 
-### Code Connect
-
-When a `core/ui` component lands, add a Code Connect mapping from its Figma component to the code component (load `figma:figma-code-connect`). Later `get_design_context` calls then return our component names. If writing the mapping fails because of permissions, tell the user and continue without it.
-
 ### Icons
 
 Icons are exported from Figma as SVG and live as React components in `src/core/ui/icons/`. Replace hard-coded fills and strokes with `currentColor` so the color comes from the text color. Add an icon when a feature first needs it. Features render icons only through `Icon` and `IconButton` from `core/ui`.
@@ -275,4 +271,3 @@ Ask before building anything that depends on these:
 | `react-unit-testing` | Tests for reducers, mappers, schemas, utils and other pure logic |
 | `react-integration-testing` | Screen, feature, route and API tests with MSW, and Playwright E2E |
 | `figma:figma-design-to-code` | Before every `get_design_context` call |
-| `figma:figma-code-connect` | Mapping a new `core/ui` component to its Figma component |

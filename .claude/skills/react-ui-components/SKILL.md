@@ -1,7 +1,7 @@
 ---
 name: react-ui-components
 description: |
-  Building React UI components for SPAs styled with Tailwind CSS v4 and a token-based design system in core/ui that mirrors the Figma Design System and Foundations - Figma variable names as theme tokens, Figma text styles as type utilities, Code Connect mappings, shadcn/ui components copied in and restyled on Radix primitives, the cn helper and cva variants, prop design (className passthrough, native prop spreading, ref as a prop), icons exported from Figma as SVG components, the Icon and IconButton wrappers, slots through children and asChild, theme tokens instead of raw colors or dark: variants, light and dark following the system, user-facing text through react-i18next (namespaces, typed keys, plurals, interpolation, date and number formatting), accessibility basics, and dev-only previews for every design system component. Use this skill whenever writing or changing a component that is not a Root/Screen (buttons, cards, list items, inputs, dialogs, menus, toolbars), adding a design system component, adding an icon, styling with Tailwind, adding translations, or reviewing accessibility. For Root/Screen components, see react-presentation-mvi. Trigger on phrases like "create a component", "Figma component", "Code Connect", "SVG", "button", "card", "dialog", "input", "text field", "dropdown", "menu", "shadcn", "Radix", "Tailwind", "className", "cn", "cva", "variant", "icon", "IconButton", "design system", "theme", "color", "dark mode", "token", "translation", "i18n", "t(", "useTranslation", "plural", "format date", "aria-label", "accessibility", "a11y", or "preview".
+  Building React UI components for SPAs styled with Tailwind CSS v4 and a token-based design system in core/ui that mirrors the Figma Design System and Foundations - Figma variable names as theme tokens, Figma text styles as type utilities, shadcn/ui components copied in and restyled on Radix primitives, the cn helper and cva variants, prop design (className passthrough, native prop spreading, ref as a prop), icons exported from Figma as SVG components, the Icon and IconButton wrappers, slots through children and asChild, theme tokens instead of raw colors or dark: variants, light and dark following the system, user-facing text through react-i18next (namespaces, typed keys, plurals, interpolation, date and number formatting), accessibility basics, and dev-only previews for every design system component. Use this skill whenever writing or changing a component that is not a Root/Screen (buttons, cards, list items, inputs, dialogs, menus, toolbars), adding a design system component, adding an icon, styling with Tailwind, adding translations, or reviewing accessibility. For Root/Screen components, see react-presentation-mvi. Trigger on phrases like "create a component", "Figma component", "SVG", "button", "card", "dialog", "input", "text field", "dropdown", "menu", "shadcn", "Radix", "Tailwind", "className", "cn", "cva", "variant", "icon", "IconButton", "design system", "theme", "color", "dark mode", "token", "translation", "i18n", "t(", "useTranslation", "plural", "format date", "aria-label", "accessibility", "a11y", or "preview".
 ---
 
 # React UI Components
@@ -25,8 +25,7 @@ This skill covers every component that is not a page-level Root or Screen: desig
 
 1. Find the component on the Design System page and read it with the Figma MCP (`get_design_context`, `get_screenshot`). If the MCP call fails, stop and report it. Never build a component from a guess.
 2. Build it as described below, with the variants Figma defines.
-3. Add a Code Connect mapping from the Figma component to the code component (load `figma:figma-code-connect`), so later design reads return our component. If that fails for permission reasons, say so and continue.
-4. Add a preview section (see [Previews](#previews)).
+3. Add a preview section (see [Previews](#previews)).
 
 ### shadcn/ui as the base
 
@@ -249,7 +248,6 @@ Every `core/ui` component has a section on the dev-only design system preview pa
 - [ ] Lives in the feature, or in `core/ui` if a second feature needs it
 - [ ] Read from Figma with the MCP, with exactly the variants, sizes and states Figma defines
 - [ ] Design system components start from shadcn/Radix and are restyled with tokens
-- [ ] Code Connect mapping added for new `core/ui` components
 - [ ] Only token classes named after Figma variables, no raw colors, no arbitrary values, no `dark:`
 - [ ] Accepts `className` merged with `cn` on the outer element, spreads native props where it wraps an element
 - [ ] Variants with `cva`, named by purpose
