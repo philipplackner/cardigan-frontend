@@ -8,22 +8,22 @@ This file is the project's system prompt. The `react-*` skills in `.claude/skill
 
 ## Tech Stack
 
-| Area | Choice |
-|---|---|
-| App type | Client-side SPA. No SSR, no React Server Components, no Next.js. |
-| Build | Vite, TypeScript (strict), npm. Node version pinned in `.nvmrc`. |
-| UI | React 19 with the React Compiler enabled |
-| Routing | TanStack Router, file-based, in `src/app/routes` |
-| Server state | TanStack Query v5 |
-| API contract | Zod schemas and types **generated** from the backend's OpenAPI spec (see [API Contract](#api-contract)) |
-| Forms | React Hook Form + Zod |
-| Styling | Tailwind CSS v4 with tokens from Figma, shadcn/ui components on Radix primitives in `core/ui` |
-| Icons | SVGs exported from Figma, as React components in `core/ui/icons` |
-| Fonts | Geist and Geist Mono, self-hosted |
-| Drag & drop | dnd-kit, with its keyboard sensor and screen reader announcements |
-| i18n | react-i18next, English only for now |
-| Lint / format | oxlint (with import boundaries), Prettier |
-| Tests | Vitest, React Testing Library, user-event, MSW, Playwright |
+| Area          | Choice                                                                                                  |
+| ------------- | ------------------------------------------------------------------------------------------------------- |
+| App type      | Client-side SPA. No SSR, no React Server Components, no Next.js.                                        |
+| Build         | Vite, TypeScript (strict), npm. Node version pinned in `.nvmrc`.                                        |
+| UI            | React 19 with the React Compiler enabled                                                                |
+| Routing       | TanStack Router, file-based, in `src/app/routes`                                                        |
+| Server state  | TanStack Query v5                                                                                       |
+| API contract  | Zod schemas and types **generated** from the backend's OpenAPI spec (see [API Contract](#api-contract)) |
+| Forms         | React Hook Form + Zod                                                                                   |
+| Styling       | Tailwind CSS v4 with tokens from Figma, shadcn/ui components on Radix primitives in `core/ui`           |
+| Icons         | SVGs exported from Figma, as React components in `core/ui/icons`                                        |
+| Fonts         | Geist and Geist Mono, self-hosted                                                                       |
+| Drag & drop   | dnd-kit, with its keyboard sensor and screen reader announcements                                       |
+| i18n          | react-i18next, English only for now                                                                     |
+| Lint / format | oxlint (with import boundaries), Prettier                                                               |
+| Tests         | Vitest, React Testing Library, user-event, MSW, Playwright                                              |
 
 **Current state:** the repo is still the Vite scaffold (`App.tsx` with a default export, no router, no Tailwind, no tests, no Prettier). Build the layout from `react-project-structure` before building features. Add each dependency in the change that first needs it, and ask before adding one that isn't in the table above.
 
@@ -54,13 +54,13 @@ src/
 
 ### Features
 
-| Feature | Covers | Figma page |
-|---|---|---|
-| `auth` | log in, register, session expired, log out | Log in & register |
-| `boards` | board list (grid, phone list), new/rename/delete board, board view (columns, quick add, drag & drop, column menu, search, label filter) | Board list, Board view |
-| `cards` | card detail (side panel / full screen), card labels, unsaved changes | Card detail |
-| `labels` | labels page, new/edit/delete label | Labels |
-| `transfer` | export from the board menu, import dialog | Import & export |
+| Feature    | Covers                                                                                                                                  | Figma page             |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| `auth`     | log in, register, session expired, log out                                                                                              | Log in & register      |
+| `boards`   | board list (grid, phone list), new/rename/delete board, board view (columns, quick add, drag & drop, column menu, search, label filter) | Board list, Board view |
+| `cards`    | card detail (side panel / full screen), card labels, unsaved changes                                                                    | Card detail            |
+| `labels`   | labels page, new/edit/delete label                                                                                                      | Labels                 |
+| `transfer` | export from the board menu, import dialog                                                                                               | Import & export        |
 
 Don't create another feature folder without asking.
 
@@ -86,17 +86,17 @@ File: [Cardigan Designs](https://www.figma.com/design/MALwbOph7Uj2QtiTy21JaQ/Car
 
 **Start at the Overview page.** It explains how the file is organized, links every page, and lists the UI decisions. Then open the page for the feature you're working on. Each feature has its own page:
 
-| Page | Node | What's there |
-|---|---|---|
-| Overview | `0:1` | Index: how to read the file, page list, UI decisions |
-| Foundations | `9:2` | Color tokens (light and dark), 20-color label palette, type, spacing, radius, breakpoints |
-| Design System | `9:3` | All components with variants, slots and properties |
-| Log in & register | `9:4` | Log in, register, live password rules, errors, loading |
-| Board list | `9:5` | Board grid and phone list, new board, rename, delete, empty and error states |
-| Board view | `9:6` | Columns, quick add, drag & drop, column menu, search, label filter |
-| Card detail | `9:7` | Side panel on tablet/desktop, full screen on phone, labels, unsaved changes |
-| Labels | `9:8` | Labels page, new/edit/delete dialogs, empty and loading states |
-| Import & export | `9:9` | Export from the board menu, import dialog with drop zone, errors, key clash |
+| Page              | Node  | What's there                                                                              |
+| ----------------- | ----- | ----------------------------------------------------------------------------------------- |
+| Overview          | `0:1` | Index: how to read the file, page list, UI decisions                                      |
+| Foundations       | `9:2` | Color tokens (light and dark), 20-color label palette, type, spacing, radius, breakpoints |
+| Design System     | `9:3` | All components with variants, slots and properties                                        |
+| Log in & register | `9:4` | Log in, register, live password rules, errors, loading                                    |
+| Board list        | `9:5` | Board grid and phone list, new board, rename, delete, empty and error states              |
+| Board view        | `9:6` | Columns, quick add, drag & drop, column menu, search, label filter                        |
+| Card detail       | `9:7` | Side panel on tablet/desktop, full screen on phone, labels, unsaved changes               |
+| Labels            | `9:8` | Labels page, new/edit/delete dialogs, empty and loading states                            |
+| Import & export   | `9:9` | Export from the board menu, import dialog with drop zone, errors, key clash               |
 
 Page node IDs are stable. Frame IDs inside pages change as designs change, so look them up with `get_metadata` on the page instead of copying them into code or docs.
 
@@ -192,13 +192,13 @@ The rules in `react-ui-components` and `react-screen-architecture` apply. Specif
 
 All test types are expected. See `react-unit-testing` and `react-integration-testing` for the details.
 
-| Type | Where | What's real |
-|---|---|---|
-| Unit | next to the file | Pure logic: reducers, mappers, schemas, utils. No DOM, no I/O, fake time, pinned non-UTC time zone. |
-| Screen | next to the Screen | Screen and its children, rendered with props only |
-| Feature | next to the Root | Root, view-model, queries, API functions, HTTP client, mappers. Network faked with MSW. |
-| Route | `src/app` | The whole router at a URL, guards, loaders, not-found. Network faked with MSW. |
-| E2E | `e2e/` | The built app in real browsers against a **locally running backend** |
+| Type    | Where              | What's real                                                                                         |
+| ------- | ------------------ | --------------------------------------------------------------------------------------------------- |
+| Unit    | next to the file   | Pure logic: reducers, mappers, schemas, utils. No DOM, no I/O, fake time, pinned non-UTC time zone. |
+| Screen  | next to the Screen | Screen and its children, rendered with props only                                                   |
+| Feature | next to the Root   | Root, view-model, queries, API functions, HTTP client, mappers. Network faked with MSW.             |
+| Route   | `src/app`          | The whole router at a URL, guards, loaders, not-found. Network faked with MSW.                      |
+| E2E     | `e2e/`             | The built app in real browsers against a **locally running backend**                                |
 
 - Write unit tests the adversarial way: list the break vectors first, then one test per distinct angle.
 - MSW handlers return JSON shaped like the spec's DTOs, built with fixtures.
@@ -207,11 +207,11 @@ All test types are expected. See `react-unit-testing` and `react-integration-tes
 
 ### Commands
 
-| Command | What it does |
-|---|---|
-| `npm run api:sync` | Copy the OpenAPI spec from `/Users/philipplackner/IdeaProjects/cardigan/app/src/test/resources/openapi/` |
-| `npm run api:generate` | Generate schemas and types from `api/openapi.json` |
-| `npm run e2e` | Playwright against the local backend (it must be running on `localhost:8080`) |
+| Command                | What it does                                                                                             |
+| ---------------------- | -------------------------------------------------------------------------------------------------------- |
+| `npm run api:sync`     | Copy the OpenAPI spec from `/Users/philipplackner/IdeaProjects/cardigan/app/src/test/resources/openapi/` |
+| `npm run api:generate` | Generate schemas and types from `api/openapi.json`                                                       |
+| `npm run e2e`          | Playwright against the local backend (it must be running on `localhost:8080`)                            |
 
 Scripts that don't exist yet get added in the change that sets up the tool.
 
@@ -257,17 +257,17 @@ Ask before building anything that depends on these:
 
 ## Skill Map
 
-| Skill | Use it when |
-|---|---|
-| `react-project-structure` | Setting up the layout, adding a feature or a `core` module, wiring providers, adding a dependency, changing lint boundaries |
-| `react-routing` | Adding a page or route, links, path or search params, loaders, auth guards, not-found and error pages |
-| `react-presentation-mvi` | Creating a screen, Root/Screen split, view-model hooks, reducers, forms |
-| `react-screen-architecture` | Deciding where state lives, effects, Suspense, lists, responsive layout, focus, page titles, animations |
-| `react-ui-components` | Building any component that isn't a Root/Screen, design system work, tokens, icons, translations, accessibility |
-| `react-data-layer` | Calling an endpoint, API functions, schemas, mappers, domain types, environment config |
-| `react-server-state` | Queries, mutations, cache keys, invalidation, optimistic updates, pagination |
-| `react-error-handling` | DataError, mapping statuses and error codes, error messages, error pages, retries |
-| `react-security` | Login, register, logout, tokens, refresh, 401s, protected routes, redirects, XSS, storage, env variables |
-| `react-unit-testing` | Tests for reducers, mappers, schemas, utils and other pure logic |
-| `react-integration-testing` | Screen, feature, route and API tests with MSW, and Playwright E2E |
-| `figma:figma-design-to-code` | Before every `get_design_context` call |
+| Skill                        | Use it when                                                                                                                 |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `react-project-structure`    | Setting up the layout, adding a feature or a `core` module, wiring providers, adding a dependency, changing lint boundaries |
+| `react-routing`              | Adding a page or route, links, path or search params, loaders, auth guards, not-found and error pages                       |
+| `react-presentation-mvi`     | Creating a screen, Root/Screen split, view-model hooks, reducers, forms                                                     |
+| `react-screen-architecture`  | Deciding where state lives, effects, Suspense, lists, responsive layout, focus, page titles, animations                     |
+| `react-ui-components`        | Building any component that isn't a Root/Screen, design system work, tokens, icons, translations, accessibility             |
+| `react-data-layer`           | Calling an endpoint, API functions, schemas, mappers, domain types, environment config                                      |
+| `react-server-state`         | Queries, mutations, cache keys, invalidation, optimistic updates, pagination                                                |
+| `react-error-handling`       | DataError, mapping statuses and error codes, error messages, error pages, retries                                           |
+| `react-security`             | Login, register, logout, tokens, refresh, 401s, protected routes, redirects, XSS, storage, env variables                    |
+| `react-unit-testing`         | Tests for reducers, mappers, schemas, utils and other pure logic                                                            |
+| `react-integration-testing`  | Screen, feature, route and API tests with MSW, and Playwright E2E                                                           |
+| `figma:figma-design-to-code` | Before every `get_design_context` call                                                                                      |

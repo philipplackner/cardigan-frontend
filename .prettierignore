@@ -1,0 +1,7 @@
+dist
+node_modules
+package-lock.json
+src/core/api/generated
+src/app/routeTree.gen.ts
+openspec
+.claude
