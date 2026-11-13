@@ -1,8 +1,68 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
+  "plugins": ["react", "typescript", "oxc", "import"],
+  "ignorePatterns": [
+    "src/core/api/generated/**",
+    "src/app/routeTree.gen.ts",
+    "dist/**"
+  ],
   "rules": {
     "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
+    "react/only-export-components": ["warn", { "allowConstantExport": true }],
+    "import/no-default-export": "error",
+    "typescript/consistent-type-definitions": ["error", "type"],
+    "typescript/no-explicit-any": "error"
+  },
+  "overrides": [
+    {
+      "files": ["*.config.ts"],
+      "rules": {
+        "import/no-default-export": "off"
+      }
+    },
+    {
+      "files": ["src/core/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/app", "@/app/**", "@/features", "@/features/**"],
+                "message": "core must not import from app or features."
+              },
+              {
+                "regex": "^(\\.\\./)+(app|features)(/|$)",
+                "message": "core must not import from app or features."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/features/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/app", "@/app/**", "@/features", "@/features/**"],
+                "message": "Features must not import from app or other features. Use relative imports inside a feature."
+              },
+              {
+                "regex": "^(\\.\\./)+app(/|$)",
+                "message": "Features must not import from app."
+              },
+              {
+                "group": ["@radix-ui/*"],
+                "message": "Use the components from @/core/ui instead."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
 }
