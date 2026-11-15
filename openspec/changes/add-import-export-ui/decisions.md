@@ -173,10 +173,16 @@ Build the `transfer` feature's UI for chunk 23 (`web-import-export-ui`): an Expo
 - **Depends on**: —
 
 ### D24 — Key error copy
-- **Question**: Which messages show for TOO_SHORT, TOO_LONG and INVALID_FORMAT on the clash dialog's key field?
-- **Decision**: The strings the board list chunks define for the New board key field (web chunk 20). Import reuses them and defines none of its own.
-- **Alternatives**: Define them in this change.
-- **Why**: One set of key messages app-wide.
+- **Question**: Which messages show for REQUIRED, TOO_SHORT, TOO_LONG and INVALID_FORMAT on the clash dialog's key field?
+- **Decision**: This change defines them, and chunk 20 (`web-board-list-ui`) reuses them for the New board key field instead of defining its own:
+  - REQUIRED: "Enter a key."
+  - TOO_SHORT: "Use at least 2 letters."
+  - TOO_LONG: "Use at most 5 letters."
+  - INVALID_FORMAT: "Use only the letters A–Z."
+  - A key field error with any other code shows the INVALID_FORMAT message.
+  An empty key is REQUIRED, a wrong length TOO_SHORT or TOO_LONG, any other character INVALID_FORMAT (`api-errors` › field error order).
+- **Alternatives**: Wait for chunk 20 to define them (the original decision; changed on 2026-11-15 so this change can finish).
+- **Why**: One set of key messages app-wide. The fallback follows `api-errors` › *Clients handle unknown error codes by status*: a key field error is still a key problem.
 - **Depends on**: D10
 
 ### D25 — Clash dialog initial state
@@ -219,5 +225,4 @@ Build the `transfer` feature's UI for chunk 23 (`web-import-export-ui`): an Expo
 
 ## Deferred
 
-- The exact key error strings (D24) exist only once chunk 20 (`web-board-list-ui`) defines them — settle before: implementation of task group 6.
 - Where the shared key validation lives once both `boards` and `transfer` need it (`core/utils` or a new `core` module) — settle before: implementation.

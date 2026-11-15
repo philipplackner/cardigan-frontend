@@ -114,7 +114,9 @@ Alternative: a full-screen invisible drop target. Rejected: it would sit above t
 - The field starts with the clashing key and uppercases a–z on input. The local check is `/^[A-Z]{2,5}$/`.
 - A server `keyInvalid` or `keyUsed` result shows under the field through `Field`'s error slot and keeps the dialog open.
 - The `clash` state keeps `usedKeys`: the original clashing key plus every key that came back `keyUsed` in this flow (spec › Key clash dialog). While the field's value is in `usedKeys`, the field shows "You already have a board with the key {key}." and Import is disabled (D25). That includes the moment the dialog opens. The error is derived from the value, not stored, so typing a used key again brings it back.
-- "You already have a board with the key {key}." comes from Figma's New board frame. The TOO_SHORT, TOO_LONG and INVALID_FORMAT texts are the ones chunk 20 defines for the New board key field (D24). They're copied into the `transfer` namespace until key validation moves to `core` (see Open Questions).
+- "You already have a board with the key {key}." comes from Figma's New board frame. The REQUIRED, TOO_SHORT, TOO_LONG and INVALID_FORMAT texts are defined here (D24), in the `transfer` namespace, with INVALID_FORMAT as the fallback for unknown key codes. Chunk 20 reuses them for the New board key field; they move to `core` together with key validation (see Open Questions).
+- The local check follows `api-errors`: empty is REQUIRED, under 2 letters TOO_SHORT, over 5 TOO_LONG, anything else that isn't A–Z INVALID_FORMAT.
+- The field shows Figma's help text "2–5 uppercase letters. Can’t be changed later." (frame "Key already used").
 
 ### DropZone Over variant (D23)
 
@@ -143,7 +145,7 @@ The setup landed in commit 978fd70 (task group 1). This change uses it as follow
 - **[Merge conflicts with other wave-3 web changes]** (resolved): board list, board view, card detail, labels and auth UI also need i18n and RTL. The setup landed once as its own commit (978fd70), and the orchestrator told the other sessions to build on it instead of re-adding it. What's left: each feature adds its namespace to `src/app/i18n.ts`, so parallel changes touch that one file. Those are one-line additions that merge easily.
 - **[Seam drifts from the real API]**: the result union is written before the OpenAPI spec exists. → It only uses codes from `board-export-format` and `api-errors`. Chunk 40 adds the mapper and its tests.
 - **[Reading files on the main thread]**: `file.text()` and `JSON.parse` on a 5 MB file can block for tens of milliseconds. → Acceptable for a one-off action. The size check runs first, so nothing over 5 MB is read.
-- **[Key error copy comes from another change]**: chunk 20 defines the TOO_SHORT, TOO_LONG and INVALID_FORMAT strings (D24). → Task group 6 stops and asks if they don't exist yet.
+- **[Key error copy shared with chunk 20]**: this change defines the key error strings (D24) and chunk 20 must reuse them. → The orchestrator records this in the chunk 20 breakdown. When `boards` needs them, they and the key check move to `core`.
 - **[Hung request keeps the progress dialog open]**: there is no timeout in this change. → Accepted; chunk 40 decides timeouts.
 
 ## Open Questions

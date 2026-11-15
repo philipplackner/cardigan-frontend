@@ -235,6 +235,14 @@ The Key field SHALL follow the New board key field, with its error messages: low
 - **WHEN** the user submits `C`
 - **THEN** a key error shows under the field and nothing is uploaded
 
+#### Scenario: Key error messages
+- **WHEN** the user submits an empty key, `C`, `CRDBXY` or `CR1`
+- **THEN** the field shows "Enter a key.", "Use at least 2 letters.", "Use at most 5 letters." or "Use only the letters A–Z." and nothing is uploaded
+
+#### Scenario: Unknown key error code
+- **WHEN** the retry fails with 400 and a `key` field error code the client doesn't know
+- **THEN** the field shows "Use only the letters A–Z." and the dialog stays open
+
 #### Scenario: New key also used
 - **WHEN** the retry with `CRDB` fails with 409 and `key`/`ALREADY_USED`
 - **THEN** the dialog stays open with "You already have a board with the key CRDB." under the field and Import disabled until the key changes again

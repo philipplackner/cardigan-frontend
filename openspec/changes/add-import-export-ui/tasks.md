@@ -2,7 +2,7 @@
 
 Each group ends in its own commit once all five gates pass (`typecheck`, `lint`, `format:check`, `test`, `build`). "Check against Figma" means: open the transfer preview section on the dev server at 390 px, 834 px and 1440 px wide, in light and dark system themes, and compare it with `get_screenshot` of the matching frame on page `9:9`. Look frames up with `get_metadata 9:9`; don't use node IDs copied from this file.
 
-Before group 6: chunk 20 must have defined the New board key error strings (D24). Stop and ask if either is missing.
+The key error strings are defined in this change (D24, settled 2026-11-15). Chunk 20 reuses them.
 
 ## 1. i18n and screen test setup
 
@@ -40,7 +40,7 @@ Covered by commit 978fd70 ("build: add react-i18next and screen test setup").
 
 ## 6. Key clash and success
 
-- [ ] 6.1 Add the key clash dialog to `ImportScreen` (prefilled key, uppercase on input, local 2–5 A–Z check with chunk 20's messages, server key errors under the field, "Cancel import", "Import") with the named and fallback body texts. While the value is a used key it shows "You already have a board with the key {key}." and Import is disabled, from the moment it opens. Write screen tests for both bodies, the initial error with disabled Import, uppercase input, changing the key enabling Import, typing `crd` back disabling it, and a local key error
+- [ ] 6.1 Add the key clash dialog to `ImportScreen` (prefilled key, uppercase on input, local key check with the D24 messages (REQUIRED, TOO_SHORT, TOO_LONG, INVALID_FORMAT, and INVALID_FORMAT for unknown server codes), server key errors under the field, "Cancel import", "Import") with the named and fallback body texts. While the value is a used key it shows "You already have a board with the key {key}." and Import is disabled, from the moment it opens. Write screen tests for both bodies, the initial error with disabled Import, uppercase input, changing the key enabling Import, typing `crd` back disabling it, and a local key error
 - [ ] 6.2 Wire the clash into the view model: 409 `keyUsed` opens it with `findBoardNameByKey` and adds the key to `usedKeys`; "Import" re-uploads the same `File` with the key; "Cancel import" closes everything. Write feature tests: clash, retry succeeds with `CRDB`, retry clashes again and stays open with the error and Import disabled, typing the first clashing key after a second clash keeps Import disabled, a retry failing without a response shows the import dialog with the generic error and calls `onBoardsChanged`, cancel calls the fake no more and leaves no dialog open
 - [ ] 6.3 On success, close all dialogs, call `onBoardsChanged` and show "Imported “{name}” with the key {key}." from the returned board. Write feature tests for an import with and without a key change, and one importing a board named `R&D <x>` that checks the toast text exactly
 - [ ] 6.4 Add the clash and success states to the preview demo and check Key already used (390 px, 1440 px) and Imported (toast) against Figma
@@ -55,5 +55,6 @@ Covered by commit 978fd70 ("build: add react-i18next and screen test setup").
 
 - Chunk 40 (`web-import-export-connect`) adds the API functions, the `DataError` → result mapper, MSW handlers, timeouts and E2E tests.
 - The app layer mounts `ImportTrigger` or `useImportFlow` in the board list (chunks 20/35) and `useExportBoard` in the board view menu (chunks 21/35).
+- Chunk 20 (`web-board-list-ui`) reuses the D24 key error strings for the New board key field and moves them and the key check to `core`.
 - The mounting change writes the entry-point and reload tests from `web-board-transfer` › Export entry point, Import entry point, Import success.
 - Archive the change after review.
