@@ -55,8 +55,9 @@ Why a result union and not `DataError`: `core/api` and `DataError` don't exist y
 
 All pieces live in `features/transfer` and are exported from its public `index.ts`:
 
-- `ImportTrigger`: renders the "Import" button or, with `variant="menuItem"`, the "Import board" menu item. It owns the import flow.
-- `ImportFlow`: Root. It calls `useImportViewModel` and renders `ImportScreen`, which holds the import dialog, the progress dialog and the key clash dialog.
+- `useImportFlow({ importBoard, findBoardNameByKey, onBoardsChanged })`: returns `{ open(), dialogs }`. The host renders the "Import" button or the "Import board" menu item and calls `open`, and renders `dialogs` outside any menu, the same way as `useExportBoard`. `core/ui/Menu` is a Radix `DropdownMenu` whose content unmounts when the menu closes, so dialogs rendered inside a menu item would disappear with it.
+- `ImportTrigger` (button variant only): a convenience wrapper for the header that renders the "Import" button and the `dialogs`.
+- `ImportFlow`: Root. It calls `useImportViewModel` and renders `ImportScreen`, which holds the import dialog, the progress dialog and the key clash dialog. `dialogs` from `useImportFlow` is this Root.
 - `useExportBoard({ exportBoard })`: returns `{ start(board: { id, name }), dialog }`. The board view's menu item calls `start`, and `dialog` (the progress dialog) is rendered by the host. Export has no Screen of its own; the hook runs the request, the download and the toasts.
 
 Import view-model state is a reducer with a discriminated union:
@@ -67,14 +68,14 @@ idle → choosing { file?, error? } → checking → uploading { file, key? }
      → done (closes, toast)
 ```
 
-The reducer is pure and unit-tested. The async work (pre-check, upload) lives in the hook. Only the current step's dialog is open, so the import dialog and the clash dialog never stack.
+The reducer is pure and unit-tested. The async work (pre-check, upload) lives in the hook. Each pre-check carries the file it started for; a check that resolves after cancel, or after a newer file was chosen, is ignored. A non-key failure on a retry from `clash` returns to `choosing` with the error. Only the current step's dialog is open, so the import dialog and the clash dialog never stack.
 
 ### Pre-checks (D4, D5)
 
 `utils/checkExportFile.ts`: `async (file: File) => { ok: true } | { ok: false, reason: 'tooLarge' | 'invalidFile' }`.
 
 - The size check uses `file.size > 5_242_880` before reading anything, so a 50 MB file is never read into memory.
-- Then `file.text()`, `JSON.parse` in a try/catch, and a check that the root is an object with `format === 'cardigan.board'` and `formatVersion === 1` (strict number check, so `"1"` fails).
+- Then `file.text()` (UTF-8; a UTF-8 BOM is stripped, and files in other encodings fail as not JSON), `JSON.parse` in a try/catch, and a check that the root is an object with `format === 'cardigan.board'` and `formatVersion === 1` (strict number check, so `"1"` fails).
 - Nothing else is validated (domain rules stay on the backend).
 - The parsed object is dropped. The original `File` is uploaded unchanged.
 
@@ -90,7 +91,7 @@ Unit tests cover 0, 1, 1023, 1024, 1,536, 14,336, 1,048,575, 1,048,576, 1,310,72
 
 ### Download (D12)
 
-`utils/downloadFile.ts` creates an object URL for the `Blob` and clicks a temporary `<a download="name">`, then revokes the URL in a `setTimeout(…, 0)` so Safari has started the download. An `<a href>` straight to the API can't be used: the access token lives in memory and goes in the `Authorization` header (AGENTS.md › Authentication).
+`utils/downloadFile.ts` creates an object URL for the `Blob` and clicks a temporary `<a download="name">`, then revokes the URL after 60 seconds (`setTimeout`), long enough for every supported browser to have read it. Revoking on the next tick can cancel the download in some browsers. An `<a href>` straight to the API can't be used: the access token lives in memory and goes in the `Authorization` header (AGENTS.md › Authentication).
 
 `utils/exportFileName.ts`:
 
@@ -111,7 +112,7 @@ Alternative: a full-screen invisible drop target. Rejected: it would sit above t
 - Built from `Dialog`, `Field` and `Input`.
 - The field starts with the clashing key and uppercases a–z on input. The local check is `/^[A-Z]{2,5}$/`.
 - A server `keyInvalid` or `keyUsed` result shows under the field through `Field`'s error slot and keeps the dialog open.
-- The `clash` state keeps `usedKeys`: the original clashing key plus every key that came back `keyUsed` in this flow. While the field's value is in `usedKeys`, the field shows "You already have a board with the key {key}." and Import is disabled (D25). That includes the moment the dialog opens. The error is derived from the value, not stored, so typing a used key again brings it back.
+- The `clash` state keeps `usedKeys`: the original clashing key plus every key that came back `keyUsed` in this flow (spec › Key clash dialog). While the field's value is in `usedKeys`, the field shows "You already have a board with the key {key}." and Import is disabled (D25). That includes the moment the dialog opens. The error is derived from the value, not stored, so typing a used key again brings it back.
 - "You already have a board with the key {key}." comes from Figma's New board frame. The TOO_SHORT, TOO_LONG and INVALID_FORMAT texts are the ones chunk 20 defines for the New board key field (D24). They're copied into the `transfer` namespace until key validation moves to `core` (see Open Questions).
 
 ### DropZone Over variant (D23)
@@ -122,6 +123,7 @@ Alternative: a full-screen invisible drop target. Rejected: it would sit above t
 
 - `core/i18n/i18n.ts` initializes i18next with English only and resources bundled at build time (no HTTP backend, CSP-safe).
 - Typed keys come through `CustomTypeOptions` (as in `react-ui-components`).
+- i18next runs with `interpolation.escapeValue: false`, since React escapes text; otherwise names like "R&D" show as "R&amp;D". Interpolated values are never rendered as HTML (no `Trans` with markup for user data).
 - `transfer` owns a `transfer` namespace in `features/transfer/i18n/en.json`. Shared strings like "Cancel" go into a `common` namespace in `core/i18n`.
 - `main.tsx` imports the setup. The preview entry imports it too.
 

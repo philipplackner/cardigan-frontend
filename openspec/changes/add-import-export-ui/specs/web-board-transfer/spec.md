@@ -7,7 +7,7 @@ Defines the web-only behavior of exporting a board to a JSON file and importing 
 ## ADDED Requirements
 
 ### Requirement: Export entry point
-Export SHALL be offered only as "Export as JSON" in the board view's board menu, on every size. It SHALL NOT be offered in the board list.
+Export SHALL be offered only as "Export as JSON" in the board view's board menu, on every size. The `transfer` feature provides this piece; the app layer mounts it (D18), and its tests are written with the mounting change. It SHALL NOT be offered in the board list.
 
 #### Scenario: Board view menu
 - **WHEN** the user opens the board menu in the board view
@@ -59,7 +59,7 @@ After the download starts, a success toast SHALL show "“{board name}” export
 - **THEN** the error toast "Couldn't export “Cardigan v1”. Check your connection and try again." shows
 
 ### Requirement: Import entry point
-On tablet and desktop, the board list header SHALL offer an "Import" button. On a phone, the board list menu SHALL offer "Import board". Both SHALL open the import dialog titled "Import board" with the drop zone, the hint "JSON exports up to 5 MB" and a Cancel button. Tablet SHALL use the desktop dialog layout.
+On tablet and desktop, the board list header SHALL offer an "Import" button. On a phone, the board list menu SHALL offer "Import board". `transfer` provides the pieces; the app layer mounts them and writes these tests (D18). The dialogs SHALL stay open after the menu closes. Both SHALL open the import dialog titled "Import board" with the drop zone, the hint "JSON exports up to 5 MB" and a Cancel button. Tablet SHALL use the desktop dialog layout.
 
 #### Scenario: Desktop
 - **WHEN** the user selects "Import" in the board list header on a 1440 px viewport
@@ -67,7 +67,7 @@ On tablet and desktop, the board list header SHALL offer an "Import" button. On 
 
 #### Scenario: Phone
 - **WHEN** the user selects "Import board" in the board list menu on a phone
-- **THEN** the "Import board" dialog opens with the drop zone
+- **THEN** the "Import board" dialog opens with the drop zone and stays open after the menu closes
 
 ### Requirement: Choosing a file
 The user SHALL choose a file by dropping it on the drop zone or through the system file picker, which SHALL suggest `.json` files. When several files are dropped, only the first SHALL be used. Choosing a file SHALL start the pre-checks and, if they pass, the upload right away, without a confirm step.
@@ -92,7 +92,7 @@ While the import dialog is open, a file dropped anywhere outside the drop zone S
 - **THEN** the app stays on the board list, the dialog stays open and nothing is uploaded
 
 ### Requirement: Import pre-checks
-Before uploading, the web app SHALL reject a file over 5,242,880 bytes. Otherwise it SHALL parse the file as JSON and reject it if it isn't JSON, or if `format` isn't `cardigan.board` or `formatVersion` isn't `1`. A rejected file SHALL NOT be uploaded. All other validation SHALL be left to the backend.
+Before uploading, the web app SHALL reject a file over 5,242,880 bytes. Otherwise it SHALL parse the file as JSON and reject it if it isn't JSON, or if `format` isn't `cardigan.board` or `formatVersion` isn't `1`. A rejected file SHALL NOT be uploaded. All other validation SHALL be left to the backend. If the import dialog is closed or another file is chosen while a file is being checked, the result of that check SHALL be discarded and that file SHALL NOT be uploaded.
 
 #### Scenario: Exactly at the limit
 - **WHEN** the user picks a valid export of exactly 5,242,880 bytes
@@ -114,6 +114,14 @@ Before uploading, the web app SHALL reject a file over 5,242,880 bytes. Otherwis
 - **WHEN** the file has a valid header and a card title over the limit
 - **THEN** it is uploaded and the backend's 422 decides
 
+#### Scenario: Cancel during the check
+- **WHEN** the user picks a 5 MB file and presses Cancel before the check finishes
+- **THEN** no dialog is open and nothing is uploaded
+
+#### Scenario: Newer file during the check
+- **WHEN** the user drops `b.json` while `a.json` is still being checked
+- **THEN** only `b.json` can be uploaded
+
 ### Requirement: Import progress
 While the import request runs, the web app SHALL show the progress dialog titled "Importing {file name}" with the body "This creates the board with all its columns, cards and labels." It SHALL NOT be dismissible and SHALL close when the request ends.
 
@@ -122,7 +130,7 @@ While the import request runs, the web app SHALL show the progress dialog titled
 - **THEN** the progress dialog "Importing board-backup.json" shows and Escape doesn't close it
 
 ### Requirement: Import errors in the dialog
-When a file is rejected or the import fails other than with a key error, the import dialog SHALL show the drop zone, the file row (name and size) and an error box with the message. The user SHALL be able to choose another file from the same dialog. After a failed upload, the board list SHALL reload.
+When a file is rejected or the import fails other than with a key error, the import dialog SHALL show the drop zone, the file row (name and size) and an error box with the message. The user SHALL be able to choose another file from the same dialog. After a failed upload, the flow SHALL call `onBoardsChanged`, which the app layer points at the board list reload.
 
 #### Scenario: Error and retry
 - **WHEN** `notes.json` was rejected and the user drops `board-backup.json`
@@ -130,7 +138,7 @@ When a file is rejected or the import fails other than with a key error, the imp
 
 #### Scenario: Board list after a server error
 - **WHEN** the import request fails with 500 `INTERNAL_ERROR`
-- **THEN** the error box shows in the dialog and the board list reloads
+- **THEN** the error box shows in the dialog and `onBoardsChanged` is called
 
 ### Requirement: Import error messages
 The error box SHALL show "This file is {size}. Board exports can be up to 5 MB." for an oversized file or a 413. It SHALL show "This file isn't a Cardigan board export. Choose a .json file that was exported from Cardigan." for a failed format check or any 422. Every other failure SHALL show "Couldn't import the board. Check your connection and try again."
@@ -154,6 +162,22 @@ File sizes SHALL be shown with base 1024 in English: whole KB below 1 MB (1,048,
 - **WHEN** the file has 14,336 bytes
 - **THEN** its size shows as "14 KB"
 
+#### Scenario: Smallest sizes
+- **WHEN** the file has 0 bytes, 1 byte or 1,023 bytes
+- **THEN** its size shows as "0 KB", "0 KB" or "1 KB"
+
+#### Scenario: Just below 1 MB
+- **WHEN** the file has 1,048,575 bytes
+- **THEN** its size shows as "1024 KB"
+
+#### Scenario: Exactly 1 MB
+- **WHEN** the file has 1,048,576 bytes
+- **THEN** its size shows as "1.0 MB"
+
+#### Scenario: Exactly at the limit
+- **WHEN** the file has 5,242,880 bytes
+- **THEN** its size shows as "5.0 MB"
+
 #### Scenario: Half a KB
 - **WHEN** the file has 1,536 bytes
 - **THEN** its size shows as "2 KB"
@@ -171,7 +195,7 @@ File sizes SHALL be shown with base 1024 in English: whole KB below 1 MB (1,048,
 - **THEN** its size shows as "5.1 MB", not "5.0 MB"
 
 ### Requirement: Key clash dialog
-When the import fails with 409 `CONFLICT` and the field error `key`/`ALREADY_USED`, the import dialog SHALL be replaced by "Choose a different key". Its Key field SHALL be prefilled with the clashing key and show "You already have a board with the key {key}." It SHALL offer "Cancel import" and "Import". Import SHALL be disabled while the field holds the clashing key.
+When the import fails with 409 `CONFLICT` and the field error `key`/`ALREADY_USED`, the import dialog SHALL be replaced by "Choose a different key". Its Key field SHALL be prefilled with the clashing key and show "You already have a board with the key {key}." It SHALL offer "Cancel import" and "Import". Import SHALL be disabled, and the "already used" error SHALL show, while the field holds any key that came back as already used during this import.
 
 #### Scenario: Clash
 - **WHEN** the user imports a file with the key `CRD` and already has a board with that key
@@ -184,6 +208,10 @@ When the import fails with 409 `CONFLICT` and the field error `key`/`ALREADY_USE
 #### Scenario: Key changed back
 - **WHEN** the user changes the key back to `crd`
 - **THEN** the field shows `CRD`, the "already used" error shows again and Import is disabled
+
+#### Scenario: Earlier clashing key
+- **WHEN** `CRD` and then `CRDB` clashed and the user types `CRD`
+- **THEN** the "already used" error shows and Import is disabled
 
 ### Requirement: Key clash text
 The clash dialog body SHALL be "Your board “{name}” already uses the key {key}. Enter another key for the imported board." when a board with that key is in the board list data already loaded. Otherwise it SHALL be "One of your boards already uses the key {key}. Enter another key for the imported board." No extra request SHALL be made for the name.
@@ -218,12 +246,16 @@ The Key field SHALL follow the New board key field, with its error messages: low
 - **WHEN** the user enters `CRDB` and selects "Import"
 - **THEN** the same file is uploaded with the key `CRDB`
 
+#### Scenario: Retry fails without a response
+- **WHEN** the retry with `CRDB` fails without a response
+- **THEN** the clash dialog is replaced by the import dialog with the file row and "Couldn't import the board. Check your connection and try again.", and `onBoardsChanged` is called
+
 #### Scenario: Cancel
 - **WHEN** the user selects "Cancel import"
 - **THEN** no dialog is open and no board was created
 
 ### Requirement: Import success
-After a successful import, every import dialog SHALL close, the user SHALL stay on the board list, the board list SHALL reload, and a success toast SHALL show "Imported “{name}” with the key {key}." using the created board's name and key, also when the key wasn't changed.
+After a successful import, every import dialog SHALL close, the user SHALL stay on the board list, the flow SHALL call `onBoardsChanged`, and a success toast SHALL show "Imported “{name}” with the key {key}." using the created board's name and key, also when the key wasn't changed.
 
 #### Scenario: Imported with a new key
 - **WHEN** "Cardigan v1" is imported with the key `CRDB`

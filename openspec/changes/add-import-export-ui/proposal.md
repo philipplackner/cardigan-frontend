@@ -11,7 +11,7 @@ Users need to export a board as JSON and import such a file as a new board (chun
   - Then the browser downloads the file under the `Content-Disposition` name, with a client-built fallback name. A success toast follows: "“{name}” exported."
   - Failures show an error toast.
 - **Import** (D2–D11, D15, D16, D22):
-  - An import trigger: the "Import" button on tablet/desktop and the "Import board" menu item on phones. It opens the import dialog with the drop zone.
+  - An import flow the host opens from the "Import" button on tablet/desktop or the "Import board" menu item on phones. The host renders its dialogs outside the menu. It opens the import dialog with the drop zone.
   - Picking or dropping a file runs client pre-checks: size, then JSON + `format` + `formatVersion`. If they pass, the upload starts right away behind the blocking "Importing {file name}" dialog.
   - Errors show in the dialog's error box with the file row.
   - A key clash opens "Choose a different key" with the clashing key prefilled.
