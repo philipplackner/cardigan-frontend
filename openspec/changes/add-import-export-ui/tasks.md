@@ -6,9 +6,9 @@ Before group 6: chunk 20 must have defined the New board key error strings (D24)
 
 ## 1. i18n and screen test setup
 
-- [ ] 1.1 Install `i18next`, `react-i18next`, `jsdom`, `@testing-library/react`, `@testing-library/user-event`, `@testing-library/jest-dom`, and verify `npm ls` lists them with no peer warnings
-- [ ] 1.2 Add `src/core/i18n/` setup (English only, bundled resources, typed keys via `CustomTypeOptions`, `interpolation.escapeValue: false`, `common` namespace) and import it from `src/main.tsx` and the preview entry. Verify `npm run build` passes and a typo in a `t()` key fails `npm run typecheck`
-- [ ] 1.3 Configure Vitest so `*.test.tsx` runs in jsdom while `*.test.ts` stays in `node`, add `src/testSetup.ts` (jest-dom, i18n, cleanup), update `tsconfig.test.json`, and verify with one smoke `*.test.tsx` that renders a `core/ui` `Button` and finds it by role, while the existing tests still pass
+- [x] 1.1 Install `i18next`, `react-i18next`, `jsdom`, `@testing-library/react`, `@testing-library/user-event`, `@testing-library/jest-dom`, and verify `npm ls` lists them with no peer warnings
+- [x] 1.2 Add `src/core/i18n/` setup (English only, bundled resources, typed keys via `CustomTypeOptions`, `interpolation.escapeValue: false`, `common` namespace) and import it from `src/main.tsx` and the preview entry. Verify `npm run build` passes and a typo in a `t()` key fails `npm run typecheck`
+- [x] 1.3 Configure Vitest so `*.test.tsx` runs in jsdom while `*.test.ts` stays in `node`, add `src/testSetup.ts` (jest-dom, i18n, cleanup), update `tsconfig.test.json`, and verify with one smoke `*.test.tsx` that renders a `core/ui` `Button` and finds it by role, while the existing tests still pass
 - [ ] 1.4 Tell the orchestrator session (cardiganapp-be) that the setup commit has landed, so the other wave-3 web sessions rebase onto it
 
 ## 2. Drop zone Over variant

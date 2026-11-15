@@ -6,7 +6,24 @@ process.env.TZ = 'Europe/Berlin'
 export default defineConfig({
   resolve: { tsconfigPaths: true },
   test: {
-    environment: 'node',
-    include: ['src/**/*.test.{ts,tsx}'],
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'node',
+          environment: 'node',
+          include: ['src/**/*.test.ts'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'dom',
+          environment: 'jsdom',
+          include: ['src/**/*.test.tsx'],
+          setupFiles: ['src/testSetup.ts'],
+        },
+      },
+    ],
   },
 })
