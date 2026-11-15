@@ -25,7 +25,41 @@ function MenuOpensDialog() {
   )
 }
 
+function DialogHandsOver() {
+  const [step, setStep] = useState<'closed' | 'first' | 'second'>('closed')
+  return (
+    <>
+      <Button onClick={() => setStep('first')}>Start</Button>
+      <Dialog
+        open={step === 'first'}
+        onOpenChange={() => setStep('closed')}
+        title="First"
+        actions={<Button onClick={() => setStep('second')}>Next</Button>}
+      />
+      <Dialog
+        open={step === 'second'}
+        onOpenChange={() => setStep('closed')}
+        title="Second"
+        actions={<Button onClick={() => setStep('closed')}>Finish</Button>}
+      />
+    </>
+  )
+}
+
 describe('Dialog', () => {
+  it('returns focus to the original control when one dialog replaces another', async () => {
+    const user = userEvent.setup()
+    render(<DialogHandsOver />)
+
+    await user.click(screen.getByRole('button', { name: 'Start' }))
+    await user.click(await screen.findByRole('button', { name: 'Next' }))
+    await user.click(await screen.findByRole('button', { name: 'Finish' }))
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Start' })).toHaveFocus(),
+    )
+  })
+
   it('returns focus to the menu button when it was opened from a menu item', async () => {
     const user = userEvent.setup()
     render(<MenuOpensDialog />)
