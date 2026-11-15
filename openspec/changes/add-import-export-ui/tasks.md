@@ -15,7 +15,7 @@ Covered by commit 978fd70 ("build: add react-i18next and screen test setup").
 
 ## 2. Drop zone Over variant
 
-- [ ] 2.1 Add `overTitle` to `DropZone`: Over shows `DownloadIcon` and the over title without the hint line, and the browse button stays mounted. Update `ImportExportSection` in the preview, add a screen test that `dragenter` with files shows "Release to import" and hides "or browse files" and that `dragleave` restores it, and check against the Figma frame "Dragging a file over · Desktop 1440"
+- [x] 2.1 Add `overTitle` to `DropZone`: Over shows `DownloadIcon` and the over title without the hint line, and the browse button stays mounted. Update `ImportExportSection` in the preview, add a screen test that `dragenter` with files shows "Release to import" and hides "or browse files" and that `dragleave` restores it, and check against the Figma frame "Dragging a file over · Desktop 1440"
 
 ## 3. Transfer types, translations and pure utils
 

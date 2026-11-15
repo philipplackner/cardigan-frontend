@@ -5,6 +5,8 @@ import { DownloadIcon, FileIcon } from './icons'
 
 type DropZoneProps = {
   title: string
+  /** Shown instead of the title and hint while a file is dragged over, for example "Release to import". */
+  overTitle: string
   /** Text before the browse button, for example "or ". */
   hintPrefix: string
   /** The browse button, for example "browse files". */
@@ -22,6 +24,7 @@ function hasFiles(event: DragEvent) {
 
 export function DropZone({
   title,
+  overTitle,
   hintPrefix,
   browseLabel,
   accept,
@@ -76,8 +79,10 @@ export function DropZone({
         size={24}
         className={isOver ? 'text-accent' : 'text-text-muted'}
       />
-      <p className="type-sans-14-semibold-145 text-text-primary">{title}</p>
-      <p className="type-sans-13-regular-145 text-text-muted">
+      <p className="type-sans-14-semibold-145 text-text-primary">
+        {isOver ? overTitle : title}
+      </p>
+      <p hidden={isOver} className="type-sans-13-regular-145 text-text-muted">
         {hintPrefix}
         <button
           type="button"

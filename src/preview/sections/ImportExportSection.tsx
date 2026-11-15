@@ -22,6 +22,7 @@ export function ImportExportSection() {
         <div className="w-[380px]">
           <DropZone
             title="Drop a board export here"
+            overTitle="Release to import"
             hintPrefix="or "
             browseLabel="browse files"
             accept=".json,application/json"
