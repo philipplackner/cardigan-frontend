@@ -4,6 +4,7 @@ import { ActionsSection } from './sections/ActionsSection'
 import { FeedbackSection } from './sections/FeedbackSection'
 import { DataDisplaySection } from './sections/DataDisplaySection'
 import { LabelsSection } from './sections/LabelsSection'
+import { NavigationSection } from './sections/NavigationSection'
 import { OverlaysSection } from './sections/OverlaysSection'
 import { BrandSection } from './sections/BrandSection'
 import { FoundationsSection } from './sections/FoundationsSection'
@@ -19,6 +20,7 @@ const BUILT_SECTIONS: Record<string, ComponentType> = {
   'Data display': DataDisplaySection,
   Inputs: InputsSection,
   Overlays: OverlaysSection,
+  Navigation: NavigationSection,
 }
 
 const DESIGN_SYSTEM_SECTIONS = [

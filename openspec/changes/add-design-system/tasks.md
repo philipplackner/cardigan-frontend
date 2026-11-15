@@ -60,9 +60,9 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 10. Navigation and layout
 
-- [ ] 10.1 Add `NavItem` (Default, Selected, Dim, truncating name), `Sidebar` (Brand, nav, Boards slot, account footer) and `PageHeader` (title, count, Actions slot), and check them against Figma
-- [ ] 10.2 Add `AppBar` (Brand, Title, Centered × Raised) and check it against Figma
-- [ ] 10.3 Add `AppLayout` per D19 and D24, sized only with the `w-sidebar-*` and `w-panel-*` tokens, with a preview section that composes Sidebar, AppBar, content and Panel. Check by hand at 390×844, 844×390, 834×1194, 1280×420 and 1440×900 that the regions and widths match the spec's layout scenarios, and that Tab never leaves the open panel on a phone
+- [x] 10.1 Add `NavItem` (Default, Selected, Dim, truncating name), `Sidebar` (Brand, nav, Boards slot, account footer) and `PageHeader` (title, count, Actions slot), and check them against Figma
+- [x] 10.2 Add `AppBar` (Brand, Title, Centered × Raised) and check it against Figma
+- [x] 10.3 Add `AppLayout` per D19 and D24, sized only with the `w-sidebar-*` and `w-panel-*` tokens, with a preview section that composes Sidebar, AppBar, content and Panel. Check by hand at 390×844, 844×390, 834×1194, 1280×420 and 1440×900 that the regions and widths match the spec's layout scenarios, and that Tab never leaves the open panel on a phone
 
 ## 11. Board, boards, card detail, import & export
 
