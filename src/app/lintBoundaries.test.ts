@@ -56,6 +56,16 @@ const FORBIDDEN: { file: string; source: string; rule: string }[] = [
     rule: RULES.restrictedImports,
   },
   {
+    file: 'src/features/boards/featureImportsUnifiedRadix.ts',
+    source: "export { Dialog } from 'radix-ui'",
+    rule: RULES.restrictedImports,
+  },
+  {
+    file: 'src/features/boards/featureImportsUnifiedRadixSubpath.ts',
+    source: "export { Root } from 'radix-ui/internal'",
+    rule: RULES.restrictedImports,
+  },
+  {
     file: 'src/core/utils/defaultExport.ts',
     source: 'export default 1',
     rule: RULES.noDefaultExport,

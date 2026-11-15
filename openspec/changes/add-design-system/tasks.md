@@ -4,8 +4,8 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 1. Dependencies and lint
 
-- [ ] 1.1 Install `radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `@fontsource-variable/geist`, `@fontsource-variable/geist-mono` and verify `npm ls` lists them with no peer warnings
-- [ ] 1.2 Add `radix-ui` and `radix-ui/*` to the features restriction in `.oxlintrc.json`, add a case to `src/app/lintBoundaries.test.ts` for a feature importing `radix-ui`, and verify `npm test` passes and the new case fails without the rule
+- [x] 1.1 Install `radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `@fontsource-variable/geist`, `@fontsource-variable/geist-mono` and verify `npm ls` lists them with no peer warnings
+- [x] 1.2 Add `radix-ui` and `radix-ui/*` to the features restriction in `.oxlintrc.json`, add a case to `src/app/lintBoundaries.test.ts` for a feature importing `radix-ui`, and verify `npm test` passes and the new case fails without the rule
 
 ## 2. Theme tokens
 

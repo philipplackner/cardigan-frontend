@@ -56,7 +56,7 @@
                 "message": "Features must not import from app."
               },
               {
-                "group": ["@radix-ui/*"],
+                "group": ["@radix-ui/*", "radix-ui", "radix-ui/*"],
                 "message": "Use the components from @/core/ui instead."
               }
             ]
