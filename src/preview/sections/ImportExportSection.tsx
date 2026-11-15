@@ -117,16 +117,37 @@ function ExportDemo() {
   )
 }
 
-type ImportOutcome = 'success' | 'tooLarge' | 'invalidFile' | 'other'
+type ImportOutcome =
+  | 'success'
+  | 'clash'
+  | 'clashUnknownBoard'
+  | 'tooLarge'
+  | 'invalidFile'
+  | 'other'
 
-const IMPORT_OUTCOMES = ['success', 'tooLarge', 'invalidFile', 'other'] as const
+const IMPORT_OUTCOMES = [
+  'success',
+  'clash',
+  'clashUnknownBoard',
+  'tooLarge',
+  'invalidFile',
+  'other',
+] as const
 
+/** Clash outcomes reject CRD and GARD, so a retry with either clashes again. */
 function fakeImport(outcome: ImportOutcome): ImportBoard {
-  return () => {
+  return (_file, key) => {
+    const fileKey = outcome === 'clashUnknownBoard' ? 'GARD' : 'CRD'
+    const finalKey = key ?? fileKey
+    const isClash =
+      (outcome === 'clash' || outcome === 'clashUnknownBoard') &&
+      ['CRD', 'GARD'].includes(finalKey)
     const result: ImportResult =
-      outcome === 'success'
-        ? { ok: true, board: { name: 'Cardigan v1', key: 'CRD' } }
-        : { ok: false, error: { kind: outcome } }
+      outcome === 'tooLarge' || outcome === 'invalidFile' || outcome === 'other'
+        ? { ok: false, error: { kind: outcome } }
+        : isClash
+          ? { ok: false, error: { kind: 'keyUsed' } }
+          : { ok: true, board: { name: 'Cardigan v1', key: finalKey } }
     return new Promise((resolve) => setTimeout(() => resolve(result), DELAY_MS))
   }
 }

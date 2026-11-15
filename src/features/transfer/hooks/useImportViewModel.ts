@@ -22,6 +22,7 @@ const KEY_PATTERN = /^[A-Z]{2,5}$/
 
 function localKeyError(key: string): KeyFieldError | null {
   if (KEY_PATTERN.test(key)) return null
+  if (key.length === 0) return { code: 'REQUIRED' }
   if (key.length < 2) return { code: 'TOO_SHORT', min: 2 }
   if (key.length > 5) return { code: 'TOO_LONG', max: 5 }
   return { code: 'INVALID_FORMAT' }
@@ -108,7 +109,12 @@ export function useImportViewModel({
         dispatch({ type: 'cancel' })
         break
       case 'keyChange':
-        dispatch({ type: 'keyChange', value: action.value.toUpperCase() })
+        dispatch({
+          type: 'keyChange',
+          value: action.value.replace(/[a-z]/g, (letter) =>
+            letter.toUpperCase(),
+          ),
+        })
         break
       case 'clashSubmit': {
         if (state.step !== 'clash') break

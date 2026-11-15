@@ -32,6 +32,12 @@
     "keyHelp": "2–5 uppercase letters. Can’t be changed later.",
     "keyUsed": "You already have a board with the key {{key}}.",
     "cancel": "Cancel import",
-    "submit": "Import"
+    "submit": "Import",
+    "keyErrors": {
+      "required": "Enter a key.",
+      "tooShort": "Use at least 2 letters.",
+      "tooLong": "Use at most 5 letters.",
+      "invalidFormat": "Use only the letters A–Z."
+    }
   }
 }

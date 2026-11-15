@@ -2,7 +2,9 @@ import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Banner, Button, Dialog, DropZone, FileRow } from '@/core/ui'
 import type { ImportBoxError, ImportReducerState } from '../hooks/importReducer'
+import { useLastPresent } from '../hooks/useLastPresent'
 import { formatFileSize } from '../utils/formatFileSize'
+import { ClashDialog } from './ClashDialog'
 
 export type ImportScreenAction =
   | { type: 'filesChoose'; files: File[] }
@@ -52,6 +54,9 @@ export function ImportScreen({ state, onAction }: ImportScreenProps) {
   const { t: tCommon } = useTranslation()
   const isChoosing = state.step === 'choosing' || state.step === 'checking'
   const failed = state.step === 'choosing' && state.error ? state : null
+  const uploadingName = useLastPresent(
+    state.step === 'uploading' ? state.file.name : null,
+  )
   useBlockStrayFileDrops(isChoosing)
 
   return (
@@ -100,10 +105,12 @@ export function ImportScreen({ state, onAction }: ImportScreenProps) {
         open={state.step === 'uploading'}
         onOpenChange={() => {}}
         type="progress"
-        title={t('import.progressTitle', {
-          fileName: state.step === 'uploading' ? state.file.name : '',
-        })}
+        title={t('import.progressTitle', { fileName: uploadingName ?? '' })}
         description={t('import.progressBody')}
+      />
+      <ClashDialog
+        state={state.step === 'clash' ? state : null}
+        onAction={onAction}
       />
     </>
   )
