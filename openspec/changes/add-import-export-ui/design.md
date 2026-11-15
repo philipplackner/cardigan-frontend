@@ -4,11 +4,12 @@
 
 See proposal.md › Why. Current state that shapes the approach:
 
-- `src/features/transfer/` has only empty folders. `src/core/i18n/` is empty.
+- `src/features/transfer/` has only empty folders.
+- i18n and the screen test stack are in place (commit 978fd70): `initI18n` in `core/i18n` with a `common` namespace, `src/app/i18n.ts` assembling all namespaces, typed keys in `src/app/i18next.d.ts`, and `src/testSetup.ts`.
 - No router, no TanStack Query, no `core/api` (chunk 18), no OpenAPI snapshot.
 - `src/core/ui` has what the screens need: `Dialog` (default and progress), `ToastProvider`/`useToast`, `DropZone`, `FileRow`, `Banner`, `Field`, `Input`, `Button`, `Menu`.
 - `DropZone` already ignores drags without files, keeps only the first file and resets the input after a pick.
-- Vitest runs in the `node` environment with `TZ=Europe/Berlin`. There is no jsdom or Testing Library.
+- Vitest runs `*.test.ts` in `node` and `*.test.tsx` in jsdom (through `test.projects`), with `TZ=Europe/Berlin`.
 - The repo rules: plain API functions with MSW instead of a repository layer, no `vi.mock` of project modules, features don't import each other, all text through react-i18next.
 - Hosts for the entry points belong to other changes: the board list header and phone menu (chunk 20), the board view menu (chunk 21).
 
@@ -121,17 +122,15 @@ Alternative: a full-screen invisible drop target. Rejected: it would sit above t
 
 ### i18n (D19)
 
-- `core/i18n/i18n.ts` initializes i18next with English only and resources bundled at build time (no HTTP backend, CSP-safe).
-- Typed keys come through `CustomTypeOptions` (as in `react-ui-components`).
-- i18next runs with `interpolation.escapeValue: false`, since React escapes text; otherwise names like "R&D" show as "R&amp;D". Interpolated values are never rendered as HTML (no `Trans` with markup for user data).
-- `transfer` owns a `transfer` namespace in `features/transfer/i18n/en.json`. Shared strings like "Cancel" go into a `common` namespace in `core/i18n`.
-- `main.tsx` imports the setup. The preview entry imports it too.
+The setup landed in commit 978fd70 (task group 1). This change uses it as follows:
+
+- `core/i18n/i18n.ts` (`initI18n`) initializes i18next with English only and resources bundled at build time (no HTTP backend, CSP-safe), with `interpolation.escapeValue: false`. Interpolated values are never rendered as HTML (no `Trans` with markup for user data).
+- `transfer` owns a `transfer` namespace in `features/transfer/i18n/en.json`. It is added to `resources` in `src/app/i18n.ts`, which also gives it typed keys through `src/app/i18next.d.ts`. "Cancel" and "Close" come from the existing `common` namespace.
+- `main.tsx`, the preview entry and `src/testSetup.ts` already import `src/app/i18n.ts`, so tests see the `transfer` strings without extra setup.
 
 ### Test stack (D19, D21)
 
-- Add `jsdom`, `@testing-library/react`, `@testing-library/user-event`, `@testing-library/jest-dom`.
-- Vitest keeps `node` as the default environment. Screen and feature tests (`*.test.tsx`) run in jsdom through a per-glob setting (`test.projects` or `environmentMatchGlobs`, whichever the installed Vitest supports).
-- A `src/testSetup.ts` registers jest-dom matchers, initializes i18n and runs RTL `cleanup`.
+- In place since commit 978fd70: `jsdom`, `@testing-library/react`, `@testing-library/dom`, `@testing-library/user-event`, `@testing-library/jest-dom`. `vitest.config.ts` uses `test.projects`: `*.test.ts` in `node`, `*.test.tsx` in jsdom with `src/testSetup.ts` (jest-dom matchers, i18n, RTL `cleanup`).
 - Test kinds:
   - **Unit**: reducer, `checkExportFile`, `formatFileSize`, `exportFileName`.
   - **Screen**: `ImportScreen` per state, rendered with props.
@@ -141,7 +140,7 @@ Alternative: a full-screen invisible drop target. Rejected: it would sit above t
 
 ## Risks / Trade-offs
 
-- **[Merge conflicts with other wave-3 web changes]**: board list, board view, card detail, labels and auth UI also need i18n and RTL. If several add them in parallel, `package.json`, `package-lock.json`, `vitest.config.ts`, `testSetup.ts` and `core/i18n` collide. → Do the setup as the first task group with its own commit, keep it minimal and generic (no transfer strings in `core/i18n`), and tell the orchestrator when it lands so the other sessions rebase instead of re-adding it. The user chose this over a separate foundation change.
+- **[Merge conflicts with other wave-3 web changes]** (resolved): board list, board view, card detail, labels and auth UI also need i18n and RTL. The setup landed once as its own commit (978fd70), and the orchestrator told the other sessions to build on it instead of re-adding it. What's left: each feature adds its namespace to `src/app/i18n.ts`, so parallel changes touch that one file. Those are one-line additions that merge easily.
 - **[Seam drifts from the real API]**: the result union is written before the OpenAPI spec exists. → It only uses codes from `board-export-format` and `api-errors`. Chunk 40 adds the mapper and its tests.
 - **[Reading files on the main thread]**: `file.text()` and `JSON.parse` on a 5 MB file can block for tens of milliseconds. → Acceptable for a one-off action. The size check runs first, so nothing over 5 MB is read.
 - **[Key error copy comes from another change]**: chunk 20 defines the TOO_SHORT, TOO_LONG and INVALID_FORMAT strings (D24). → Task group 6 stops and asks if they don't exist yet.

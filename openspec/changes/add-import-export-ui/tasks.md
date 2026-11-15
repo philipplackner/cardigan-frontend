@@ -6,10 +6,12 @@ Before group 6: chunk 20 must have defined the New board key error strings (D24)
 
 ## 1. i18n and screen test setup
 
+Covered by commit 978fd70 ("build: add react-i18next and screen test setup").
+
 - [x] 1.1 Install `i18next`, `react-i18next`, `jsdom`, `@testing-library/react`, `@testing-library/user-event`, `@testing-library/jest-dom`, and verify `npm ls` lists them with no peer warnings
 - [x] 1.2 Add `src/core/i18n/` setup (English only, bundled resources, typed keys via `CustomTypeOptions`, `interpolation.escapeValue: false`, `common` namespace) and import it from `src/main.tsx` and the preview entry. Verify `npm run build` passes and a typo in a `t()` key fails `npm run typecheck`
 - [x] 1.3 Configure Vitest so `*.test.tsx` runs in jsdom while `*.test.ts` stays in `node`, add `src/testSetup.ts` (jest-dom, i18n, cleanup), update `tsconfig.test.json`, and verify with one smoke `*.test.tsx` that renders a `core/ui` `Button` and finds it by role, while the existing tests still pass
-- [ ] 1.4 Tell the orchestrator session (cardiganapp-be) that the setup commit has landed, so the other wave-3 web sessions rebase onto it
+- [x] 1.4 Tell the orchestrator session (cardiganapp-be) that the setup commit has landed, so the other wave-3 web sessions rebase onto it
 
 ## 2. Drop zone Over variant
 
@@ -18,7 +20,7 @@ Before group 6: chunk 20 must have defined the New board key error strings (D24)
 ## 3. Transfer types, translations and pure utils
 
 - [ ] 3.1 Add `features/transfer/types.ts` with `ExportBoard`, `ImportBoard`, `ExportResult`, `ImportResult` as in design.md, and verify `npm run typecheck` passes
-- [ ] 3.2 Add the `transfer` namespace (`features/transfer/i18n/en.json`) with every Figma string from page `9:9` plus the copy from proposal.md › What Changes, and verify each string matches Figma or the proposal character for character, including the curly quotes
+- [ ] 3.2 Add the `transfer` namespace (`features/transfer/i18n/en.json`), registered under `resources` in `src/app/i18n.ts`, with every Figma string from page `9:9` plus the copy from proposal.md › What Changes, and verify each string matches Figma or the proposal character for character, including the curly quotes
 - [ ] 3.3 Add `formatFileSize` with adversarial unit tests (0 → "0 KB", 1 → "0 KB", 1023 → "1 KB", 1024 → "1 KB", 1,536 → "2 KB", 14,336 → "14 KB", 1,048,575 → "1024 KB", 1,048,576 → "1.0 MB", 1,310,720 → "1.3 MB", 5,242,880 → "5.0 MB", 5,242,881 → "5.1 MB", 7,549,747 → "7.2 MB") and verify they pass
 - [ ] 3.4 Add `checkExportFile` with unit tests: exactly 5,242,880 bytes passes, 5,242,881 fails as too large without being read, not JSON, JSON array, `null`, wrong `format`, `formatVersion` `2` and `"1"`, BOM-prefixed valid file passes (the backend decides with 422 if it rejects it), valid header with invalid content passes. Verify they pass
 - [ ] 3.5 Add `exportFileName` with unit tests: `filename="CRD-2026-11-04.json"`, `filename*=UTF-8''…`, missing header falls back to key + UTC date with `exportedAt` `2026-11-04T23:30:00Z` under `TZ=Europe/Berlin` giving `2026-11-04`, path separators stripped, unreadable file gives `board-export.json`. Verify they pass
