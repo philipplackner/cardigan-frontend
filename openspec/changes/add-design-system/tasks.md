@@ -42,9 +42,9 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 7. Feedback
 
-- [ ] 7.1 Add `Spinner` (Small, Large, inherits color) and `Skeleton` with the 1.2s shimmer. Check them against Figma, and check by hand that the shimmer stops when the OS reduced-motion setting is on
-- [ ] 7.2 Add `Banner` (Error, Info) and `EmptyState` (Default, Error, Actions slot), and check them against Figma
-- [ ] 7.3 Add `ToastProvider` and `useToast()` per D10. Check them against Figma, and check by hand on the preview page: success closes after 4 s, the timer pauses while hovered, error stays, a second toast replaces the first, swiping right closes it, the close button works, and toasts don't slide under reduced motion
+- [x] 7.1 Add `Spinner` (Small, Large, inherits color) and `Skeleton` with the 1.2s shimmer. Check them against Figma, and check by hand that the shimmer stops when the OS reduced-motion setting is on
+- [x] 7.2 Add `Banner` (Error, Info) and `EmptyState` (Default, Error, Actions slot), and check them against Figma
+- [x] 7.3 Add `ToastProvider` and `useToast()` per D10. Check them against Figma, and check by hand on the preview page: success closes after 4 s, the timer pauses while hovered, error stays, a second toast replaces the first, swiping right closes it, the close button works, and toasts don't slide under reduced motion
 
 ## 8. Labels and data display
 

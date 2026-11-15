@@ -750,12 +750,93 @@
   text-transform: uppercase;
 }
 
+/* Motion has no Figma tokens. Overlays only animate under motion-safe. */
+@theme static {
+  --animate-shimmer: shimmer 1.2s linear infinite;
+  --animate-fade-in: fade-in 150ms ease-out;
+  --animate-fade-out: fade-out 150ms ease-in;
+  --animate-pop-in: pop-in 150ms ease-out;
+  --animate-pop-out: pop-out 150ms ease-in;
+  --animate-rise-in: rise-in 200ms ease-out;
+  --animate-sink-out: sink-out 150ms ease-in;
+  --animate-sheet-in: sheet-in 200ms ease-out;
+  --animate-sheet-out: sheet-out 150ms ease-in;
+  --animate-swipe-out: swipe-out 150ms ease-out;
+}
+
 @keyframes shimmer {
   from {
     background-position: 100% 0;
   }
   to {
     background-position: -100% 0;
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@keyframes pop-out {
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes sink-out {
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+@keyframes sheet-out {
+  to {
+    transform: translateY(100%);
+  }
+}
+@keyframes swipe-out {
+  from {
+    transform: translateX(var(--radix-toast-swipe-end-x));
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@utility skeleton-shimmer {
+  background-color: var(--color-background-skeleton);
+  @media (prefers-reduced-motion: no-preference) {
+    background-image: linear-gradient(
+      90deg,
+      var(--color-background-skeleton) 0%,
+      var(--color-background-skeleton-highlight) 50%,
+      var(--color-background-skeleton) 100%
+    );
+    background-size: 200% 100%;
+    animation: var(--animate-shimmer);
   }
 }
 
