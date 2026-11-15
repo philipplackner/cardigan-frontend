@@ -9,13 +9,13 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 2. Theme tokens
 
-- [ ] 2.1 Export every Figma variable (Light and Dark), text style and effect style to a JSON file in the scratchpad with a read-only `use_figma` script, and verify the counts: 53 colors, 23 spacing, 11 radius, 12 size (including `width/sidebar-tablet`, `width/sidebar-desktop`, `width/panel-tablet`, `width/panel-desktop`), 59 text styles, 7 effect styles. If the 4 `width/*` variables are missing, `update-figma-foundations` hasn't been applied yet: stop and ask instead of hard-coding the values
-- [ ] 2.2 Write the color section of `theme.css` (raw `:root` values, dark `prefers-color-scheme` block, `color-scheme`, `@theme inline` mapping, default palette cleared) and verify `bg-accent` and `bg-label-teal` produce CSS while `bg-blue-500` does not
-- [ ] 2.3 Add spacing, radius, size, shadow and focus-ring tokens with the default scales cleared, and verify `p-12` is 12px, `min-h-control-touch` is 44px, `p-17` and `rounded-md` produce no CSS, and `min-w-[0]` and `inset-[0]` produce CSS while `min-w-0` does not
-- [ ] 2.4 Add the `phone`, `tablet` and `desktop` custom variants and remove the default breakpoints. Verify `sm:` produces no CSS, `phone:` compiles to the width-or-height media query, and `w-sidebar-tablet` is 224px
-- [ ] 2.5 Import the Geist fonts in `src/main.tsx`, set the sans and mono font tokens, and verify in the built `dist/` that the woff2 files are bundled same-origin
-- [ ] 2.6 Add one `type-*` utility per Figma text style (sizes in rem) plus the 7 semantic role utilities with phone sizes (Page title 28 on phones), and verify the generated CSS has 59 raw and 7 role utilities, and that `font-bold` and `leading-tight` produce no CSS
-- [ ] 2.7 Add `src/core/ui/cn.ts` with `clsx`, `tailwind-merge` and an `extendTailwindMerge` config for the `type-*` group and the named spacing, size and radius scales, and add a unit test that `cn('type-body', 'text-text-muted')` keeps both classes and `cn('p-12', 'p-8')` keeps `p-8`
+- [x] 2.1 Export every Figma variable (Light and Dark), text style and effect style to a JSON file in the scratchpad with a read-only `use_figma` script, and verify the counts: 53 colors, 23 spacing, 11 radius, 12 size (including `width/sidebar-tablet`, `width/sidebar-desktop`, `width/panel-tablet`, `width/panel-desktop`), 59 text styles, 7 effect styles. If the 4 `width/*` variables are missing, `update-figma-foundations` hasn't been applied yet: stop and ask instead of hard-coding the values
+- [x] 2.2 Write the color section of `theme.css` (raw `:root` values, dark `prefers-color-scheme` block, `color-scheme`, `@theme inline` mapping, default palette cleared) and verify `bg-accent` and `bg-label-teal` produce CSS while `bg-blue-500` does not
+- [x] 2.3 Add spacing, radius, size, shadow and focus-ring tokens with the default scales cleared, and verify `p-12` is 12px, `min-h-control-touch` is 44px, `p-17` and `rounded-md` produce no CSS, and `min-w-[0]` and `inset-[0]` produce CSS while `min-w-0` does not
+- [x] 2.4 Add the `phone`, `tablet` and `desktop` custom variants and remove the default breakpoints. Verify `sm:` produces no CSS, `phone:` compiles to the width-or-height media query, and `w-sidebar-tablet` is 224px
+- [x] 2.5 Import the Geist fonts in `src/main.tsx`, set the sans and mono font tokens, and verify in the built `dist/` that the woff2 files are bundled same-origin
+- [x] 2.6 Add one `type-*` utility per Figma text style (sizes in rem) plus the 7 semantic role utilities with phone sizes (Page title 28 on phones), and verify the generated CSS has 59 raw and 7 role utilities, and that `font-bold` and `leading-tight` produce no CSS
+- [x] 2.7 Add `src/core/ui/cn.ts` with `clsx`, `tailwind-merge` and an `extendTailwindMerge` config for the `type-*` group and the named spacing, size and radius scales, and add a unit test that `cn('type-body', 'text-text-muted')` keeps both classes and `cn('p-12', 'p-8')` keeps `p-8`
 
 ## 3. Preview page
 
