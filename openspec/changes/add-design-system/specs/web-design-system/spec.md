@@ -44,7 +44,7 @@ Components that have Default and Touch size variants in Figma SHALL use the Touc
 - **THEN** it has the Default size from Figma
 
 ### Requirement: Layout regions per breakpoint
-The app layout SHALL show a top app bar and no sidebar on a phone, a 224 px sidebar from 640 px wide, and a 248 px sidebar from 1024 px wide. An open side panel SHALL be 420 px wide on tablet, 452 px on desktop, and fill the screen on a phone.
+The app layout SHALL show a top app bar and no sidebar on a phone. When the viewport is not a phone, it SHALL show a 224 px sidebar below 1024 px wide and a 248 px sidebar from 1024 px wide. An open side panel SHALL be 420 px wide on tablet, 452 px on desktop, and fill the screen on a phone. On a phone, while the side panel is open, the content behind it SHALL NOT be reachable by keyboard or assistive technology.
 
 #### Scenario: Tablet portrait with side panel
 - **WHEN** the viewport is 834 px wide, not a phone, and a side panel is open
@@ -58,6 +58,14 @@ The app layout SHALL show a top app bar and no sidebar on a phone, a 224 px side
 - **WHEN** the viewport is a phone and a side panel is open
 - **THEN** the panel covers the whole viewport and no sidebar is shown
 
+#### Scenario: Tab on a phone with side panel
+- **WHEN** a side panel is open on a phone and the user presses Tab repeatedly
+- **THEN** focus never reaches an element behind the panel
+
+#### Scenario: Short wide window
+- **WHEN** the viewport is 1280 px wide and 420 px high
+- **THEN** the app bar is shown and no sidebar
+
 ### Requirement: Text follows the user's text size
 All text SHALL scale with the browser's default font size and page zoom. Control heights from Figma SHALL act as minimum heights so controls grow to fit larger text. Single-line labels that no longer fit SHALL be truncated with an ellipsis instead of wrapping.
 
@@ -70,7 +78,7 @@ All text SHALL scale with the browser's default font size and page zoom. Control
 - **THEN** it is shown on one line, cut off with an ellipsis
 
 ### Requirement: Visible keyboard focus
-Every interactive component SHALL show the Figma focus ring when it receives focus from the keyboard. Inputs and text areas in error SHALL show the danger focus ring. Focus from a mouse click SHALL NOT show the ring on buttons.
+Every interactive component SHALL show the Figma focus ring when it receives focus from the keyboard, except menu items and options, which show their Highlighted state instead. Inputs and text areas in error SHALL show the danger focus ring. Focus from a mouse click SHALL NOT show the ring on buttons.
 
 #### Scenario: Tab to a button
 - **WHEN** the user presses Tab until a button has focus
@@ -98,6 +106,10 @@ A button in its loading state SHALL show the spinner in place of its leading ico
 - **WHEN** the user clicks or presses Enter on a button that is loading
 - **THEN** its action does not run and the spinner keeps showing
 
+#### Scenario: Submit a form whose submit button is loading
+- **WHEN** a form's submit button is loading and the user presses Enter in one of the form's text inputs
+- **THEN** the form is not submitted again
+
 ### Requirement: Icon-only controls have an accessible name
 Every icon-only control SHALL have an accessible name supplied by the screen that uses it. Icons next to visible text SHALL be hidden from assistive technology.
 
@@ -109,7 +121,7 @@ Every icon-only control SHALL have an accessible name supplied by the screen tha
 Toasts SHALL appear at the bottom center of the viewport. A success toast SHALL close by itself after 4 seconds. An error toast SHALL stay until the user closes it. Only one toast SHALL be visible; showing a new toast SHALL replace the current one. Every toast SHALL have a close button.
 
 #### Scenario: Success toast
-- **WHEN** a success toast is shown and the user does nothing
+- **WHEN** a success toast is shown, the window keeps focus, and the pointer is not over the toast
 - **THEN** it closes after 4 seconds
 
 #### Scenario: Error toast
@@ -120,8 +132,19 @@ Toasts SHALL appear at the bottom center of the viewport. A success toast SHALL 
 - **WHEN** a toast is visible and another toast is shown
 - **THEN** the first one disappears and only the new one is visible
 
+### Requirement: Toast timer pause and swipe
+The success toast's 4-second timer SHALL pause while the pointer is over the toast, while focus is inside it, and while the window doesn't have focus, and SHALL resume with the remaining time when that ends. A toast SHALL also close when swiped to the right.
+
+#### Scenario: Pointer rests on a success toast
+- **WHEN** a success toast is shown and the pointer stays over it for 10 seconds
+- **THEN** it is still visible, and it closes within 4 seconds after the pointer leaves
+
+#### Scenario: Swipe a toast
+- **WHEN** the user swipes a toast to the right
+- **THEN** it closes
+
 ### Requirement: Modal overlays and keyboard
-Dialogs and bottom sheets SHALL keep keyboard focus inside while open, close on Escape or on a click on the scrim, and return focus to the element that opened them. Menus and popovers SHALL close on Escape or an outside click and return focus to their trigger.
+Dialogs and bottom sheets SHALL keep keyboard focus inside while open, close on Escape or on a click on the scrim (except Progress dialogs, see below), and return focus to the element that opened them. Menus and popovers SHALL close on Escape or an outside click and return focus to their trigger.
 
 #### Scenario: Escape in a dialog
 - **WHEN** a dialog is open and the user presses Escape
@@ -139,7 +162,7 @@ A dialog in its Progress type SHALL NOT close on Escape, on a click on the scrim
 - **THEN** the dialog stays open
 
 ### Requirement: Bottom sheet
-A bottom sheet SHALL slide in from the bottom edge on a phone and close on a scrim tap, Escape, or its close action. It SHALL NOT respond to dragging.
+A bottom sheet SHALL slide in from the bottom edge on a phone and close on a scrim tap, Escape, or its close action. It SHALL NOT respond to dragging. A bottom sheet SHALL only be used on a phone. When the user prefers reduced motion, bottom sheets, dialogs and toasts SHALL appear and disappear without sliding or scaling.
 
 #### Scenario: Tap the scrim
 - **WHEN** a bottom sheet is open and the user taps the scrim above it
@@ -151,6 +174,14 @@ Title and Multi-line text areas SHALL grow in height to show all their text with
 #### Scenario: Long card title
 - **WHEN** the user types a title that wraps to three lines
 - **THEN** the Title text area is three lines high and all text is visible
+
+#### Scenario: Existing long title
+- **WHEN** a Title text area is shown with a value that wraps to three lines
+- **THEN** it is three lines high before any input
+
+#### Scenario: Narrower container
+- **WHEN** the viewport narrows so the title wraps to more lines
+- **THEN** the text area grows to show all text
 
 ### Requirement: Skeleton shimmer
 Skeleton placeholders SHALL show a shimmer moving from the skeleton color to the skeleton highlight color, about 1.2 seconds per cycle. When the user prefers reduced motion, skeletons SHALL be static.
@@ -167,11 +198,15 @@ The design system SHALL offer exactly the 20 label colors from the `domain-label
 - **THEN** its dot uses the Figma Dark mode value of `label/teal`
 
 ### Requirement: File drop zone
-The drop zone SHALL show its Over state while a file is dragged over it, SHALL hand dropped files to the screen, and SHALL let keyboard and pointer users choose a file through the system file picker.
+The drop zone SHALL show its Over state while a file is dragged over it, SHALL hand dropped files to the screen, and SHALL let keyboard and pointer users choose a file through the system file picker. The drop zone SHALL accept one file at a time. It SHALL show the Over state only for drags that carry files, and SHALL ignore drops without files.
 
 #### Scenario: Drag a file over
 - **WHEN** the user drags a file over the drop zone
 - **THEN** it shows the Over state, and returns to Default when the file leaves without being dropped
+
+#### Scenario: Drop a file
+- **WHEN** the user drops a file on the drop zone
+- **THEN** the screen receives that file, the zone returns to Default, and the page does not navigate
 
 #### Scenario: Choose with the keyboard
 - **WHEN** the user tabs to the drop zone's browse control and presses Enter

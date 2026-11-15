@@ -11,15 +11,15 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 - [ ] 2.1 Export every Figma variable (Light and Dark), text style and effect style to a JSON file in the scratchpad with a read-only `use_figma` script, and verify the counts: 53 colors, 23 spacing, 11 radius, 12 size (including `width/sidebar-tablet`, `width/sidebar-desktop`, `width/panel-tablet`, `width/panel-desktop`), 59 text styles, 7 effect styles. If the 4 `width/*` variables are missing, `update-figma-foundations` hasn't been applied yet: stop and ask instead of hard-coding the values
 - [ ] 2.2 Write the color section of `theme.css` (raw `:root` values, dark `prefers-color-scheme` block, `color-scheme`, `@theme inline` mapping, default palette cleared) and verify `bg-accent` and `bg-label-teal` produce CSS while `bg-blue-500` does not
-- [ ] 2.3 Add spacing, radius, size, shadow and focus-ring tokens with the default scales cleared, and verify `p-12` is 12px, `min-h-control-touch` is 44px, and `p-17` and `rounded-md` produce no CSS
+- [ ] 2.3 Add spacing, radius, size, shadow and focus-ring tokens with the default scales cleared, and verify `p-12` is 12px, `min-h-control-touch` is 44px, `p-17` and `rounded-md` produce no CSS, and `min-w-[0]` and `inset-[0]` produce CSS while `min-w-0` does not
 - [ ] 2.4 Add the `phone`, `tablet` and `desktop` custom variants and remove the default breakpoints. Verify `sm:` produces no CSS, `phone:` compiles to the width-or-height media query, and `w-sidebar-tablet` is 224px
 - [ ] 2.5 Import the Geist fonts in `src/main.tsx`, set the sans and mono font tokens, and verify in the built `dist/` that the woff2 files are bundled same-origin
-- [ ] 2.6 Add one `type-*` utility per Figma text style (sizes in rem) plus the 7 semantic role utilities with phone sizes (Page title 28 on phones), and verify the generated CSS has 59 raw and 7 role utilities
+- [ ] 2.6 Add one `type-*` utility per Figma text style (sizes in rem) plus the 7 semantic role utilities with phone sizes (Page title 28 on phones), and verify the generated CSS has 59 raw and 7 role utilities, and that `font-bold` and `leading-tight` produce no CSS
 - [ ] 2.7 Add `src/core/ui/cn.ts` with `clsx`, `tailwind-merge` and an `extendTailwindMerge` config for the `type-*` group and the named spacing, size and radius scales, and add a unit test that `cn('type-body', 'text-text-muted')` keeps both classes and `cn('p-12', 'p-8')` keeps `p-8`
 
 ## 3. Preview page
 
-- [ ] 3.1 Add `preview.html` and `src/preview/main.tsx` with an empty section per Figma Design System section plus a Foundations section showing all color, spacing, radius, shadow and type tokens. Verify the page loads on the dev server and `npm run build` produces no preview file or chunk in `dist/`
+- [ ] 3.1 Add `preview.html` and `src/preview/main.tsx` with an empty section per Figma Design System section plus a Foundations section showing all color, spacing, radius, shadow and type tokens. Verify the page loads on the dev server, uses Geist and the theme tokens, and `npm run build` produces no preview file or chunk in `dist/`
 - [ ] 3.2 Check the Foundations preview section against Figma Foundations `9:2` in both themes
 
 ## 4. Icons and brand
@@ -30,13 +30,13 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 5. Actions
 
-- [ ] 5.1 Add `Button` (Primary, Secondary, Ghost, Danger, Danger ghost × Small/Medium with Touch pairs, Disabled, loading, optional leading icon, `asChild`) with hover, focus-visible and loading per D9. Check against Figma, and check by hand that a loading button ignores clicks and Enter and that danger buttons don't change on hover
+- [ ] 5.1 Add `Button` (Primary, Secondary, Ghost, Danger, Danger ghost × Small/Medium with Touch pairs, Disabled, loading, optional leading icon, `asChild`) with hover, focus-visible and loading per D9. Check against Figma, and check by hand that a loading button ignores clicks and Enter, that Enter in a form field doesn't submit while the submit button is loading, and that danger buttons don't change on hover
 - [ ] 5.2 Add `FilterButton` (Default, Active) and check it against Figma
 
 ## 6. Inputs
 
 - [ ] 6.1 Add `Input` (Default, Focus, Error, Read-only, Disabled; Touch on phones; `ref` passed to the input; `aria-invalid` in error) and check it against Figma, including the focus rings
-- [ ] 6.2 Add `TextArea` (Multi-line, Title, Description; Default, Focus, Error) that grows with content per D17, check it against Figma, and check by hand that a three-line title shows all text without a scrollbar
+- [ ] 6.2 Add `TextArea` (Multi-line, Title, Description; Default, Focus, Error) that grows with content per D17, check it against Figma, and check by hand that a three-line title shows all text without a scrollbar, both when typed and when shown with an existing value, and after narrowing the viewport
 - [ ] 6.3 Add `Field` (label with `htmlFor`/`useId`, control slot, help or `ErrorMessage` linked with `aria-describedby`), `ErrorMessage` and `PasswordRule` (Met true/false, not color-only), and check them against Figma
 - [ ] 6.4 Add `Checkbox` and `Option` (Default, Highlighted; Touch on phones), and check them against Figma, including keyboard toggling with Space
 
@@ -44,7 +44,7 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 - [ ] 7.1 Add `Spinner` (Small, Large, inherits color) and `Skeleton` with the 1.2s shimmer. Check them against Figma, and check by hand that the shimmer stops when the OS reduced-motion setting is on
 - [ ] 7.2 Add `Banner` (Error, Info) and `EmptyState` (Default, Error, Actions slot), and check them against Figma
-- [ ] 7.3 Add `ToastProvider` and `useToast()` per D10. Check them against Figma, and check by hand on the preview page: success closes after 4 s, error stays, a second toast replaces the first, and the close button works
+- [ ] 7.3 Add `ToastProvider` and `useToast()` per D10. Check them against Figma, and check by hand on the preview page: success closes after 4 s, the timer pauses while hovered, error stays, a second toast replaces the first, swiping right closes it, the close button works, and toasts don't slide under reduced motion
 
 ## 8. Labels and data display
 
@@ -56,20 +56,20 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 - [ ] 9.1 Add `Menu`, `MenuItem` (Default, Highlighted, Danger, Disabled, Header; Touch on phones) and `MenuDivider`. Check them against Figma, and check by hand: arrow keys move the highlight, and Escape closes and returns focus to the trigger
 - [ ] 9.2 Add `Popover` and check it against Figma, including Escape and outside click closing
 - [ ] 9.3 Add `Dialog` (Default with Content and Actions slots, Progress; Touch on phones). Check it against Figma, and check by hand: focus is trapped, Escape and scrim close the default dialog, and nothing closes the progress dialog
-- [ ] 9.4 Add `BottomSheet` (Dialog-based, no drag). Check it against Figma, and check by hand that scrim tap and Escape close it
+- [ ] 9.4 Add `BottomSheet` (Dialog-based, no drag). Check it against Figma, and check by hand that scrim tap and Escape close it and that it doesn't slide under reduced motion
 
 ## 10. Navigation and layout
 
 - [ ] 10.1 Add `NavItem` (Default, Selected, Dim, truncating name), `Sidebar` (Brand, nav, Boards slot, account footer) and `PageHeader` (title, count, Actions slot), and check them against Figma
 - [ ] 10.2 Add `AppBar` (Brand, Title, Centered × Raised) and check it against Figma
-- [ ] 10.3 Add `AppLayout` per D19 and D24, sized only with the `w-sidebar-*` and `w-panel-*` tokens, with a preview section that composes Sidebar, AppBar, content and Panel. Check by hand at 390×844, 844×390, 834×1194 and 1440×900 that the regions and widths match the spec's layout scenarios
+- [ ] 10.3 Add `AppLayout` per D19 and D24, sized only with the `w-sidebar-*` and `w-panel-*` tokens, with a preview section that composes Sidebar, AppBar, content and Panel. Check by hand at 390×844, 844×390, 834×1194, 1280×420 and 1440×900 that the regions and widths match the spec's layout scenarios, and that Tab never leaves the open panel on a phone
 
 ## 11. Board, boards, card detail, import & export
 
 - [ ] 11.1 Add `Card` (Default, Selected, Dragging, Placeholder as props; Touch on phones), `Column` (header with name, count and menu slot, Cards slot, Add card), `AddCardButton`, `AddColumnButton` and `DropIndicator`, and check them against Figma
 - [ ] 11.2 Add `BoardTile` (Default, Hover) and `BoardRow`, and check them against Figma
 - [ ] 11.3 Add `LabelRow` (Default, Touch) and `Panel` (header, Body and Footer slots, close with required label), and check them against Figma
-- [ ] 11.4 Add `FileRow` and `DropZone` (Default, Over, browse button, `onFiles`). Check them against Figma, and check by hand that dragging a file over shows Over, leaving resets it, and Enter on browse opens the file picker
+- [ ] 11.4 Add `FileRow` and `DropZone` (Default, Over, browse button, `onFiles`). Check them against Figma, and check by hand that dragging a file over shows Over, moving over the zone's text keeps Over, leaving resets it, dragging selected text shows no Over, dropping hands the file to `onFiles` without navigating, and Enter on browse opens the file picker
 
 ## 12. Documentation
 
@@ -81,6 +81,7 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 - [ ] 13.2 With the browser default font size at 24 px, check every preview section: no clipped text in controls, and single-line labels truncate
 - [ ] 13.3 Switch the OS theme while the preview page is open and verify all sections change without a reload
 - [ ] 13.4 Run all five gates, run `openspec validate add-design-system --strict`, and verify `dist/` contains no preview page
+- [ ] 13.5 Serve `dist/` with `Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'` and check that opening a dialog locks page scroll and the console shows no CSP violation
 
 ## Workflow follow-up
 
