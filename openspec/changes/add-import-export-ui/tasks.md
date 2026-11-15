@@ -49,7 +49,7 @@ Covered by commit 978fd70 ("build: add react-i18next and screen test setup").
 ## 7. Integration checks
 
 - [x] 7.1 Run all five gates on a clean checkout of the branch and verify they pass
-- [ ] 7.2 Walk through the full flows on the preview page with only the keyboard (open import, browse, pick, clash, retry, cancel; export from the menu), and verify focus returns to the trigger, or for menu items to the menu's button, after each dialog closes. Also export a board in Safari and Firefox and verify the file is downloaded
+- [x] 7.2 Walk through the full flows on the preview page with only the keyboard (open import, browse, pick, clash, retry, cancel; export from the menu), and verify focus returns to the trigger, or for menu items to the menu's button, after each dialog closes. Also export a board in Safari and Firefox and verify the file is downloaded
 
 ## Workflow follow-up
 
