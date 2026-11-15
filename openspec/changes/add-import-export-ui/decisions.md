@@ -45,7 +45,7 @@ Build the `transfer` feature's UI for chunk 23 (`web-import-export-ui`): an Expo
 
 ### D6 — File size format
 - **Question**: How are file sizes shown?
-- **Decision**: Base 1024. Below 1 MB: whole KB. From 1 MB: MB with one decimal. When the file is over the 5 MB limit, the value is rounded up, so 5,242,881 bytes shows "5.1 MB", never "5.0 MB".
+- **Decision**: Base 1024. Below 1 MB: whole KB. From 1 MB: MB with one decimal. KB and MB round half up (1,536 bytes → "2 KB", 1.25 MB → "1.3 MB"). When the file is over the 5 MB limit, the value is always rounded up, so 5,242,881 bytes shows "5.1 MB", never "5.0 MB". (Half-up rounding confirmed with the user after the first proposal.)
 - **Alternatives**: Decimal units.
 - **Why**: Consistent with the 5,242,880-byte limit. Shared with mobile.
 - **Depends on**: —
@@ -57,7 +57,7 @@ Build the `transfer` feature's UI for chunk 23 (`web-import-export-ui`): an Expo
   - Export 404: "“{boardName}” no longer exists, so it can't be exported."
   - Import failed: "Couldn't import the board. Check your connection and try again."
 - **Alternatives**: Toasts for both; wait for designs.
-- **Why**: Reuses drawn patterns. The user reviews the copy in the proposal.
+- **Why**: Reuses drawn patterns. The user approved the copy unchanged in the proposal review.
 - **Depends on**: —
 
 ### D8 — Key prefill
@@ -99,7 +99,7 @@ Build the `transfer` feature's UI for chunk 23 (`web-import-export-ui`): an Expo
 - **Question**: Keep the Figma text that mentions both platforms?
 - **Decision**: Platform-specific. Web shows only the browser sentence: "When the file is ready, the browser downloads it."
 - **Alternatives**: Keep the Figma text on both platforms.
-- **Why**: User decision. The user reviews the copy in the proposal.
+- **Why**: User decision. The user approved the copy unchanged in the proposal review.
 - **Depends on**: —
 
 ### D14 — Export success toast
@@ -220,5 +220,4 @@ Build the `transfer` feature's UI for chunk 23 (`web-import-export-ui`): an Expo
 ## Deferred
 
 - The exact key error strings (D24) exist only once chunk 20 (`web-board-list-ui`) defines them — settle before: implementation of task group 6.
-- The copy review of D7, D9 and D13 is still open with the user — settle before: implementation of task group 3.
 - Where the shared key validation lives once both `boards` and `transfer` need it (`core/utils` or a new `core` module) — settle before: implementation.

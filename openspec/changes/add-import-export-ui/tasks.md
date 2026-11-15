@@ -2,7 +2,7 @@
 
 Each group ends in its own commit once all five gates pass (`typecheck`, `lint`, `format:check`, `test`, `build`). "Check against Figma" means: open the transfer preview section on the dev server at 390 px, 834 px and 1440 px wide, in light and dark system themes, and compare it with `get_screenshot` of the matching frame on page `9:9`. Look frames up with `get_metadata 9:9`; don't use node IDs copied from this file.
 
-Before group 3: the user's copy review of proposal.md › What Changes must be finished. Before group 6: chunk 20 must have defined the New board key error strings (D24). Stop and ask if either is missing.
+Before group 6: chunk 20 must have defined the New board key error strings (D24). Stop and ask if either is missing.
 
 ## 1. i18n and screen test setup
 
@@ -19,7 +19,7 @@ Before group 3: the user's copy review of proposal.md › What Changes must be f
 
 - [ ] 3.1 Add `features/transfer/types.ts` with `ExportBoard`, `ImportBoard`, `ExportResult`, `ImportResult` as in design.md, and verify `npm run typecheck` passes
 - [ ] 3.2 Add the `transfer` namespace (`features/transfer/i18n/en.json`) with every Figma string from page `9:9` plus the copy from proposal.md › What Changes, and verify each string matches Figma or the proposal character for character, including the curly quotes
-- [ ] 3.3 Add `formatFileSize` with adversarial unit tests (0, 1, 1023, 1024, 14,336, 1,048,575, 1,048,576, 5,242,880, 5,242,881 → "5.1 MB", 7,549,747 → "7.2 MB") and verify they pass
+- [ ] 3.3 Add `formatFileSize` with adversarial unit tests (0, 1, 1023, 1024, 1,536 → "2 KB", 14,336, 1,048,575, 1,048,576, 1,310,720 → "1.3 MB", 5,242,880, 5,242,881 → "5.1 MB", 7,549,747 → "7.2 MB") and verify they pass
 - [ ] 3.4 Add `checkExportFile` with unit tests: exactly 5,242,880 bytes passes, 5,242,881 fails as too large without being read, not JSON, JSON array, `null`, wrong `format`, `formatVersion` `2` and `"1"`, BOM-prefixed valid file, valid header with invalid content passes. Verify they pass
 - [ ] 3.5 Add `exportFileName` with unit tests: `filename="CRD-2026-11-04.json"`, `filename*=UTF-8''…`, missing header falls back to key + UTC date with `exportedAt` `2026-11-04T23:30:00Z` under `TZ=Europe/Berlin` giving `2026-11-04`, path separators stripped, unreadable file gives `board-export.json`. Verify they pass
 

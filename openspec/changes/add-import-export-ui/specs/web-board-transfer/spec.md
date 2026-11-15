@@ -148,11 +148,19 @@ The error box SHALL show "This file is {size}. Board exports can be up to 5 MB."
 - **THEN** the box shows "Couldn't import the board. Check your connection and try again."
 
 ### Requirement: File size text
-File sizes SHALL be shown with base 1024 in English: whole KB below 1 MB (1,048,576 bytes), otherwise MB with one decimal. Values SHALL be rounded to the nearest step, except for files over 5,242,880 bytes, which SHALL be rounded up.
+File sizes SHALL be shown with base 1024 in English: whole KB below 1 MB (1,048,576 bytes), otherwise MB with one decimal. KB and MB SHALL be rounded half up, except for files over 5,242,880 bytes, which SHALL always be rounded up.
 
 #### Scenario: Small file
 - **WHEN** the file has 14,336 bytes
 - **THEN** its size shows as "14 KB"
+
+#### Scenario: Half a KB
+- **WHEN** the file has 1,536 bytes
+- **THEN** its size shows as "2 KB"
+
+#### Scenario: Half a tenth of a MB
+- **WHEN** the file has 1,310,720 bytes (1.25 MB)
+- **THEN** its size shows as "1.3 MB"
 
 #### Scenario: Large file
 - **WHEN** the file has 7,549,747 bytes

@@ -80,7 +80,13 @@ The reducer is pure and unit-tested. The async work (pre-check, upload) lives in
 
 ### Size text (D6)
 
-`utils/formatFileSize.ts` takes `(bytes, { roundUp })`. The caller sets `roundUp` when `bytes > 5_242_880`. Below 1,048,576 bytes it shows whole KB (`Math.round` or `Math.ceil` of `bytes / 1024`); otherwise MB with one decimal (`/ 10` of round or ceil of `bytes / 104857.6`). Numbers go through `Intl.NumberFormat('en', …)` so the decimal point stays fixed while only English exists. Unit tests cover 0, 1, 1023, 1024, 14,336, 1,048,575, 1,048,576, 5,242,880, 5,242,881 and 7,549,747.
+`utils/formatFileSize.ts` takes `(bytes, { roundUp })`. The caller sets `roundUp` when `bytes > 5_242_880`.
+
+- Below 1,048,576 bytes it shows whole KB, otherwise MB with one decimal.
+- Rounding is half up, or ceiling when `roundUp` is set (D6). It works on integers: tenths of a MB are `bytes * 10 / 1_048_576`, rounded with an integer remainder check rather than `Math.round` on a float, so exact halves like 1,310,720 bytes never tip the wrong way.
+- Numbers are formatted with `Intl.NumberFormat('en', …)`, so the decimal point stays fixed while only English exists.
+
+Unit tests cover 0, 1, 1023, 1024, 1,536, 14,336, 1,048,575, 1,048,576, 1,310,720, 5,242,880, 5,242,881 and 7,549,747.
 
 ### Download (D12)
 
