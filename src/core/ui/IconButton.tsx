@@ -17,7 +17,7 @@ const iconButtonVariants = cva(
       },
       size: {
         small: 'size-icon-button-small',
-        medium: 'size-icon-button-medium phone:size-icon-button-large',
+        medium: 'size-icon-button-medium',
         large: 'size-icon-button-large',
       },
     },
@@ -54,11 +54,7 @@ export function IconButton({
       )}
       {...props}
     >
-      <Icon
-        icon={icon}
-        size={size === 'large' ? 19 : 16}
-        className={size === 'medium' ? 'phone:size-[19px]' : undefined}
-      />
+      <Icon icon={icon} size={size === 'large' ? 19 : 16} />
     </button>
   )
 }

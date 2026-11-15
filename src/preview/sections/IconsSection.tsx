@@ -42,7 +42,7 @@ export function IconsSection() {
         [false, true].map((isSelected) => (
           <PreviewGroup
             key={`${variant}-${isSelected}`}
-            title={`Icon button · ${variant} · ${isSelected ? 'selected' : 'default'} · small, medium (large on phones), large, disabled`}
+            title={`Icon button · ${variant} · ${isSelected ? 'selected' : 'default'} · small, medium, large, disabled`}
           >
             <IconButton
               icon={icons.MoreIcon}
