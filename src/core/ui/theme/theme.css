@@ -115,7 +115,7 @@
   }
 }
 
-@theme inline {
+@theme inline static {
   --color-*: initial;
   --spacing-*: initial;
   --radius-*: initial;
@@ -185,7 +185,7 @@
   --color-label-slate: var(--c-label-slate);
 }
 
-@theme {
+@theme static {
   --spacing: initial;
   --spacing-1: 1px;
   --spacing-2: 2px;

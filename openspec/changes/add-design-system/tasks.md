@@ -19,8 +19,8 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 3. Preview page
 
-- [ ] 3.1 Add `preview.html` and `src/preview/main.tsx` with an empty section per Figma Design System section plus a Foundations section showing all color, spacing, radius, shadow and type tokens. Verify the page loads on the dev server, uses Geist and the theme tokens, and `npm run build` produces no preview file or chunk in `dist/`
-- [ ] 3.2 Check the Foundations preview section against Figma Foundations `9:2` in both themes
+- [x] 3.1 Add `preview.html` and `src/preview/main.tsx` with an empty section per Figma Design System section plus a Foundations section showing all color, spacing, radius, shadow and type tokens. Verify the page loads on the dev server, uses Geist and the theme tokens, and `npm run build` produces no preview file or chunk in `dist/`
+- [x] 3.2 Check the Foundations preview section against Figma Foundations `9:2` in both themes
 
 ## 4. Icons and brand
 
