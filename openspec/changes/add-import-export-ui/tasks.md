@@ -27,9 +27,9 @@ Covered by commit 978fd70 ("build: add react-i18next and screen test setup").
 
 ## 4. Export
 
-- [ ] 4.1 Add `downloadFile` (object URL, temporary `<a download>`, revoke after 60 seconds) and a jsdom test with fake timers that it clicks an anchor with the given name, does not revoke before 60 seconds and revokes the URL afterwards
-- [ ] 4.2 Add `useExportBoard` with the progress dialog ("Exporting “{name}”" with the web-only body), the download, the success toast and the error toasts for `notFound` and `other`. Write feature tests with a fake `ExportBoard`: success downloads with the response name and shows "“Cardigan v1” exported.", 404 shows the no-longer-exists toast and downloads nothing, other failures show the generic toast, Escape doesn't close the progress dialog
-- [ ] 4.3 Add an export demo to the preview section (a menu with "Export as JSON" and a fake that resolves after a delay) and check the menu, the Exporting dialog and the Export done toast against Figma at 390 px and 1440 px
+- [x] 4.1 Add `downloadFile` (object URL, temporary `<a download>`, revoke after 60 seconds) and a jsdom test with fake timers that it clicks an anchor with the given name, does not revoke before 60 seconds and revokes the URL afterwards
+- [x] 4.2 Add `useExportBoard` with the progress dialog ("Exporting “{name}”" with the web-only body), the download, the success toast and the error toasts for `notFound` and `other`. Write feature tests with a fake `ExportBoard`: success downloads with the response name and shows "“Cardigan v1” exported.", 404 shows the no-longer-exists toast and downloads nothing, other failures show the generic toast, Escape doesn't close the progress dialog
+- [x] 4.3 Add an export demo to the preview section (a menu with "Export as JSON" and a fake that resolves after a delay) and check the menu, the Exporting dialog and the Export done toast against Figma at 390 px and 1440 px
 
 ## 5. Import dialog, pre-checks and progress
 
