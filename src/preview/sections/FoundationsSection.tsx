@@ -204,7 +204,10 @@ export function FoundationsSection() {
       </PreviewGroup>
       <PreviewGroup title="Size">
         {SIZES.map((size) => (
-          <div key={size} className="flex flex-col items-start gap-4">
+          <div
+            key={size}
+            className="flex max-w-full flex-col items-start gap-4 overflow-x-auto"
+          >
             <div
               className="w-[24px] bg-accent"
               style={{

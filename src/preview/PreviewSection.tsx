@@ -30,9 +30,7 @@ export function PreviewGroup({ title, children }: PreviewGroupProps) {
   return (
     <div className="flex flex-col gap-8">
       <h3 className="type-section-label text-text-muted">{title}</h3>
-      <div className="flex flex-wrap items-start gap-12 overflow-x-auto">
-        {children}
-      </div>
+      <div className="flex flex-wrap items-start gap-12">{children}</div>
     </div>
   )
 }

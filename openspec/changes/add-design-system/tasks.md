@@ -24,9 +24,9 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 4. Icons and brand
 
-- [ ] 4.1 Export all 27 icons from Figma as `<Name>Icon.tsx` in `src/core/ui/icons/`, with `currentColor`, the Figma `viewBox` and no fixed size. Verify all 27 render on the preview page and change color with the parent's text color
-- [ ] 4.2 Add `Icon` (decorative by default, optional `label`) and `IconButton` (required `label`, Ghost/Boxed × Default/Selected × Small/Medium/Large, Touch size on phones), and check them against Figma
-- [ ] 4.3 Add `Logo` and `Brand` (Sidebar, App bar, Auth sizes) from the Figma assets, and check them against Figma
+- [x] 4.1 Export all 27 icons from Figma as `<Name>Icon.tsx` in `src/core/ui/icons/`, with `currentColor`, the Figma `viewBox` and no fixed size. Verify all 27 render on the preview page and change color with the parent's text color
+- [x] 4.2 Add `Icon` (decorative by default, optional `label`) and `IconButton` (required `label`, Ghost/Boxed × Default/Selected × Small/Medium/Large, Touch size on phones), and check them against Figma
+- [x] 4.3 Add `Logo` and `Brand` (Sidebar, App bar, Auth sizes) from the Figma assets, and check them against Figma
 
 ## 5. Actions
 

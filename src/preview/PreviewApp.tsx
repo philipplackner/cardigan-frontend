@@ -1,5 +1,13 @@
 import { PreviewSection } from './PreviewSection'
+import type { ComponentType } from 'react'
+import { BrandSection } from './sections/BrandSection'
 import { FoundationsSection } from './sections/FoundationsSection'
+import { IconsSection } from './sections/IconsSection'
+
+const BUILT_SECTIONS: Record<string, ComponentType> = {
+  Icons: IconsSection,
+  Brand: BrandSection,
+}
 
 const DESIGN_SYSTEM_SECTIONS = [
   'Icons',
@@ -36,9 +44,14 @@ export function PreviewApp() {
         ))}
       </nav>
       <FoundationsSection />
-      {DESIGN_SYSTEM_SECTIONS.map((title) => (
-        <PreviewSection key={title} title={title} />
-      ))}
+      {DESIGN_SYSTEM_SECTIONS.map((title) => {
+        const Section = BUILT_SECTIONS[title]
+        return Section ? (
+          <Section key={title} />
+        ) : (
+          <PreviewSection key={title} title={title} />
+        )
+      })}
     </main>
   )
 }
