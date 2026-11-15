@@ -1,5 +1,6 @@
 import { PreviewSection } from './PreviewSection'
 import type { ComponentType } from 'react'
+import { ActionsSection } from './sections/ActionsSection'
 import { BrandSection } from './sections/BrandSection'
 import { FoundationsSection } from './sections/FoundationsSection'
 import { IconsSection } from './sections/IconsSection'
@@ -7,6 +8,7 @@ import { IconsSection } from './sections/IconsSection'
 const BUILT_SECTIONS: Record<string, ComponentType> = {
   Icons: IconsSection,
   Brand: BrandSection,
+  Actions: ActionsSection,
 }
 
 const DESIGN_SYSTEM_SECTIONS = [

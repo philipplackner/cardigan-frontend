@@ -30,8 +30,8 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 5. Actions
 
-- [ ] 5.1 Add `Button` (Primary, Secondary, Ghost, Danger, Danger ghost × Small/Medium with Touch pairs, Disabled, loading, optional leading icon, `asChild`) with hover, focus-visible and loading per D9. Check against Figma, and check by hand that a loading button ignores clicks and Enter, that Enter in a form field doesn't submit while the submit button is loading, and that danger buttons don't change on hover
-- [ ] 5.2 Add `FilterButton` (Default, Active) and check it against Figma
+- [x] 5.1 Add `Button` (Primary, Secondary, Ghost, Danger, Danger ghost × Small/Medium with Touch pairs, Disabled, loading, optional leading icon, `asChild`) with hover, focus-visible and loading per D9. Check against Figma, and check by hand that a loading button ignores clicks and Enter, that Enter in a form field doesn't submit while the submit button is loading, and that danger buttons don't change on hover
+- [x] 5.2 Add `FilterButton` (Default, Active) and check it against Figma
 
 ## 6. Inputs
 
