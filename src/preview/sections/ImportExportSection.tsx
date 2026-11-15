@@ -5,14 +5,24 @@ import {
   DropZone,
   FileRow,
   IconButton,
+  LabelIcon,
+  LogOutIcon,
   Menu,
   MenuDivider,
   MenuItem,
   MoreIcon,
   RenameIcon,
   TrashIcon,
+  UploadIcon,
 } from '@/core/ui'
-import { useExportBoard, type ExportResult } from '@/features/transfer'
+import {
+  ImportTrigger,
+  useExportBoard,
+  useImportFlow,
+  type ExportResult,
+  type ImportBoard,
+  type ImportResult,
+} from '@/features/transfer'
 import { PreviewGroup, PreviewSection } from '../PreviewSection'
 
 const DELAY_MS = 1500
@@ -107,6 +117,64 @@ function ExportDemo() {
   )
 }
 
+type ImportOutcome = 'success' | 'tooLarge' | 'invalidFile' | 'other'
+
+const IMPORT_OUTCOMES = ['success', 'tooLarge', 'invalidFile', 'other'] as const
+
+function fakeImport(outcome: ImportOutcome): ImportBoard {
+  return () => {
+    const result: ImportResult =
+      outcome === 'success'
+        ? { ok: true, board: { name: 'Cardigan v1', key: 'CRD' } }
+        : { ok: false, error: { kind: outcome } }
+    return new Promise((resolve) => setTimeout(() => resolve(result), DELAY_MS))
+  }
+}
+
+const findBoardNameByKey = (key: string) =>
+  key === 'CRD' ? 'Cardigan v1' : undefined
+
+function ImportDemo() {
+  const { t } = useTranslation('transfer')
+  const [outcome, setOutcome] = useState<ImportOutcome>('success')
+  const [reloads, setReloads] = useState(0)
+  const params = {
+    importBoard: fakeImport(outcome),
+    findBoardNameByKey,
+    onBoardsChanged: () => setReloads((count) => count + 1),
+  }
+  const menuFlow = useImportFlow(params)
+
+  return (
+    <div className="flex flex-col gap-12">
+      <OutcomePicker
+        name="Import outcome"
+        options={IMPORT_OUTCOMES}
+        value={outcome}
+        onChange={setOutcome}
+      />
+      <p className="type-body text-text-muted">Board list reloads: {reloads}</p>
+      <div className="flex items-center gap-12">
+        <ImportTrigger {...params} />
+        <Menu
+          trigger={<IconButton icon={MoreIcon} label="Board list menu" />}
+          align="start"
+        >
+          <MenuItem
+            label={t('import.menuItem')}
+            icon={UploadIcon}
+            onSelect={menuFlow.open}
+          />
+          <MenuItem label="Labels" icon={LabelIcon} />
+          <MenuDivider />
+          <MenuItem label="Log out" icon={LogOutIcon} />
+        </Menu>
+      </div>
+      {menuFlow.dialogs}
+    </div>
+  )
+}
+
 export function ImportExportSection() {
   const [received, setReceived] = useState<string>('nothing yet')
 
@@ -138,6 +206,9 @@ export function ImportExportSection() {
             }
           />
         </div>
+      </PreviewGroup>
+      <PreviewGroup title="Import · header button and phone menu item · fake request takes 1.5 s">
+        <ImportDemo />
       </PreviewGroup>
       <PreviewGroup title="Export · board menu → Export as JSON · fake request takes 1.5 s">
         <ExportDemo />

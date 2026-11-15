@@ -57,9 +57,24 @@ describe('checkExportFile', () => {
   })
 
   it('accepts a valid export with a UTF-8 BOM', async () => {
-    const file = new File([`﻿${JSON.stringify(HEADER)}`], 'bom.json')
+    const file = new File([`\uFEFF${JSON.stringify(HEADER)}`], 'bom.json')
 
     expect(await checkExportFile(file)).toEqual({ ok: true })
+  })
+
+  it('returns the board key when the file has one', async () => {
+    const file = jsonFile({ ...HEADER, board: { key: 'CRD' } })
+
+    expect(await checkExportFile(file)).toEqual({ ok: true, boardKey: 'CRD' })
+  })
+
+  it.each([
+    ['no board', { ...HEADER }],
+    ['a board without a key', { ...HEADER, board: {} }],
+    ['a numeric key', { ...HEADER, board: { key: 42 } }],
+    ['a null board', { ...HEADER, board: null }],
+  ])('passes without a board key for %s', async (_, content) => {
+    expect(await checkExportFile(jsonFile(content))).toEqual({ ok: true })
   })
 
   it('leaves invalid content to the backend', async () => {

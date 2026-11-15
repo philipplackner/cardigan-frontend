@@ -1,9 +1,11 @@
 import { MAX_IMPORT_BYTES } from './limits'
 
 export type ExportFileCheck =
-  { ok: true } | { ok: false; reason: 'tooLarge' | 'invalidFile' }
+  /** `boardKey` is the file's key if it has one, used to prefill the key after a clash. */
+  | { ok: true; boardKey?: string }
+  | { ok: false; reason: 'tooLarge' | 'invalidFile' }
 
-const BOM = '﻿'
+const BOM = '\uFEFF'
 
 function hasExportHeader(value: unknown) {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -24,7 +26,7 @@ export async function checkExportFile(file: File): Promise<ExportFileCheck> {
   } catch {
     return { ok: false, reason: 'invalidFile' }
   }
-  return hasExportHeader(parsed)
-    ? { ok: true }
-    : { ok: false, reason: 'invalidFile' }
+  if (!hasExportHeader(parsed)) return { ok: false, reason: 'invalidFile' }
+  const key = (parsed as { board?: { key?: unknown } }).board?.key
+  return typeof key === 'string' ? { ok: true, boardKey: key } : { ok: true }
 }
