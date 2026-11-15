@@ -10,8 +10,8 @@ description: |
 
 This skill covers every component that is not a page-level Root or Screen: design system components in `src/core/ui/` and feature components in `src/features/<feature>/components/`.
 
-- A component used by one feature lives in that feature.
-- It moves to `core/ui` when a second feature needs it. It then loses every feature-specific word: all text comes in through props.
+- Every component on the Figma **Design System** page lives in `core/ui`, including the ones only one feature uses (Card, Column, Board tile, Panel, Drop zone, ...). They take plain props (strings, numbers, label colors), never domain types, so `core` never imports a feature.
+- A feature component that isn't on the Design System page lives in that feature. It moves to `core/ui` when a second feature needs it. It then loses every feature-specific word: all text comes in through props.
 
 ---
 
@@ -19,7 +19,9 @@ This skill covers every component that is not a page-level Root or Screen: desig
 
 `core/ui` is the code version of the Figma file's **Design System** page (components) and **Foundations** page (tokens). Figma is the source of truth: a component's variants, sizes, states and slots are the ones in Figma, no more and no fewer.
 
-`core/ui` is the only place that imports Radix. Features import from `@/core/ui/...`, which lint enforces (see **react-project-structure**).
+`core/ui` is the only place that imports Radix, through the unified `radix-ui` package (`import { Dialog } from 'radix-ui'`). Features import from `@/core/ui`, which lint enforces for both `radix-ui` and `@radix-ui/*` (see **react-project-structure**).
+
+Everything is exported from `src/core/ui/index.ts`. Icons are also available as a namespace: `import { icons } from '@/core/ui'`.
 
 ### From Figma to `core/ui`
 
@@ -43,58 +45,32 @@ Like Material 3 on Android, the library is the starting point for behavior, not 
 
 ### `cn` and variants
 
-```ts
-// src/core/ui/cn.ts
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-}
-```
+`cn` (`src/core/ui/cn.ts`) is `clsx` plus a `tailwind-merge` extended for this theme: the `type-*` utilities are their own class group (they conflict with font size, weight, family, line height and tracking, not with `text-*` colors), and the named size, radius and shadow tokens are registered so `cn('min-h-control-sm', 'min-h-control-touch')` keeps the last one. Register new custom utilities there too.
 
 ```tsx
-// src/core/ui/Button.tsx
+// Shortened from src/core/ui/Button.tsx
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-6 type-label transition-colors focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-50',
+  'inline-flex max-w-full min-w-[0] items-center justify-center gap-7 rounded-6 whitespace-nowrap outline-none focus-visible:shadow-focus-accent disabled:opacity-45',
   {
     variants: {
       variant: {
-        primary: 'bg-accent text-background-surface',
-        secondary: 'bg-background-surface text-text-primary border border-border-strong',
-        ghost: 'text-text-primary hover:bg-accent-soft',
-        danger: 'bg-danger text-background-surface',
+        primary: 'bg-accent text-text-on-accent not-disabled:not-aria-disabled:hover:bg-accent-hover',
+        secondary: 'border border-border-strong bg-background-surface text-text-primary shadow-small',
+        danger: 'bg-danger text-text-on-danger',
       },
       size: {
-        md: 'h-10 px-4',
-        lg: 'h-12 px-5',
+        small: 'min-h-control-sm px-10 type-sans-13-medium-100 phone:min-h-control-touch-sm phone:px-16 phone:type-sans-14-medium-100',
+        medium: 'min-h-control-md px-13 type-sans-13.5-medium-100 phone:min-h-control-touch phone:px-16 phone:type-sans-15-medium-100',
       },
     },
-    defaultVariants: { variant: 'primary', size: 'md' },
+    defaultVariants: { variant: 'primary', size: 'medium' },
   },
 )
-
-type ButtonProps = ComponentProps<'button'> &
-  VariantProps<typeof buttonVariants> & {
-    isLoading?: boolean
-    asChild?: boolean
-  }
-
-export function Button({ variant, size, isLoading, asChild, className, children, disabled, ...props }: ButtonProps) {
-  const Component = asChild ? Slot : 'button'
-  return (
-    <Component
-      className={cn(buttonVariants({ variant, size }), className)}
-      disabled={disabled || isLoading}
-      aria-busy={isLoading || undefined}
-      {...props}
-    >
-      {children}
-    </Component>
-  )
-}
 ```
 
-- The classes above show the token names. The real variants, sizes and styles come from the Button in Figma.
-- Variants use `cva`, as shadcn does. Variant names follow the Figma variant names and describe purpose (`primary`, `danger`), not color (`blue`).
-- If `twMerge` doesn't resolve a conflict between two custom utilities (a custom type style and a font size, say), register them with `extendTailwindMerge` in `cn.ts`.
+- Variants use `cva`, as shadcn does. Variant values are the Figma variant names in camelCase (`dangerGhost` for "Danger ghost"). The prop is `variant`, not `style`, because `style` is the React style prop.
+- **Touch sizes are not a prop.** Components with Default and Touch variants in Figma write the Default classes first and the Touch pair under `phone:` (see [Breakpoints](#breakpoints-and-the-phone-condition)). Components without a Touch variant in Figma (Icon button, for example) keep their size on phones; the screen picks the size Figma uses.
+- **States Figma doesn't draw** come from existing tokens: primary hover is `accent-hover`, secondary, ghost and icon button hover is `background-hover`, danger buttons don't change on hover, keyboard focus is `shadow-focus-accent`. Inputs and text areas show their Figma Focus state on any focus (`focus:` / `focus-within:`), and the danger ring in their error state.
 
 ---
 
@@ -107,22 +83,57 @@ export function Button({ variant, size, isLoading, asChild, className, children,
 
 ### Token names come from Figma
 
-Every theme token is named after its Figma variable: `/` becomes `-`, and a trailing `/default` is dropped.
+Every Figma variable and style is exactly one theme token in `src/core/ui/theme/theme.css`. The name follows the Figma variable: `/` becomes `-`, and a trailing `/default` is dropped. There is no token without a Figma variable.
 
 | Figma variable | Theme variable | Example class |
 |---|---|---|
-| `background/app`, `background/surface`, `background/column`, `background/sidebar` | `--color-background-app`, ... | `bg-background-surface` |
-| `text/primary`, `text/muted`, `text/faint` | `--color-text-primary`, ... | `text-text-muted` |
-| `border/default`, `border/strong` | `--color-border`, `--color-border-strong` | `border-border` |
-| `accent/default`, `accent/soft` | `--color-accent`, `--color-accent-soft` | `bg-accent-soft` |
-| `danger/default`, `success/default` | `--color-danger`, `--color-success` | `text-danger` |
-| `label/red` ... `label/slate` (20 label colors) | `--color-label-red`, ... | `bg-label-red` |
-| `radius/4` ... `radius/12`, `radius/full` | `--radius-4`, ... | `rounded-8`, `rounded-full` |
+| `background/app`, `surface`, `column`, `sidebar`, `hover`, `skeleton`, `skeleton-highlight`, `scrim`, `toast` | `--color-background-app`, ... | `bg-background-surface` |
+| `text/primary`, `muted`, `faint`, `on-accent`, `on-danger`, `toast` | `--color-text-primary`, ... | `text-text-muted` |
+| `border/default`, `strong`, `accent-subtle`, `danger-subtle` | `--color-border`, `--color-border-strong`, ... | `border-border`, `border-border-strong` |
+| `accent/default`, `hover`, `soft` | `--color-accent`, `--color-accent-hover`, `--color-accent-soft` | `bg-accent`, `bg-accent-soft` |
+| `danger/default`, `soft`; `success/default`, `soft` | `--color-danger`, `--color-danger-soft`, `--color-success`, ... | `text-danger`, `bg-success` |
+| `label/red` ... `label/slate` (20 colors) | `--color-label-red`, ... | `bg-label-teal` |
+| `shadow/small`, `popover-1`, ... | `--color-shadow-small`, ... | only used inside the shadow tokens |
+| `space/1` ... `space/32` (23 steps) | `--spacing-1` ... `--spacing-32` | `p-12`, `gap-7` |
+| `radius/1` ... `radius/16`, `radius/full` | `--radius-1` ... `--radius-full` | `rounded-6`, `rounded-full` |
+| `height/control-sm`, `control-md`, `control-touch-sm`, `control-touch`, `input`, `icon-button-small`, `-medium`, `-large` | `--spacing-control-sm`, ... | `min-h-control-md`, `size-icon-button-small` |
+| `width/sidebar-tablet`, `sidebar-desktop`, `panel-tablet`, `panel-desktop` | `--spacing-sidebar-tablet`, ... | `w-sidebar-tablet desktop:w-sidebar-desktop` |
+| Effect styles `Shadow/Small`, `Popover`, `Drag`, `Panel`, `Raised` | `--shadow-small`, ... | `shadow-popover` |
+| Effect styles `Focus/Accent`, `Focus/Danger` | `--shadow-focus-accent`, `--shadow-focus-danger` | `focus-visible:shadow-focus-accent` |
 
-- **Spacing** uses Figma's steps only: 4, 8, 12, 16, 20, 24 and 32 px. With a 4 px spacing base these are `1`, `2`, `3`, `4`, `5`, `6` and `8` (`p-3`, `gap-2`). Don't use other steps.
-- **Type styles are utilities** named after the Figma text styles: `type-page-title`, `type-screen-title`, `type-card-title`, `type-body`, `type-label`, `type-metadata`, `type-section-label`. Each one sets font family (Geist or Geist Mono), size, weight, line height and letter spacing, including the larger phone sizes Figma lists. Don't combine `text-*` size, `font-*` weight and `leading-*` by hand.
-- **Breakpoints** come from Figma Foundations: `tablet` from 640 px, `desktop` from 1024 px. They are marked as a proposal in Figma, so they are defined only in the theme and nowhere else.
-- When Figma adds or renames a variable, update the theme in the same change. Never add a token that has no Figma variable.
+- Colors swap through private variables (`--c-accent`) under `prefers-color-scheme: dark`. Components only use the public token classes.
+- Tailwind's default palette, spacing scale, radii, text sizes, shadows, breakpoints, font weights, line heights and letter spacings are removed. `bg-blue-500`, `p-17`, `rounded-md`, `text-sm`, `font-bold` and `leading-tight` produce no CSS.
+- **Spacing classes are Figma px.** `p-12` is 12 px, `gap-5` is 5 px. Only the 23 Figma steps exist (1–16, 18, 20, 22, 24, 25, 28, 32). Spacing and sizes stay in px; only text scales with the user's font size.
+- **Zero has no step.** `min-w-0`, `inset-0` and `p-0` produce no CSS. Write zero values as `min-w-[0]`, `inset-[0]`, `p-[0]`.
+- **Control heights are minimums** (`min-h-control-md`, not `h-control-md`), so controls grow when the user's text is larger. Single-line labels use `truncate` with `min-w-[0]` on their flex parent instead of wrapping.
+- Values Figma draws without a variable (a 44 px icon box, a 276 px column) are arbitrary values taken from the Figma node. Anything else arbitrary is a review finding.
+- All token variables are emitted (`@theme static`), so `var(--color-label-teal)` also works in inline styles.
+
+### Type
+
+- **Raw text styles.** Each of the 59 Figma text styles is one utility named after it: `Sans/13.5 Medium/145%` → `type-sans-13.5-medium-145`, `Sans/18 SemiBold/120% · -1.5% LS` → `type-sans-18-semibold-120-ls-1.5`, `Mono/11 Medium/100% · +6% LS · Caps` → `type-mono-11-medium-100-ls6-caps`. Each sets family, size in `rem`, weight, line height, letter spacing and caps. Components use the style their Figma node has.
+- **Roles.** The 7 Foundations roles are `type-page-title`, `type-screen-title`, `type-card-title`, `type-body`, `type-label`, `type-metadata` and `type-section-label`. They switch to the phone size by themselves (Page title 22 → 28, Card title 13.5 → 14.5, Body 13.5 → 15). Screens use the roles.
+- Don't combine `text-*` sizes, `font-*` weights or `leading-*` by hand; those scales don't exist.
+- Fonts are Geist and Geist Mono from Fontsource, imported in `src/main.tsx` (`font-sans`, `font-mono`).
+
+### Breakpoints and the phone condition
+
+The theme defines three custom variants. These are the only place the numbers appear:
+
+| Variant | Condition | Use |
+|---|---|---|
+| `phone:` | narrower than 640 px **or** lower than 480 px | Touch sizes, phone layout |
+| `tablet:` | at least 640 × 480 | layout from tablet up |
+| `desktop:` | at least 1024 px wide and 480 px high | desktop widths |
+
+- Tailwind's `sm:`, `md:`, `lg:` don't exist.
+- Write components desktop-first for size: Default classes, then `phone:` overrides.
+- When JS needs to know the layout, read it from the CSS (see `AppLayout`, which checks whether the panel is `position: fixed`) instead of repeating the numbers in a media query string.
+- `AppLayout` (`core/ui/layout/`) owns the app shell: sidebar or phone app bar, content, and the optional side panel, sized with the `w-sidebar-*` and `w-panel-*` tokens.
+
+### Motion
+
+Overlays (dialogs, sheets, menus, popovers, toasts) animate only under `motion-safe:` with the `animate-*` tokens in the theme, so they appear without sliding or scaling under reduced motion. The skeleton shimmer (`skeleton-shimmer`) is static under reduced motion.
 
 ---
 
@@ -154,9 +165,9 @@ Components may hold state that only affects how they look: hover, a menu being o
 ## Icons
 
 ```tsx
-<Icon icon={PlusIcon} />                                  // default size, hidden from screen readers
-<Icon icon={StarIcon} label={t('notes:favorite')} />
-<IconButton icon={TrashIcon} label={t('notes:delete')} onClick={...} />
+<Icon icon={PlusIcon} />                                  // 16 px, hidden from screen readers
+<Icon icon={StarIcon} size={19} label={t('notes:favorite')} />
+<IconButton icon={TrashIcon} label={t('notes:delete')} size="small" onClick={...} />
 ```
 
 Icons are SVGs exported from Figma. There is no icon library.
@@ -165,7 +176,15 @@ Icons are SVGs exported from Figma. There is no icon library.
 // src/core/ui/icons/TrashIcon.tsx
 export function TrashIcon(props: ComponentProps<'svg'>) {
   return (
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" {...props}>
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.13333}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
       <path d="..." />
     </svg>
   )
@@ -174,7 +193,7 @@ export function TrashIcon(props: ComponentProps<'svg'>) {
 
 - One file per icon in `src/core/ui/icons/`, named `<Name>Icon.tsx` after the Figma icon. Add an icon when a feature first needs it, exported from Figma with the MCP. Never draw or copy an icon from somewhere else.
 - Replace every hard-coded fill and stroke color with `currentColor`. Keep the `viewBox` from Figma, remove fixed `width` and `height`.
-- Icons are rendered through `Icon` or `IconButton` from `core/ui`, which limit size to the design system's options. Never render an icon component directly.
+- Icons are rendered through `Icon` or `IconButton` from `core/ui`, which limit size to the sizes Figma uses (12, 13, 15, 16, 19, 20, 24). Never render an icon component directly. All 27 Figma icons exist; add one only when Figma adds one.
 - An icon next to visible text has no label and is hidden from assistive technology.
 - An icon-only button requires `label`. `IconButton` makes it a required prop, so a missing label is a type error.
 - Icon color follows the text color (`currentColor`). Set color on the parent with a token class.
@@ -217,7 +236,7 @@ const { t } = useTranslation('notes')
 - **No concatenation.** `t('a') + name + t('b')` breaks in languages with a different word order. Use interpolation.
 - **Plurals** use `count` and `_one` / `_other` suffixes. Other languages add the forms they need (`_few`, `_many`).
 - **Dates and numbers** are formatted with i18next's built-in formatters (`datetime`, `number`, `relativetime`, `list`), which use `Intl` and the active language. Outside `t`, use `Intl.DateTimeFormat(i18n.resolvedLanguage, ...)`. Never format with a fixed locale or by hand.
-- **`core/ui` components don't call `t` for content.** Labels and messages come in as props. Generic words (a "Close" label on a dialog) may come from `common`.
+- **`core/ui` components don't call `t`.** Every visible or accessible string comes in as a prop, including generic words like a dialog's close label. Labels for icon-only controls are required props, so a missing one is a type error.
 - **Schema messages are translation keys.** Zod error messages in form schemas are keys like `'notes:form.titleRequired'`. `useTranslatedError()` from `core/i18n` turns them into text. It's the one place that translates a key that isn't known at compile time.
 - Rich text with markup in a translation uses the `Trans` component, never `dangerouslySetInnerHTML`.
 
@@ -238,17 +257,18 @@ const { t } = useTranslation('notes')
 
 Every `core/ui` component has a section on the dev-only design system preview page. It shows each variant, each size and each meaningful state: default, disabled, loading, with an error, with long text that has to wrap or truncate, and with and without optional slots.
 
-- The preview page is a second Vite HTML entry that the production build doesn't include. It shows the active OS theme, so check both.
+- The preview page is `preview.html` with `src/preview/`, a second Vite entry that `vite build` doesn't include. It has one section per Figma Design System section, in Figma order, plus Foundations. `preview.html?layout` shows `AppLayout` full screen. It shows the active OS theme, so check both.
 - Feature components and Screens don't get previews. Their component tests cover their states (see **react-integration-testing**).
 
 ---
 
 ## Checklist: Building a Component
 
-- [ ] Lives in the feature, or in `core/ui` if a second feature needs it
+- [ ] Lives in `core/ui` if it's on the Figma Design System page or a second feature needs it, otherwise in the feature
 - [ ] Read from Figma with the MCP, with exactly the variants, sizes and states Figma defines
 - [ ] Design system components start from shadcn/Radix and are restyled with tokens
-- [ ] Only token classes named after Figma variables, no raw colors, no arbitrary values, no `dark:`
+- [ ] Only token classes named after Figma variables, no raw colors, no `dark:`, arbitrary values only for Figma values without a variable and for zero (`min-w-[0]`)
+- [ ] Touch sizes under `phone:` where Figma has a Touch variant; control heights as `min-h-*`; single-line labels truncate
 - [ ] Accepts `className` merged with `cn` on the outer element, spreads native props where it wraps an element
 - [ ] Variants with `cva`, named by purpose
 - [ ] Icons exported from Figma, `currentColor`, rendered through `Icon`/`IconButton`, icon-only buttons have a label

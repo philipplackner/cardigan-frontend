@@ -73,7 +73,7 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 12. Documentation
 
-- [ ] 12.1 Update `.claude/skills/react-ui-components/SKILL.md` per design.md, Skill update, and verify every token name and class in its examples exists in `theme.css`
+- [x] 12.1 Update `.claude/skills/react-ui-components/SKILL.md` per design.md, Skill update, and verify every token name and class in its examples exists in `theme.css`
 
 ## 13. Integration checks
 
