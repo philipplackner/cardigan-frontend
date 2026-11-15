@@ -48,8 +48,8 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 8. Labels and data display
 
-- [ ] 8.1 Export the 20-name label color type and add `LabelDot`, `Label` (Small, Medium, Large), `LabelChip` (optional remove action with required label) and `Swatch`. Check them against Figma, and verify a non-palette color name is a type error
-- [ ] 8.2 Add `Key` and `Avatar`, and check them against Figma
+- [x] 8.1 Export the 20-name label color type and add `LabelDot`, `Label` (Small, Medium, Large), `LabelChip` (optional remove action with required label) and `Swatch`. Check them against Figma, and verify a non-palette color name is a type error
+- [x] 8.2 Add `Key` and `Avatar`, and check them against Figma
 
 ## 9. Overlays
 

@@ -2,6 +2,8 @@ import { PreviewSection } from './PreviewSection'
 import type { ComponentType } from 'react'
 import { ActionsSection } from './sections/ActionsSection'
 import { FeedbackSection } from './sections/FeedbackSection'
+import { DataDisplaySection } from './sections/DataDisplaySection'
+import { LabelsSection } from './sections/LabelsSection'
 import { BrandSection } from './sections/BrandSection'
 import { FoundationsSection } from './sections/FoundationsSection'
 import { IconsSection } from './sections/IconsSection'
@@ -12,6 +14,8 @@ const BUILT_SECTIONS: Record<string, ComponentType> = {
   Brand: BrandSection,
   Actions: ActionsSection,
   Feedback: FeedbackSection,
+  Labels: LabelsSection,
+  'Data display': DataDisplaySection,
   Inputs: InputsSection,
 }
 
@@ -22,7 +26,6 @@ const DESIGN_SYSTEM_SECTIONS = [
   'Labels',
   'Data display',
   'Inputs',
-  'Overlays',
   'Board',
   'Actions',
   'Navigation',

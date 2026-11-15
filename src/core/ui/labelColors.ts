@@ -1,0 +1,48 @@
+/** The 20 label palette names from the shared `domain-label` spec, in Figma order. */
+export const LABEL_COLORS = [
+  'red',
+  'orange',
+  'amber',
+  'yellow',
+  'lime',
+  'green',
+  'emerald',
+  'teal',
+  'cyan',
+  'sky',
+  'blue',
+  'indigo',
+  'violet',
+  'purple',
+  'fuchsia',
+  'pink',
+  'rose',
+  'brown',
+  'olive',
+  'slate',
+] as const
+
+export type LabelColor = (typeof LABEL_COLORS)[number]
+
+export const LABEL_BG_CLASSES: Record<LabelColor, string> = {
+  red: 'bg-label-red',
+  orange: 'bg-label-orange',
+  amber: 'bg-label-amber',
+  yellow: 'bg-label-yellow',
+  lime: 'bg-label-lime',
+  green: 'bg-label-green',
+  emerald: 'bg-label-emerald',
+  teal: 'bg-label-teal',
+  cyan: 'bg-label-cyan',
+  sky: 'bg-label-sky',
+  blue: 'bg-label-blue',
+  indigo: 'bg-label-indigo',
+  violet: 'bg-label-violet',
+  purple: 'bg-label-purple',
+  fuchsia: 'bg-label-fuchsia',
+  pink: 'bg-label-pink',
+  rose: 'bg-label-rose',
+  brown: 'bg-label-brown',
+  olive: 'bg-label-olive',
+  slate: 'bg-label-slate',
+}
