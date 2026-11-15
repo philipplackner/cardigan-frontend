@@ -4,6 +4,10 @@ import { ActionsSection } from './sections/ActionsSection'
 import { FeedbackSection } from './sections/FeedbackSection'
 import { DataDisplaySection } from './sections/DataDisplaySection'
 import { LabelsSection } from './sections/LabelsSection'
+import { BoardSection } from './sections/BoardSection'
+import { BoardsSection } from './sections/BoardsSection'
+import { CardDetailSection } from './sections/CardDetailSection'
+import { ImportExportSection } from './sections/ImportExportSection'
 import { NavigationSection } from './sections/NavigationSection'
 import { OverlaysSection } from './sections/OverlaysSection'
 import { BrandSection } from './sections/BrandSection'
@@ -21,6 +25,10 @@ const BUILT_SECTIONS: Record<string, ComponentType> = {
   Inputs: InputsSection,
   Overlays: OverlaysSection,
   Navigation: NavigationSection,
+  Board: BoardSection,
+  Boards: BoardsSection,
+  'Card detail': CardDetailSection,
+  'Import & export': ImportExportSection,
 }
 
 const DESIGN_SYSTEM_SECTIONS = [

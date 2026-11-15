@@ -10,6 +10,7 @@ const SIZE_CLASSES = {
   16: 'size-16',
   19: 'size-[19px]',
   20: 'size-20',
+  24: 'size-24',
 } as const
 
 export type IconSize = keyof typeof SIZE_CLASSES

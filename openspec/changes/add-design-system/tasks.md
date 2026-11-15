@@ -66,10 +66,10 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 11. Board, boards, card detail, import & export
 
-- [ ] 11.1 Add `Card` (Default, Selected, Dragging, Placeholder as props; Touch on phones), `Column` (header with name, count and menu slot, Cards slot, Add card), `AddCardButton`, `AddColumnButton` and `DropIndicator`, and check them against Figma
-- [ ] 11.2 Add `BoardTile` (Default, Hover) and `BoardRow`, and check them against Figma
-- [ ] 11.3 Add `LabelRow` (Default, Touch) and `Panel` (header, Body and Footer slots, close with required label), and check them against Figma
-- [ ] 11.4 Add `FileRow` and `DropZone` (Default, Over, browse button, `onFiles`). Check them against Figma, and check by hand that dragging a file over shows Over, moving over the zone's text keeps Over, leaving resets it, dragging selected text shows no Over, dropping hands the file to `onFiles` without navigating, and Enter on browse opens the file picker
+- [x] 11.1 Add `Card` (Default, Selected, Dragging, Placeholder as props; Touch on phones), `Column` (header with name, count and menu slot, Cards slot, Add card), `AddCardButton`, `AddColumnButton` and `DropIndicator`, and check them against Figma
+- [x] 11.2 Add `BoardTile` (Default, Hover) and `BoardRow`, and check them against Figma
+- [x] 11.3 Add `LabelRow` (Default, Touch) and `Panel` (header, Body and Footer slots, close with required label), and check them against Figma
+- [x] 11.4 Add `FileRow` and `DropZone` (Default, Over, browse button, `onFiles`). Check them against Figma, and check by hand that dragging a file over shows Over, moving over the zone's text keeps Over, leaving resets it, dragging selected text shows no Over, dropping hands the file to `onFiles` without navigating, and Enter on browse opens the file picker
 
 ## 12. Documentation
 

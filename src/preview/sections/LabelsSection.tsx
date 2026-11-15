@@ -4,6 +4,7 @@ import {
   Label,
   LabelChip,
   LabelDot,
+  LabelRow,
   Swatch,
   SwatchGroup,
   type LabelColor,
@@ -61,6 +62,27 @@ export function LabelsSection() {
             <Swatch key={name} color={name} label={title(name)} />
           ))}
         </SwatchGroup>
+      </PreviewGroup>
+      <PreviewGroup title="Label row · default (touch on phones), last without divider, long name">
+        <div className="w-[480px] max-w-full">
+          <LabelRow
+            name="api"
+            color="blue"
+            editLabel="Edit api"
+            deleteLabel="Delete api"
+            onEdit={() => {}}
+            onDelete={() => {}}
+          />
+          <LabelRow
+            name="a-label-with-a-very-long-name-that-has-to-truncate-in-the-row"
+            color="olive"
+            editLabel="Edit label"
+            deleteLabel="Delete label"
+            onEdit={() => {}}
+            onDelete={() => {}}
+            hasDivider={false}
+          />
+        </div>
       </PreviewGroup>
     </PreviewSection>
   )

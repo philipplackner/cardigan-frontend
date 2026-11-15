@@ -7,6 +7,7 @@ import {
   PageHeader,
   icons,
 } from '@/core/ui'
+import { PreviewPanel } from './sections/CardDetailSection'
 import { PreviewSidebar } from './sections/NavigationSection'
 
 export function LayoutPreview() {
@@ -26,13 +27,7 @@ export function LayoutPreview() {
       }
       panel={
         isPanelOpen ? (
-          <div className="flex h-full flex-col gap-12 border-l border-border bg-background-surface p-20 shadow-panel">
-            <h2 className="type-screen-title">Panel</h2>
-            <p className="type-body text-text-muted">Side panel region.</p>
-            <Button variant="secondary" onClick={() => setIsPanelOpen(false)}>
-              Close panel
-            </Button>
-          </div>
+          <PreviewPanel onClose={() => setIsPanelOpen(false)} />
         ) : undefined
       }
     >
