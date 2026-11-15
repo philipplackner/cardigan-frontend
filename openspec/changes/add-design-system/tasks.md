@@ -77,11 +77,11 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 13. Integration checks
 
-- [ ] 13.1 Diff the token values in `theme.css` against a fresh Figma export and verify there are no mismatches
-- [ ] 13.2 With the browser default font size at 24 px, check every preview section: no clipped text in controls, and single-line labels truncate
-- [ ] 13.3 Switch the OS theme while the preview page is open and verify all sections change without a reload
-- [ ] 13.4 Run all five gates, run `openspec validate add-design-system --strict`, and verify `dist/` contains no preview page
-- [ ] 13.5 Serve `dist/` with `Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'` and check that opening a dialog locks page scroll and the console shows no CSP violation
+- [x] 13.1 Diff the token values in `theme.css` against a fresh Figma export and verify there are no mismatches
+- [x] 13.2 With the browser default font size at 24 px, check every preview section: no clipped text in controls, and single-line labels truncate
+- [x] 13.3 Switch the OS theme while the preview page is open and verify all sections change without a reload
+- [x] 13.4 Run all five gates, run `openspec validate add-design-system --strict`, and verify `dist/` contains no preview page
+- [x] 13.5 Serve `dist/` with `Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'` and check that opening a dialog locks page scroll and the console shows no CSP violation
 
 ## Workflow follow-up
 
