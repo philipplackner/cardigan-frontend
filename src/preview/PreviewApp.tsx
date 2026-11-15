@@ -52,7 +52,11 @@ export function PreviewApp() {
     <main className="flex flex-col px-24 py-32 phone:px-16">
       <h1 className="type-page-title">Design system preview</h1>
       <p className="type-body text-text-muted">
-        Dev only. Follows the system color scheme.
+        Dev only. Follows the system color scheme. Try import and export on{' '}
+        <a href="?transfer" className="text-accent">
+          the transfer page
+        </a>
+        .
       </p>
       <nav aria-label="Sections" className="flex flex-wrap gap-12 py-16">
         {['Foundations', ...DESIGN_SYSTEM_SECTIONS].map((title) => (

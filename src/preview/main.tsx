@@ -7,15 +7,19 @@ import '@/app/i18n'
 import { ToastProvider } from '@/core/ui'
 import { LayoutPreview } from './LayoutPreview'
 import { PreviewApp } from './PreviewApp'
+import { TransferPlayground } from './TransferPlayground'
+
+const params = new URLSearchParams(location.search)
+const page = params.has('layout') ? (
+  <LayoutPreview />
+) : params.has('transfer') ? (
+  <TransferPlayground />
+) : (
+  <PreviewApp />
+)
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ToastProvider closeLabel="Close">
-      {new URLSearchParams(location.search).has('layout') ? (
-        <LayoutPreview />
-      ) : (
-        <PreviewApp />
-      )}
-    </ToastProvider>
+    <ToastProvider closeLabel="Close">{page}</ToastProvider>
   </StrictMode>,
 )
