@@ -53,10 +53,10 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 9. Overlays
 
-- [ ] 9.1 Add `Menu`, `MenuItem` (Default, Highlighted, Danger, Disabled, Header; Touch on phones) and `MenuDivider`. Check them against Figma, and check by hand: arrow keys move the highlight, and Escape closes and returns focus to the trigger
-- [ ] 9.2 Add `Popover` and check it against Figma, including Escape and outside click closing
-- [ ] 9.3 Add `Dialog` (Default with Content and Actions slots, Progress; Touch on phones). Check it against Figma, and check by hand: focus is trapped, Escape and scrim close the default dialog, and nothing closes the progress dialog
-- [ ] 9.4 Add `BottomSheet` (Dialog-based, no drag). Check it against Figma, and check by hand that scrim tap and Escape close it and that it doesn't slide under reduced motion
+- [x] 9.1 Add `Menu`, `MenuItem` (Default, Highlighted, Danger, Disabled, Header; Touch on phones) and `MenuDivider`. Check them against Figma, and check by hand: arrow keys move the highlight, and Escape closes and returns focus to the trigger
+- [x] 9.2 Add `Popover` and check it against Figma, including Escape and outside click closing
+- [x] 9.3 Add `Dialog` (Default with Content and Actions slots, Progress; Touch on phones). Check it against Figma, and check by hand: focus is trapped, Escape and scrim close the default dialog, and nothing closes the progress dialog
+- [x] 9.4 Add `BottomSheet` (Dialog-based, no drag). Check it against Figma, and check by hand that scrim tap and Escape close it and that it doesn't slide under reduced motion
 
 ## 10. Navigation and layout
 
