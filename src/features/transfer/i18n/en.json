@@ -1,0 +1,37 @@
+{
+  "export": {
+    "menuItem": "Export as JSON",
+    "progressTitle": "Exporting “{{name}}”",
+    "progressBody": "When the file is ready, the browser downloads it.",
+    "done": "“{{name}}” exported.",
+    "notFound": "“{{name}}” no longer exists, so it can't be exported.",
+    "failed": "Couldn't export “{{name}}”. Check your connection and try again."
+  },
+  "import": {
+    "button": "Import",
+    "menuItem": "Import board",
+    "title": "Import board",
+    "description": "Choose a .json file exported from Cardigan. It’s added as a new board; your other boards don’t change.",
+    "dropTitle": "Drop a board export here",
+    "dropOverTitle": "Release to import",
+    "dropHintPrefix": "or ",
+    "browse": "browse files",
+    "hint": "JSON exports up to 5 MB",
+    "progressTitle": "Importing {{fileName}}",
+    "progressBody": "This creates the board with all its columns, cards and labels.",
+    "tooLarge": "This file is {{size}}. Board exports can be up to 5 MB.",
+    "invalidFile": "This file isn’t a Cardigan board export. Choose a .json file that was exported from Cardigan.",
+    "failed": "Couldn't import the board. Check your connection and try again.",
+    "done": "Imported “{{name}}” with the key {{key}}."
+  },
+  "clash": {
+    "title": "Choose a different key",
+    "bodyNamed": "Your board “{{name}}” already uses the key {{key}}. Enter another key for the imported board.",
+    "bodyUnnamed": "One of your boards already uses the key {{key}}. Enter another key for the imported board.",
+    "keyLabel": "Key",
+    "keyHelp": "2–5 uppercase letters. Can’t be changed later.",
+    "keyUsed": "You already have a board with the key {{key}}.",
+    "cancel": "Cancel import",
+    "submit": "Import"
+  }
+}
