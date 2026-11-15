@@ -4,10 +4,7 @@ import { ActionsSection } from './sections/ActionsSection'
 import { FeedbackSection } from './sections/FeedbackSection'
 import { DataDisplaySection } from './sections/DataDisplaySection'
 import { LabelsSection } from './sections/LabelsSection'
-<<<<<<< Updated upstream
-=======
 import { OverlaysSection } from './sections/OverlaysSection'
->>>>>>> Stashed changes
 import { BrandSection } from './sections/BrandSection'
 import { FoundationsSection } from './sections/FoundationsSection'
 import { IconsSection } from './sections/IconsSection'
@@ -31,6 +28,7 @@ const DESIGN_SYSTEM_SECTIONS = [
   'Labels',
   'Data display',
   'Inputs',
+  'Overlays',
   'Board',
   'Actions',
   'Navigation',
