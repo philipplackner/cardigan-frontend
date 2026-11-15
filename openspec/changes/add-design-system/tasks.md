@@ -35,10 +35,10 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 6. Inputs
 
-- [ ] 6.1 Add `Input` (Default, Focus, Error, Read-only, Disabled; Touch on phones; `ref` passed to the input; `aria-invalid` in error) and check it against Figma, including the focus rings
-- [ ] 6.2 Add `TextArea` (Multi-line, Title, Description; Default, Focus, Error) that grows with content per D17, check it against Figma, and check by hand that a three-line title shows all text without a scrollbar, both when typed and when shown with an existing value, and after narrowing the viewport
-- [ ] 6.3 Add `Field` (label with `htmlFor`/`useId`, control slot, help or `ErrorMessage` linked with `aria-describedby`), `ErrorMessage` and `PasswordRule` (Met true/false, not color-only), and check them against Figma
-- [ ] 6.4 Add `Checkbox` and `Option` (Default, Highlighted; Touch on phones), and check them against Figma, including keyboard toggling with Space
+- [x] 6.1 Add `Input` (Default, Focus, Error, Read-only, Disabled; Touch on phones; `ref` passed to the input; `aria-invalid` in error) and check it against Figma, including the focus rings
+- [x] 6.2 Add `TextArea` (Multi-line, Title, Description; Default, Focus, Error) that grows with content per D17, check it against Figma, and check by hand that a three-line title shows all text without a scrollbar, both when typed and when shown with an existing value, and after narrowing the viewport
+- [x] 6.3 Add `Field` (label with `htmlFor`/`useId`, control slot, help or `ErrorMessage` linked with `aria-describedby`), `ErrorMessage` and `PasswordRule` (Met true/false, not color-only), and check them against Figma
+- [x] 6.4 Add `Checkbox` and `Option` (Default, Highlighted; Touch on phones), and check them against Figma, including keyboard toggling with Space
 
 ## 7. Feedback
 

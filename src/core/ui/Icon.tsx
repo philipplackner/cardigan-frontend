@@ -4,6 +4,8 @@ import { cn } from './cn'
 export type IconComponent = ComponentType<ComponentProps<'svg'>>
 
 const SIZE_CLASSES = {
+  12: 'size-12',
+  13: 'size-13',
   15: 'size-15',
   16: 'size-16',
   19: 'size-[19px]',

@@ -4,11 +4,13 @@ import { ActionsSection } from './sections/ActionsSection'
 import { BrandSection } from './sections/BrandSection'
 import { FoundationsSection } from './sections/FoundationsSection'
 import { IconsSection } from './sections/IconsSection'
+import { InputsSection } from './sections/InputsSection'
 
 const BUILT_SECTIONS: Record<string, ComponentType> = {
   Icons: IconsSection,
   Brand: BrandSection,
   Actions: ActionsSection,
+  Inputs: InputsSection,
 }
 
 const DESIGN_SYSTEM_SECTIONS = [
