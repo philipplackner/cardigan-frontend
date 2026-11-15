@@ -169,6 +169,13 @@ Bring the Figma Foundations and Design System into `src/core/ui`: every Figma va
 - **Why**: dnd-kit isn't in the approved dependencies (D13).
 - **Depends on**: D1, D13
 
+### D24 — Layout width tokens
+- **Question**: Where do the sidebar and side panel widths (224, 248, 420, 452) come from, given Figma had no variables for them?
+- **Decision**: From new Figma Size variables added by the mobile-owned `update-figma-foundations` change: `width/sidebar-tablet` 224, `width/sidebar-desktop` 248, `width/panel-tablet` 420, `width/panel-desktop` 452. They become theme tokens like every other variable, so the Size collection has 12 variables, not the 8 in D3.
+- **Alternatives**: Theme tokens without Figma variables, taken from the Foundations breakpoint table.
+- **Why**: Keeps "no token without a Figma variable" with no exception. The app names its tokens after the same variables.
+- **Depends on**: D3, D19
+
 ## Facts
 
 Facts looked up during the review that decisions rely on.

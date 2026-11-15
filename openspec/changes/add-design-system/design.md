@@ -42,7 +42,7 @@ Alternative: `light-dark()` per token. Rejected because AGENTS.md describes the 
 
 - Spacing (D4) uses named steps only: `--spacing-1: 1px` through `--spacing-32: 32px`, for the 23 Figma steps. With the multiplier cleared, `p-17` produces no CSS.
 - Radius: `--radius-1` … `--radius-16`, and `--radius-full: 999px`.
-- Size: `height/control-touch` → `--spacing-control-touch: 44px`, used as `min-h-control-touch` (D20). Tailwind v4 reads `--spacing-*` for `h-*`, `min-h-*`, `size-*`, `w-*`, so the 8 size tokens become spacing-namespace names. They never collide with the numeric steps.
+- Size: `height/control-touch` → `--spacing-control-touch: 44px`, used as `min-h-control-touch` (D20). Tailwind v4 reads `--spacing-*` for `h-*`, `min-h-*`, `size-*`, `w-*`, so all 12 size tokens become spacing-namespace names. That covers the 8 height variables and the 4 layout widths (D24): `width/sidebar-tablet` → `--spacing-sidebar-tablet`, used as `w-sidebar-tablet`. They never collide with the numeric steps.
 - Spacing and sizes stay in px. Only text scales with the user's font size (D20). Page zoom still scales everything.
 
 ### Typography
@@ -104,9 +104,9 @@ A `background-image` gradient between `skeleton` and `skeleton-highlight`, anima
 `AppLayout` in `core/ui/layout/` takes `sidebar`, `appBar`, `panel` (optional) and `children` slots:
 
 - **Phone:** `appBar` on top, `children` below. When `panel` is set, it renders fixed over the whole viewport. The sidebar is not rendered.
-- **Tablet and desktop:** CSS grid with sidebar (`w-224`/`desktop:w-248` as named size tokens), content, and panel (420/452) in the right column when present. The app bar is not rendered.
+- **Tablet and desktop:** CSS grid with the sidebar (`w-sidebar-tablet`, `desktop:w-sidebar-desktop`), the content, and the panel in the right column when present (`w-panel-tablet`, `desktop:w-panel-desktop`). The app bar is not rendered.
 
-The 224, 248, 420 and 452 widths come from Foundations' breakpoint table, but Figma has no variables for them. They are added as layout size tokens in the theme next to the variants, with a comment naming the Foundations table. This is the one place the theme holds values that aren't Figma variables.
+The widths come from the Figma Size collection variables `width/sidebar-tablet` (224), `width/sidebar-desktop` (248), `width/panel-tablet` (420) and `width/panel-desktop` (452), like every other token (D24). These variables only exist once the mobile-owned `update-figma-foundations` change has been applied to the Figma file, so task 2.1 checks for them first.
 
 ### Preview page (D14)
 
@@ -136,7 +136,7 @@ Alternative: a route in the app guarded by `import.meta.env.DEV`. Rejected. Ther
 - [Hand-transcribing 53 × 2 colors and 59 text styles can introduce typos] → Transcribe from the exported JSON, never from screenshots. The final task diffs the token values in `theme.css` against a fresh Figma export.
 - [The height-based phone condition puts short desktop windows (under 480 px high) in the phone layout] → Accepted by D8. It matches the app.
 - [Text in `rem` and spacing in `px` can make large text feel cramped] → Control heights are minimums and labels truncate (D20). Check at 24 px default font size on the preview page.
-- [Layout widths 224/248/420/452 aren't Figma variables] → They're kept in one block and named after the Foundations table. They can be replaced if `update-figma-foundations` adds variables.
+- [The layout width variables depend on `update-figma-foundations` being applied first] → Task 2.1 checks for the 4 `width/*` variables and stops if they're missing, instead of hard-coding the values.
 - [Single-feature components in `core/ui` grow the shared surface] → They take plain props only, so they stay free of domain types and can move into a feature later without API changes.
 
 ## Open Questions

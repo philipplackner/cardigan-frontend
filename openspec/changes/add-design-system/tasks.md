@@ -9,10 +9,10 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 2. Theme tokens
 
-- [ ] 2.1 Export every Figma variable (Light and Dark), text style and effect style to a JSON file in the scratchpad with a read-only `use_figma` script, and verify the counts: 53 colors, 23 spacing, 11 radius, 8 size, 59 text styles, 7 effect styles
+- [ ] 2.1 Export every Figma variable (Light and Dark), text style and effect style to a JSON file in the scratchpad with a read-only `use_figma` script, and verify the counts: 53 colors, 23 spacing, 11 radius, 12 size (including `width/sidebar-tablet`, `width/sidebar-desktop`, `width/panel-tablet`, `width/panel-desktop`), 59 text styles, 7 effect styles. If the 4 `width/*` variables are missing, `update-figma-foundations` hasn't been applied yet: stop and ask instead of hard-coding the values
 - [ ] 2.2 Write the color section of `theme.css` (raw `:root` values, dark `prefers-color-scheme` block, `color-scheme`, `@theme inline` mapping, default palette cleared) and verify `bg-accent` and `bg-label-teal` produce CSS while `bg-blue-500` does not
 - [ ] 2.3 Add spacing, radius, size, shadow and focus-ring tokens with the default scales cleared, and verify `p-12` is 12px, `min-h-control-touch` is 44px, and `p-17` and `rounded-md` produce no CSS
-- [ ] 2.4 Add the `phone`, `tablet` and `desktop` custom variants and the layout width tokens (224, 248, 420, 452), remove the default breakpoints, and verify `sm:` produces no CSS and `phone:` compiles to the width-or-height media query
+- [ ] 2.4 Add the `phone`, `tablet` and `desktop` custom variants and remove the default breakpoints. Verify `sm:` produces no CSS, `phone:` compiles to the width-or-height media query, and `w-sidebar-tablet` is 224px
 - [ ] 2.5 Import the Geist fonts in `src/main.tsx`, set the sans and mono font tokens, and verify in the built `dist/` that the woff2 files are bundled same-origin
 - [ ] 2.6 Add one `type-*` utility per Figma text style (sizes in rem) plus the 7 semantic role utilities with phone sizes (Page title 28 on phones), and verify the generated CSS has 59 raw and 7 role utilities
 - [ ] 2.7 Add `src/core/ui/cn.ts` with `clsx`, `tailwind-merge` and an `extendTailwindMerge` config for the `type-*` group and the named spacing, size and radius scales, and add a unit test that `cn('type-body', 'text-text-muted')` keeps both classes and `cn('p-12', 'p-8')` keeps `p-8`
@@ -62,7 +62,7 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 - [ ] 10.1 Add `NavItem` (Default, Selected, Dim, truncating name), `Sidebar` (Brand, nav, Boards slot, account footer) and `PageHeader` (title, count, Actions slot), and check them against Figma
 - [ ] 10.2 Add `AppBar` (Brand, Title, Centered × Raised) and check it against Figma
-- [ ] 10.3 Add `AppLayout` per D19 with a preview section that composes Sidebar, AppBar, content and Panel. Check by hand at 390×844, 844×390, 834×1194 and 1440×900 that the regions and widths match the spec's layout scenarios
+- [ ] 10.3 Add `AppLayout` per D19 and D24, sized only with the `w-sidebar-*` and `w-panel-*` tokens, with a preview section that composes Sidebar, AppBar, content and Panel. Check by hand at 390×844, 844×390, 834×1194 and 1440×900 that the regions and widths match the spec's layout scenarios
 
 ## 11. Board, boards, card detail, import & export
 

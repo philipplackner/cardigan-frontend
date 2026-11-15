@@ -8,7 +8,7 @@ Every web screen in Figma is built from Design System instances and Foundations 
 
 - **Theme tokens**: mirror every Figma variable and style in `src/core/ui/theme/` (D2–D5, D20, D21):
   - 53 color tokens with Light and Dark values that switch with the system theme, named after the Figma variables (`accent/default` → `bg-accent`).
-  - 23 spacing steps, 11 radii and 8 size tokens. Class numbers equal Figma px (`p-12` = 12px), and only Figma steps exist.
+  - 23 spacing steps, 11 radii and 12 size tokens (control heights and the sidebar and panel widths). Class numbers equal Figma px (`p-12` = 12px), and only Figma steps exist.
   - One type utility per Figma text style (59), plus the 7 Foundations roles as semantic utilities with phone sizes. Text is set in `rem`, so it follows the user's text size.
   - 7 effect styles as shadow and focus-ring tokens.
   - Breakpoints `tablet` 640px and `desktop` 1024px, plus one "phone" condition (under 640px wide or under 480px high).
