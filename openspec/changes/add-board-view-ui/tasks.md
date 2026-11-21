@@ -9,7 +9,7 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 1. Prerequisites
 
-- [ ] 1.1 Rebase onto the merged web foundation and board list changes. Verify that TanStack Router, TanStack Query, the shell layout, the `core/utils` normalize-and-count helper, the board summary type, the board list query key and the rename/delete board dialogs exist. Check that the shell's top-bar slot, the blank not-found component and the Query defaults (`staleTime: Infinity`, no auto refetch, `retry: false`) match design.md › Context, and verify that all five gates pass before any new code
+- [ ] 1.1 Rebase onto the merged web foundation and board list changes. Verify that TanStack Router, TanStack Query, the shell layout, the `core/utils` normalize-and-count helper, the board summary type, the board list query key and the rename/delete board dialogs exist. Check that the shell's top-bar slot, the blank not-found component and the Query defaults (`staleTime: Infinity`, no auto refetch, `retry: false`) match design.md › Context. Follow the board list's naming for its data interface (it may rename `BoardsRepository`), so `BoardViewActions` uses the same style. Verify that all five gates pass before any new code
 
 ## 2. Types, fake, pure logic and translations
 

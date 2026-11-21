@@ -57,6 +57,7 @@ type BoardViewActions = {
 }
 ```
 
+- **What it is:** `BoardViewActions` is only the interface that the later data layer plugs into. It is not a repository layer, and nothing here adds one. Chunk 35 fills it with plain API functions as in `react-data-layer`.
 - **Why a result union and not `DataError`:** `core/api` has no board code yet. The same reasoning applies as in `add-import-export-ui`. Chunk 35 writes one mapper from `DataError` to `ActionError`, and that mapper applies `api-errors` › *Clients handle unknown error codes by status*.
 - **Why `notFound` has no target:** a 404 on a column change can't say whether the column or the whole board is gone. The view model always reloads the board after a 404. A 404 on that reload means the board is gone. The exception is a 404 on delete, which counts as deleted (D15).
 - **Alternatives:**
