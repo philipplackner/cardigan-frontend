@@ -238,7 +238,7 @@ The Rename board dialog SHALL have the title "Rename board", a Name field filled
 - **THEN** the dialog shows "Cardigan v1" in Name and `CRD` in the disabled Key field
 
 ### Requirement: Rename result
-The Rename and Delete board dialogs SHALL report to the screen that opened them whether the board was renamed (with the new board), deleted, or neither. If the normalized name equals the current name, Save SHALL close the dialog without a request. On success, the dialog SHALL close and the board SHALL show the name returned by the repository. If the board no longer exists (404), the dialog SHALL close, the board SHALL disappear from the list and the toast "“{name}” no longer exists." SHALL show.
+The Rename and Delete board dialogs SHALL report to the screen that opened them whether the board was renamed (with the new board), deleted, or neither. If the normalized name equals the current name, Save SHALL close the dialog without a request. On success, the dialog SHALL close and the board SHALL show the name returned by the backend. If the board no longer exists (404), the dialog SHALL close, the board SHALL disappear from the list and the toast "“{name}” no longer exists." SHALL show.
 
 #### Scenario: Unchanged name
 - **WHEN** the user adds a trailing space to "Cardigan v1" and selects Save
