@@ -13,6 +13,7 @@ See proposal.md › Why. The current state that shapes the approach:
 - `src/core/ui` already has what the screen needs: `Column` (name, count, menu and footer slots; 300 px on phones), `Card` (a button with display ID, title and labels), `AddCardButton`, `AddColumnButton`, `AppBar`, `Menu`, `Dialog`, `Field`, `Input`, `TextArea`, `EmptyState`, `Skeleton`, `IconButton`, `Button`, `useToast` and `AppLayout`.
 - i18n (react-i18next with typed keys) and the screen test stack are in place. Each feature registers its namespace in `src/app/i18n.ts`.
 - There are no board, column or card endpoints in the OpenAPI snapshot, so no `core/api` code can be written for them.
+- **Backend split:** be-boards (archived and implemented) covers the board and column endpoints. Cards come from the later be-cards backend change: the cards in the board response, card creation for quick add, and the card count. This change doesn't depend on either; it runs against the in-memory data access. Chunk 35 (`web-boards-connect`) handles the gap if it runs before be-cards lands.
 - `transfer` exposes `useExportBoard({ exportBoard })`, which returns `{ start(board), dialog }` (`add-import-export-ui`).
 - Repo rules: features don't import each other, no `vi.mock` of project modules, server data lives only in the Query cache, and all text goes through react-i18next.
 
@@ -217,5 +218,6 @@ Board view strings live in their own namespace, `boardView` (`features/boards/i1
 - **[Two prerequisite changes]** The foundation and board list changes must land first, and the shell slot API isn't final. → Task group 1 rebases and checks what they actually expose before any screen code. Differences are fixed in this change's design before implementation goes on.
 - **[Shared `boards` folder]** Parallel work in the same feature folder. → Board view files stay under `features/boards/boardView/`, with their own namespace file. Only `features/boards/index.ts` and `src/app/i18n.ts` are shared, as one-line additions.
 - **[Seam drifts from the real API]** The action shapes are written before the endpoints exist. → They use only behavior from the shared specs (dense positions, move responses with all columns, field error codes). Chunk 35 adds the mapper and its tests.
+- **[Cards depend on be-cards]** Cards on the board, quick add and the card counts need be-cards, which comes after be-boards. → No effect on this change. Chunk 35 decides how the board view behaves if it connects before be-cards exists.
 - **[No board view in the running app before chunk 35]** The route shows an empty content area until the real data layer exists (F6). → The preview page shows every state with in-memory data, and Figma checks run there.
 - **[Focus after "Keep editing"]** Radix dialogs return focus to their trigger, but here focus has to go to the first form. → `onCloseAutoFocus` is prevented for this dialog and the view model focuses the field. A screen test checks it.
