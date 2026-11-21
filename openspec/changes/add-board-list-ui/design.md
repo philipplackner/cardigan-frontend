@@ -121,7 +121,7 @@ All in `features/boards`, exported from `index.ts`:
 
 ### Phone app bar title (spec › *Phone title on scroll*)
 
-An `IntersectionObserver` watches the large title against the app bar's bottom edge. When it isn't visible, the app bar gets `isRaised` and shows "Boards" instead of the brand. jsdom has no `IntersectionObserver`, so the screen test installs a small controllable stub on `window` (a global, not a project module, so the no-`vi.mock` rule holds). The visual result is checked on the preview page.
+The foundation deferred scroll detection to this change (D24). The board list reads no scroll position. A `useLargeTitleCollapsed(ref)` hook runs an `IntersectionObserver` with the viewport as root on the large title. The browser clips the target by every scrolling ancestor, so the hook works whether the shell's main area or the window scrolls, and the shell needs no scroll API. When the title isn't visible, the app bar gets `isRaised` and shows "Boards" instead of the brand. The hook lives in `features/boards/hooks` and moves to `core/ui` when a second feature needs it. jsdom has no `IntersectionObserver`, so the screen test installs a small controllable stub on `window` (a global, not a project module, so the no-`vi.mock` rule holds). The visual result is checked on the preview page.
 
 ### Refresh control (D11, D12)
 
@@ -131,9 +131,9 @@ The Refresh `IconButton` exists only in the tablet/desktop header. It spins its 
 
 CSS grid with `repeat(auto-fill, minmax(260px, 1fr))` inside the main area. With the sidebar widths from `web-design-system` that gives 2 columns at 834 px and 4 at 1440 px. The 260 px value is a theme token, so it can follow a Figma change in one place.
 
-### Route and placeholder repository (D23)
+### No route in this change (D23)
 
-`src/app/routes/index.tsx` replaces the foundation's empty index route and renders `BoardListRoot`, `BoardsSidebarSection` and the import flow, wiring `onOpenBoard` and `onBoardCreated` to a log until the board view route exists. `src/app` provides `BoardsRepositoryProvider` with `unavailableBoardsRepository`, whose methods all reject with `BoardsError({ kind: 'other' })`, so `/` shows "Couldn't load your boards". `web-boards-connect` swaps in the real repository. No in-memory data is served in the app.
+The foundation's empty `/` index route stays. Nothing in `src/app` provides a `BoardsRepository` yet. `web-boards-connect` mounts `BoardListRoot`, `BoardsSidebarSection` and the import flow at `/` with the real repository, and wires `account` from `useSession()`. This change exposes everything that wiring needs from `features/boards/index.ts`, and the preview page shows the same composition with the in-memory repository.
 
 ### Preview
 
@@ -149,7 +149,8 @@ CSS grid with `repeat(auto-fill, minmax(260px, 1fr))` inside the main area. With
 ## Risks / Trade-offs
 
 - **[Foundation not landed]** → This change can't start implementation until the web foundation change is merged. Task 1 checks this.
-- **[Placeholder repository visible in the app]** → Until connect lands, `/` always shows the load error state. That's acceptable for a dev-only stage with no deployment, and the preview page shows every real state.
+- **[Board list not reachable in the app until connect]** (D23) → Only the preview page shows it. The connect chunk's wiring is small because the exports are designed for it.
+- **[Title clipped by something other than scrolling]** (D24) → If an overlay or a `clip-path` hides the large title, the bar would raise as well. No such element exists on the board list; the preview check in 4.3 covers it.
 - **[`src/features/boards/` shared with the board view change]** (D17) → Board view adds its own files and rebases onto this change. This change keeps the public names stable: `BoardsRepository`, `BoardSummary`, `useBoards`, `RenameBoardDialog`, `DeleteBoardDialog`.
 - **[Seam drifts from the real API]** → The interface only uses fields and codes from `domain-board` and `api-errors`. If be-boards names the card count differently, only the connect mapper changes.
 - **[`Intl` month names]** → `en-US` is fixed because the app is English only. A second language will need locale-aware formatting.

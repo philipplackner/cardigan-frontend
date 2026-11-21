@@ -5,7 +5,7 @@ Commit after each logical chunk once all five gates pass (AGENTS.md › Git Work
 ## 1. Prerequisites
 
 - [ ] 1.1 Verify the web foundation change has landed on this branch's base: TanStack Router, TanStack Query, React Hook Form and Zod are installed, the app `QueryClient` has the defaults from design.md, the shell layout with its top-bar slot and the temporary `/` route exist, and the text normalize-and-count helper is in `core/utils`. If not, stop and tell the coordinator (cardiganapp-18)
-- [ ] 1.2 Verify auth's `useSession()` with `email: string | null` and a logout action exists. If not, build against the `account` prop only and leave the app-layer wiring in 6.4 for after the auth change lands
+- [ ] 1.2 Verify auth's `useSession()` with `email: string | null` and a logout action exists. If not, build against the `account` prop only; the app-layer wiring belongs to `web-boards-connect` (D23)
 
 ## 2. Shared key and name checks
 
@@ -25,7 +25,7 @@ Commit after each logical chunk once all five gates pass (AGENTS.md › Git Work
 
 - [ ] 4.1 Add `useBoards`, `boardsQueryOptions` and `useBoardListViewModel` (state derivation, refresh with the failure toast, dialog union). Feature tests with the in-memory repository: first load shows skeletons then boards, empty, load error and Try again, refresh keeps the list and marks the button busy, failed refresh keeps the list and shows "Couldn't refresh your boards. Check your connection and try again."
 - [ ] 4.2 Add `BoardListScreen` for tablet/desktop (header with count, Refresh, Import, New board; `auto-fill` grid with the 260 px tile minimum; `BoardTile`s with "Updated …" and plural card counts) and phone (`AppBar` in the shell's top-bar slot with + and ⋯, no Refresh; `BoardRow` list; end-of-list count). Screen tests per state: count hidden while loading, empty and in error; "1 board"; tile and row texts; activating a tile calls `onOpenBoard` and the menu button doesn't; the accessible names from D21 (including "Actions for board “Cardigan v1”"). Check against the Figma frames Board list, Loading, No boards yet and Couldn't load boards at 390, 834 (2 columns) and 1440 px (4 columns), ignoring the phone refresh icon
-- [ ] 4.3 Add the phone title behavior with `IntersectionObserver` and a screen test using a controllable stub: at the top the bar shows the brand, scrolled it shows "Boards" and is raised. Check At the top, Scrolled and End of the list against Figma at 390 px on the preview page
+- [ ] 4.3 Add `useLargeTitleCollapsed` (`IntersectionObserver`, viewport root, no shell scroll API, D24) and a screen test using a controllable stub: at the top the bar shows the brand, scrolled it shows "Boards" and is raised. Check At the top, Scrolled and End of the list against Figma at 390 px on the preview page
 - [ ] 4.4 Add the tile and row menu (Rename, divider, Delete board) opening dialogs outside the menu, and a screen test that the dialog stays open after the menu closes and focus returns to the menu button after the dialog closes
 
 ## 5. Dialogs
@@ -40,8 +40,6 @@ Commit after each logical chunk once all five gates pass (AGENTS.md › Git Work
 - [ ] 6.1 Add `BoardsSidebarSection` and `NewBoardDialogProvider`: "All boards" marked current on `/`, rows with name and key in list order, the footer email hidden while `account.email` is `null`, "+ New board" opening the shared dialog, no rows while loading, only "+ New board" when empty or in error. Feature tests for each state and for one dialog instance shared with the header button. Check against the sidebar in the Board list · Desktop 1440 and Tablet 834 frames
 - [ ] 6.2 Add the phone ⋯ menu ("Signed in as {email}", Import board, Labels, divider, Log out) wired to `account`, `importAction` and `onOpenLabels`. Screen tests: items and order, no "Signed in as" line while the email is `null`, Import board opens `importAction.dialogs` and it stays open after the menu closes, Log out calls `onLogOut` without a confirmation. Check against Phone menu · Phone 390
 - [ ] 6.3 Add `useBoardsChanged` and `useFindBoardNameByKey` for `transfer`'s import flow, with a feature test that an import success through a fake `importBoard` reloads the list and that a key clash finds the loaded board's name. Verify with `npm run lint` that `boards` imports no other feature and only `src/app` and `src/preview` import `boards`
-- [ ] 6.4 Replace the foundation's empty `/` route with the board list: `unavailableBoardsRepository` in `src/app` (every call rejects with `other`), `BoardsRepositoryProvider`, the sidebar section, the import flow, `account` from `useSession()`, and logged `onOpenBoard`/`onBoardCreated`. Add a route test that `/` renders "Couldn't load your boards" with the sidebar's "+ New board", and verify `npm run build` passes
-
 ## 7. Preview and integration checks
 
 - [ ] 7.1 Add `src/preview/sections/BoardListSection.tsx` with the in-memory repository, seed and failure controls, and the import flow fake. Walk through every Figma frame on page 9:5 at 390, 834 and 1440 px in light and dark mode and note any difference

@@ -177,9 +177,16 @@ Build the `boards` feature's board list UI for chunk 20 (`web-board-list-ui`): t
 
 ### D23 — Index route
 - **Question**: Does this change mount the board list in the app?
-- **Decision**: Yes. It replaces the foundation's temporary empty `/` index route with the board list, as the coordinator asked. Until `web-boards-connect` provides the real repository, the app layer provides one whose calls all fail with `other`, so the route shows "Couldn't load your boards". No fake data in the app. The preview page keeps the in-memory repository.
-- **Alternatives**: Leave `/` empty until connect.
-- **Why**: The coordinator assigned the route to this change. The "no fake API layer" decision rules out serving in-memory data in the app. The failing placeholder is this session's choice; reported to the coordinator.
+- **Decision**: No. The foundation's empty `/` index route stays until `web-boards-connect`, which mounts the board list with the real repository. This change shows the board list only on the dev preview page. There is no placeholder repository in `src/app`.
+- **Alternatives** (rejected): Replace `/` now, with an app-layer repository whose calls all fail, so `/` shows "Couldn't load your boards" until connect.
+- **Why**: User decision through the coordinator on 2026-11-21, after the first version of this change proposed the placeholder.
+- **Depends on**: D16
+
+### D24 — Scroll detection for the raised phone top bar
+- **Question**: The foundation deferred to this change how a page knows the main area has scrolled, for the raised phone top bar.
+- **Decision**: The board list doesn't read a scroll position. An `IntersectionObserver` with the viewport as root watches the large "Boards" title. The browser clips the title by every scrolling ancestor, so this works whichever element scrolls (the shell's main area or the window), and the shell needs no scroll API. When the title isn't visible, the page sets the `AppBar`'s raised state and title. Other pages with a large title can use the same hook.
+- **Alternatives**: The shell exposes the main area's scroll position or element through context; a scroll listener on the main area.
+- **Why**: Technical choice of this session within the foundation's deferral. It needs no shell API and no user-visible decision; Figma's "Scrolled" note defines the behavior.
 - **Depends on**: D16
 
 ## Facts
