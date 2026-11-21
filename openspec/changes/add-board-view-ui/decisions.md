@@ -231,7 +231,7 @@ Build the board view screen for chunk 21 (`web-board-view-ui`): columns with car
 
 ### F6 — No in-memory data in the app
 - **Question**: Does the running app show in-memory sample data until the connect chunk?
-- **Decision**: No. In-memory data access exists only in tests and on the preview page. The app layer provides `BoardViewDataAccessProvider` (and `BoardsDataAccessProvider`) when chunk 35 brings the real data layer. Until then, the board route shows an empty content area, like `/`.
+- **Decision**: No. In-memory data access exists only in tests and on the preview page. The app layer provides `BoardViewDataAccessProvider` (and `BoardsDataAccessProvider`) when chunk 35 brings the real data layer. Until then this change mounts nothing in the app, the same as the board list: no route renders board view components without a provider. Chunk 35 adds the board route together with the providers. This replaces the "add your route" part of D4 for this change.
 - **Alternatives**: Wire the in-memory data access into the app until chunk 35.
 - **Why**: User decision, recorded as D23 in `add-board-list-ui` and relayed by web-boardlist.
 - **Depends on**: D6

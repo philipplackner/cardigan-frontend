@@ -100,8 +100,8 @@ An in-memory implementation, `createInMemoryBoardViewDataAccess(seed, options)`,
 | `notFound` otherwise | Refetch the board, then the toast "“{name}” no longer exists. The board was reloaded." |
 | `outOfRange` | Refetch the board, then the stale-move toast (WBV-23) |
 
-- If the first load returns `notFound` (no cached board), the view model throws the router's `notFound()`, so the foundation's not-found page shows.
-- If a later load returns `notFound`, the view model shows "This board no longer exists." through `useToast` and navigates to the board list route with `replace`. A later load is a refresh or a reload after a stale change (D23).
+- If the first load returns `notFound` (no cached board), the view model calls `onNotFound`. In the app, chunk 35's route throws the router's `notFound()`, so the foundation's not-found page shows.
+- If a later load returns `notFound`, the view model shows "This board no longer exists." through `useToast` and calls `onBoardGone`. A later load is a refresh or a reload after a stale change (D23).
 - Field error codes map to the D13 messages:
   - `REQUIRED` → "Enter a name."
   - `TOO_LONG` → "Use at most {max} characters."
@@ -111,9 +111,9 @@ An in-memory implementation, `createInMemoryBoardViewDataAccess(seed, options)`,
 
 The structure follows the Root/Screen split from `react-presentation-mvi`, in `features/boards/boardView/components/`:
 
-- `BoardViewRoot({ boardId, onOpenCard, onExport, onBoardDeleted })` reads the data access from its provider, calls `useBoardViewModel` and renders `BoardViewScreen`. It also renders the board list's rename and delete board dialogs (D5).
+- `BoardViewRoot({ boardId, onOpenCard, onExport, onBack, onBoardGone, onNotFound })` reads the data access from its provider, calls `useBoardViewModel` and renders `BoardViewScreen`. It also renders the board list's rename and delete board dialogs (D5).
 - `BoardViewScreen` is driven by props only. It picks the state: loading, load error, no columns, or columns.
-- `BoardHeader` is the tablet/desktop header at the top of the content area. `BoardAppBarContent` is the phone app bar. The route puts it into the shell's top-bar slot (D3).
+- `BoardHeader` is the tablet/desktop header at the top of the content area. `BoardAppBarContent` is the phone app bar. Chunk 35's route puts it into the shell's top-bar slot (D3). The phone back button calls `onBack`.
 - `BoardColumns`, `BoardColumn`, `CardTile`, `QuickAddForm`, `AddColumnForm`, `ColumnMenu`, `RenameColumnDialog`, `DeleteColumnDialog`, `BoardSkeleton`.
 - **Hooks for the later changes:**
   - `CardTile` and `BoardColumn` take their data as props and render no drag code, so the drag & drop change can wrap them.
@@ -175,22 +175,25 @@ movingColumnId: string | null
 - The board menu items open the board list's `RenameBoardDialog` and `DeleteBoardDialog` with a `BoardSummary` built from the cached board. Their `onClose(result)` drives what happens next:
   - `{ kind: 'renamed', board }`: `setQueryData` writes the new name into the board query, so the header changes without a reload.
   - `{ kind: 'unchanged' }`: nothing.
-  - `{ kind: 'deleted' }` from `DeleteBoardDialog`: `onBoardDeleted` navigates to the board list without a toast (F3).
-  - `{ kind: 'deleted' }` from `RenameBoardDialog`: the board was deleted elsewhere (a rename 404 reports `deleted`). The dialog already showed "“{name}” no longer exists.", so the view model only navigates to the board list, without a toast of its own. The call site knows which dialog it opened, so it tells the two `deleted` results apart.
-- `onExport` comes from the route. The route calls `useExportBoard` from `transfer` and renders its `dialog`. Feature code never imports `transfer`.
+  - `{ kind: 'deleted' }` from `DeleteBoardDialog`: `onBoardGone` navigates to the board list without a toast (F3).
+  - `{ kind: 'deleted' }` from `RenameBoardDialog`: the board was deleted elsewhere (a rename 404 reports `deleted`). The dialog already showed "“{name}” no longer exists.", so the view model only calls `onBoardGone`, without a toast of its own. The call site knows which dialog it opened, so it tells the two `deleted` results apart.
+- `onExport` comes from the host: chunk 35's route in the app, the playground on the preview page. The host calls `useExportBoard` from `transfer` and renders its `dialog`. Feature code never imports `transfer`.
 
-### Route and data source
+### Mounting and data source (F6)
 
-`src/app/routes/boards.$boardId.tsx` (the exact file name follows the foundation's route layout) renders `BoardViewRoot` with:
+This change adds no route. Like the board list, it mounts nothing in the app before chunk 35: the foundation's routes stay as they are, and no component that needs `BoardViewDataAccessProvider` is rendered without one.
+
+Chunk 35 adds the board route (`/boards/$boardId`, named after the foundation's route layout) together with the providers. The route then renders `BoardViewRoot` with these props:
 
 - `boardId` from the path params.
 - `onOpenCard` (a no-op until card detail lands).
-- `onExport` from `useExportBoard`.
-- Navigation to the board list.
+- `onExport` from `useExportBoard`, with its dialog.
+- `onBack` and `onBoardGone`, which navigate to the board list with `replace`.
+- `onNotFound`, which throws the router's `notFound()`.
 
-The app has no in-memory data (F6). The app layer provides `BoardViewDataAccessProvider` only when chunk 35 brings the real data layer, together with `BoardsDataAccessProvider`. Until then, the board route shows an empty content area, the same way `/` stays empty in the board list change. Task 1.1 checks how the board list renders its route without a provider, and `BoardViewRoot` does the same.
+`BoardViewRoot` does no routing itself, so it runs the same in the app, in feature tests and on the preview page.
 
-In-memory data lives only in tests and on the preview page. `createInMemoryBoardViewDataAccess` builds its default boards from the board list's `sampleBoards` (`features/boards/testing/sampleBoards.ts`). It uses the same IDs, names and keys, and columns and cards that match each board's card count. The Figma board "Cardigan v1" gets the columns and cards from page `9:6`.
+In-memory data lives only in tests and on the preview page. `createInMemoryBoardViewDataAccess` builds its default boards from the board list's `sampleBoards` (`features/boards/testing/sampleBoards.ts`). It uses the same IDs, names and keys, and columns and cards that match each board's card count. The Figma board "Cardigan v1" gets the columns and cards from page `9:6`. The preview playground wraps `BoardViewRoot` in a provider with that implementation and wires `useExportBoard` from `transfer` (the preview may import features).
 
 ### Accessible names (F4)
 
@@ -209,8 +212,7 @@ Board view strings live in their own namespace, `boardView` (`features/boards/i1
 
 - **Unit:** `validateName`, `boardViewReducer`, the `applyChanges` updaters, `handleBoardViewError`, and the in-memory data access's position handling.
 - **Screen:** `BoardViewScreen` per state (loading with and without a known name, load error, no columns, empty columns, board with cards), the header plurals, and the column menu's disabled items. Rendered with props only.
-- **Feature:** `BoardViewRoot` with a real `QueryClient`, a memory router and the in-memory data access, driven with user-event. It covers every scenario in the spec: quick add rules, add column, move/rename/delete, failures, field errors, refresh, stale recovery and board not found.
-- **Route:** with a test-only `BoardViewDataAccessProvider` around the router, the board route loads the board from the URL and uses the board list route as the 404 target. Without a provider it renders an empty content area.
+- **Feature:** `BoardViewRoot` with a real `QueryClient`, the in-memory data access in its provider and spy callbacks for navigation, driven with user-event. It covers every scenario in the spec: quick add rules, add column, move/rename/delete, failures, field errors, refresh, stale recovery and board not found.
 - No `vi.mock`. The only fakes are the in-memory data-access implementations.
 
 ## Risks / Trade-offs
@@ -219,5 +221,5 @@ Board view strings live in their own namespace, `boardView` (`features/boards/i1
 - **[Shared `boards` folder]** Parallel work in the same feature folder. → Board view files stay under `features/boards/boardView/`, with their own namespace file. Only `features/boards/index.ts` and `src/app/i18n.ts` are shared, as one-line additions.
 - **[Seam drifts from the real API]** The action shapes are written before the endpoints exist. → They use only behavior from the shared specs (dense positions, move responses with all columns, field error codes). Chunk 35 adds the mapper and its tests.
 - **[Cards depend on be-cards]** Cards on the board, quick add and the card counts need be-cards, which comes after be-boards. → No effect on this change. Chunk 35 decides how the board view behaves if it connects before be-cards exists.
-- **[No board view in the running app before chunk 35]** The route shows an empty content area until the real data layer exists (F6). → The preview page shows every state with in-memory data, and Figma checks run there.
+- **[No board view in the running app before chunk 35]** Nothing is mounted in the app until the real data layer exists (F6). → The preview page shows every state with in-memory data, and Figma checks run there.
 - **[Focus after "Keep editing"]** Radix dialogs return focus to their trigger, but here focus has to go to the first form. → `onCloseAutoFocus` is prevented for this dialog and the view model focuses the field. A screen test checks it.

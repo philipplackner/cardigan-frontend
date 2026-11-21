@@ -6,7 +6,7 @@ Users need to open a board and work with its columns and cards (chunk 21, `web-b
 
 ## What Changes
 
-- **Board screen** (D3, D20, D24): a route for one board that renders the content area of the shell.
+- **Board screen** (D3, D20, D24): the content area of the shell for one board. It is shown on the preview page in this change; chunk 35 adds its route with the real data (F6).
   - Desktop and tablet: a header with name, key, card count, refresh and ⋯ menu.
   - Phone: app bar content with back, name and "key · count".
   - Columns are side by side and scroll horizontally. Phone columns are 300 px wide with free scrolling.
@@ -36,7 +36,7 @@ Users need to open a board and work with its columns and cards (chunk 21, `web-b
   - "This board no longer exists."
   - Discard dialog (WBV-24): "Discard changes?", "The card you started in “{column}” hasn’t been added." or "The column you started hasn’t been added.", "Keep editing", "Discard".
   - Empty column delete: "Delete column “{name}”?", "This can’t be undone.", "Delete column".
-- **Board data access** (D6): an interface (load board, create/rename/move/delete column, create card) that the data layer from chunk 35 plugs into. It is not a repository layer. Tests and the preview use an in-memory implementation. The app gets the real one in chunk 35; until then the board route shows an empty content area.
+- **Board data access** (D6): an interface (load board, create/rename/move/delete column, create card) that the data layer from chunk 35 plugs into. It is not a repository layer. Tests and the preview use an in-memory implementation. The app gets the real one in chunk 35, together with the board route.
 
 Not breaking. This change builds on the web foundation change (router, Query, shell, text helper) and the board list change (board summary type, rename/delete board dialogs). Both must land first.
 
@@ -72,8 +72,7 @@ This change implements or depends on these `cardigan-shared-specs` requirements:
 
 - **Code**:
   - `src/features/boards/` (board view components, hooks, utils, types, `boardView` translations; separate files from the board list).
-  - `src/app/routes/` (the board route, empty until chunk 35 provides data access).
-  - `src/app/i18n.ts` (namespace registration).
+  - `src/app/i18n.ts` (namespace registration). No route is added (F6).
   - `src/preview/` (board view playground with the in-memory data access).
 - **Depends on**: the web foundation change (TanStack Router, TanStack Query, shell, `core/utils` text helper) and the board list change (board summary type, rename/delete board dialogs, sidebar).
 - **New dependencies**: none beyond those the foundation change adds.

@@ -7,11 +7,15 @@ Defines the web-only behavior of the board screen: layout per screen size, heade
 ## ADDED Requirements
 
 ### Requirement: Board content area
-The board view SHALL render only the content area of the app shell for one board, identified by the board ID in the URL. The sidebar and the phone menu are not part of it. Tablet SHALL use the desktop layout of every state.
+The board view SHALL render only the content area of the app shell for one board, given by the board's ID. The sidebar and the phone menu are not part of it. Tablet SHALL use the desktop layout of every state. The web app SHALL NOT show the board view before real board data is available.
 
 #### Scenario: Opening a board
-- **WHEN** the user opens the URL of the board "Cardigan v1"
-- **THEN** the content area shows that board's header and columns next to the shell's sidebar
+- **WHEN** the board view is shown for the board "Cardigan v1"
+- **THEN** the content area shows that board's header and columns, and no sidebar of its own
+
+#### Scenario: Before real data exists
+- **WHEN** the app runs without a board data source
+- **THEN** no board view is mounted in the app
 
 #### Scenario: Tablet
 - **WHEN** the viewport is 834 px wide
