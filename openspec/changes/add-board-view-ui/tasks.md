@@ -7,8 +7,6 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 - Compare it with `get_screenshot` of the matching frame on page `9:6`. Tablet uses the desktop frames (D20).
 - Look frames up with `get_metadata 9:6`. Don't use node IDs copied from this file.
 
-**Before task group 4:** check the coordinator's answer to WBV-24 (see decisions.md › Deferred). If it differs from the assumed option, update the spec, design and task 4.2 first.
-
 ## 1. Prerequisites
 
 - [ ] 1.1 Rebase onto the merged web foundation and board list changes. Verify that TanStack Router, TanStack Query, the shell layout, the `core/utils` normalize-and-count helper, the board summary type, the board list query key and the rename/delete board dialogs exist. Check that the shell's top-bar slot, the blank not-found component and the Query defaults (`staleTime: Infinity`, no auto refetch, `retry: false`) match design.md › Context, and verify that all five gates pass before any new code
@@ -24,8 +22,9 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 - [ ] 2.4 Add the `applyChanges` updaters (`addColumn`, `renameColumn`, `applyColumnPositions`, `removeColumn`, `addCard`) with unit tests. They must not mutate the input. Column order must follow the returned positions, and an unknown ID must leave the board unchanged. Verify they pass
 - [ ] 2.5 Add `handleActionError` with unit tests for every row of the table in design.md › Error handling, including `notFound` on delete counting as deleted and an unknown field code mapping to the control-character message
 - [ ] 2.6 Add `boardViewReducer` (quick add, add column, dialogs, moving column) with unit tests:
-  - Opening a second quick add replaces an empty first form, and asks with `discardQuickAdd` when the first has text.
-  - "Discard" moves the form, and "Keep editing" keeps the first form and its text.
+  - Quick add and add column are never open together.
+  - Opening another inline form replaces an empty one, and sets `discardInline` when the open one has text.
+  - "Discard" opens the target form empty, and "Keep editing" keeps the first form and its text.
   - Submitted flags drive errors.
   - A column removed by a refetch clears the quick add and dialog state that point to it.
 - [ ] 2.7 Add the `boardView` namespace (`features/boards/i18n/boardView.json`) and register it in `src/app/i18n.ts`. It holds every string from page `9:6` that this change uses, the proposal copy and plural keys for cards. Verify each string matches Figma or the proposal character for character, including curly quotes and apostrophes
@@ -60,17 +59,9 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
   - Disabled controls, Escape and a second Enter while saving.
   - The add-card failure toast with the text kept.
   - A 404 on create reloading the board with the "no longer exists" toast.
-- [ ] 4.2 Add the discard dialog ("Discard changes?", "The card you started in “{column}” hasn’t been added.", "Keep editing", "Discard") following the card detail's "Unsaved changes" pattern. Write feature tests:
-  - Discard opens the new form empty with focus.
-  - "Keep editing", Escape and an outside click keep the first form with its text, scrolled into view and focused.
-  - An empty first form closes without the dialog.
-  - "Add card" in other columns is disabled while a create runs.
-  - Cancel and Escape in the form still discard without asking.
+- [ ] 4.2 Check Quick add card (390, 1440) against Figma, including the "Enter to add" hint only on desktop and tablet
 
-  Compare the dialog with Figma "Unsaved changes · Desktop 1440" and "· Phone 390" on page `9:7`.
-- [ ] 4.3 Check Quick add card (390, 1440) against Figma, including the "Enter to add" hint only on desktop and tablet
-
-## 5. Add column and the empty board
+## 5. Add column, the empty board and discarding started text
 
 - [ ] 5.1 Add `AddColumnForm` after the last column and in place of the no-columns empty state. After success, scroll the new column into view and focus its "Add card". Write feature tests:
   - Add from the end and from the empty state.
@@ -79,7 +70,16 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
   - A server field error under the field.
   - The add-column failure toast with the form kept open.
   - No board reload after success (the fake's `loadBoard` is called once).
-- [ ] 5.2 Check Add column (1440) and All columns deleted (1440) against Figma, and the phone at 390 px against the desktop pattern (D20)
+- [ ] 5.2 Add `DiscardInlineDialog` ("Discard changes?", the card or column body, "Keep editing", "Discard") following the card detail's "Unsaved changes" pattern, and wire it for quick add → quick add, quick add → add column, and add column → quick add. Write feature tests:
+  - Each of the three switches with text asks, with the right body.
+  - "Discard" opens the target form empty with focus.
+  - "Keep editing", Escape and a backdrop click keep the first form with its text, scrolled into view and focused, and open no new form.
+  - An empty first form closes without the dialog.
+  - "Add card" in other columns and "Add column" are disabled while a save runs.
+  - Cancel and Escape in a form still discard without asking.
+
+  Compare the dialog with Figma "Unsaved changes · Desktop 1440" and "· Phone 390" on page `9:7`.
+- [ ] 5.3 Check Add column (1440) and All columns deleted (1440) against Figma, and the phone at 390 px against the desktop pattern (D20)
 
 ## 6. Column menu
 

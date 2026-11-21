@@ -120,7 +120,7 @@ A board with zero columns SHALL show "This board has no columns", "Add a column 
 - **THEN** the add column form opens with focus in its name field
 
 ### Requirement: Opening quick add
-"Add card" at the bottom of a column SHALL replace itself with the quick add form: a title field with focus, an "Add card" button and "Cancel". Desktop and tablet SHALL also show the hint "Enter to add". At most one quick add form SHALL be open on the board. Opening one SHALL close an open form with an empty field without asking.
+"Add card" at the bottom of a column SHALL replace itself with the quick add form: a title field with focus, an "Add card" button and "Cancel". Desktop and tablet SHALL also show the hint "Enter to add". Only one inline form SHALL be open at a time, as defined in *One inline form at a time*.
 
 #### Scenario: Open
 - **WHEN** the user presses "Add card" in "To do"
@@ -130,20 +130,46 @@ A board with zero columns SHALL show "This board has no columns", "Add a column 
 - **WHEN** an empty quick add form is open in "To do" and the user presses "Add card" in "Done"
 - **THEN** the form in "To do" closes and a form opens in "Done"
 
-### Requirement: Discarding a started card
-When "Add card" is pressed in another column while the open quick add form has text, the web app SHALL ask first with the dialog "Discard changes?", "The card you started in “{column}” hasn’t been added.", "Keep editing" and "Discard". "Discard" SHALL close the first form, drop its text and open the new one. "Keep editing", Escape or a click outside the dialog SHALL keep the first form with its text, scroll it into view and focus its field.
+### Requirement: One inline form at a time
+At most one inline form (a quick add or the add column form) SHALL be open on the board. Opening another inline form SHALL close the open one without asking when its field is empty after normalization. While an inline form saves, "Add card" in the other columns and "Add column" SHALL be disabled.
 
-#### Scenario: Discard
-- **WHEN** the quick add in "To do" contains "Write docs", the user presses "Add card" in "Done" and chooses "Discard"
-- **THEN** the form in "To do" closes without creating a card, and an empty form opens in "Done" with focus
-
-#### Scenario: Keep editing
-- **WHEN** the same dialog is shown and the user chooses "Keep editing"
-- **THEN** no form opens in "Done", and the form in "To do" still contains "Write docs" and has focus
+#### Scenario: Quick add to add column with an empty field
+- **WHEN** an empty quick add is open in "To do" and the user presses "Add column"
+- **THEN** the quick add closes and the add column form opens
 
 #### Scenario: Saving form
 - **WHEN** the card in the quick add of "To do" is being saved
-- **THEN** "Add card" in the other columns is disabled
+- **THEN** "Add card" in the other columns and "Add column" are disabled
+
+### Requirement: Discarding started text
+When the user opens another inline form while the open one has text, the web app SHALL ask with "Discard changes?", "Keep editing" and "Discard". The body SHALL be "The card you started in “{column}” hasn’t been added." for a quick add and "The column you started hasn’t been added." for the add column form. "Discard" SHALL drop the text, close that form and open the new one with focus.
+
+#### Scenario: Quick add to quick add
+- **WHEN** the quick add in "To do" contains "Write docs", the user presses "Add card" in "Done" and chooses "Discard"
+- **THEN** the form in "To do" closes without creating a card, and an empty form opens in "Done" with focus
+
+#### Scenario: Quick add to add column
+- **WHEN** the quick add in "To do" contains "Write docs" and the user presses "Add column"
+- **THEN** the dialog asks with "The card you started in “To do” hasn’t been added."
+
+#### Scenario: Add column to quick add
+- **WHEN** the add column form contains "Review" and the user presses "Add card" in "To do"
+- **THEN** the dialog asks with "The column you started hasn’t been added."
+
+#### Scenario: Explicit cancel
+- **WHEN** the quick add contains "Write docs" and the user presses Escape in its field
+- **THEN** the form closes without the dialog
+
+### Requirement: Keeping started text
+"Keep editing", Escape on the dialog and a click outside the dialog SHALL close the dialog without opening the new form. The first form SHALL keep its text, scroll into view and get focus.
+
+#### Scenario: Keep editing
+- **WHEN** the dialog for the quick add in "To do" with "Write docs" is shown and the user chooses "Keep editing"
+- **THEN** no form opens in "Done", and the form in "To do" still contains "Write docs", is scrolled into view and has focus
+
+#### Scenario: Escape on the dialog
+- **WHEN** the dialog is shown and the user presses Escape
+- **THEN** the same happens as for "Keep editing"
 
 ### Requirement: Adding a card
 Pressing Enter in the title field or the form's "Add card" button SHALL create a card with the normalized title at the end of the column. When the card is created, it SHALL appear at the end of the column, and the field SHALL stay open, empty and focused. Enter on an empty or whitespace-only title SHALL do nothing.

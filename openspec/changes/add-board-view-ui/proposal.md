@@ -12,7 +12,7 @@ Users need to open a board and work with its columns and cards (chunk 21, `web-b
   - Columns are side by side and scroll horizontally. Phone columns are 300 px wide with free scrolling.
   - Card tiles show display ID, title and labels sorted by name. A click calls an injected "open card" callback (L1).
 - **States**: loading skeleton, "Couldn’t load this board" with "Try again", empty columns with "No cards yet", and "This board has no columns" with "Add column". A board deleted while it's open goes to the board list with "This board no longer exists." (D23). An unknown board ID on first load shows the app's not-found page.
-- **Quick add** (D22): title only. Enter adds and keeps the field open. Escape or Cancel closes. Outside clicks keep non-empty text. One quick add at a time. Opening another while one has text asks with a discard dialog (WBV-24, copy pending).
+- **Quick add** (D22): title only. Enter adds and keeps the field open. Escape or Cancel closes. Outside clicks keep non-empty text. One inline form (quick add or add column) at a time. Switching away from one with text asks with a discard dialog (WBV-24).
 - **Columns**:
   - Add column: an inline form at the end of the columns.
   - Column ⋯ menu: Move left, Move right (disabled at the ends), Rename (dialog), Delete column.
@@ -34,7 +34,7 @@ Users need to open a board and work with its columns and cards (chunk 21, `web-b
   - "“{name}” no longer exists. The board was reloaded."
   - "Couldn't move “{name}”. The board changed on another device, so it was reloaded." (WBV-23)
   - "This board no longer exists."
-  - Discard dialog (pending, WBV-24): "Discard changes?", "The card you started in “{column}” hasn’t been added.", "Keep editing", "Discard".
+  - Discard dialog (WBV-24): "Discard changes?", "The card you started in “{column}” hasn’t been added." or "The column you started hasn’t been added.", "Keep editing", "Discard".
   - Empty column delete: "Delete column “{name}”?", "This can’t be undone.", "Delete column".
 - **Injected board actions** (D6): load board, create/rename/move/delete column, create card. Tests and the preview use an in-memory fake.
 

@@ -120,7 +120,7 @@ quickAdd:   null | { columnId, text, submitted }   // one at a time (D22)
 addColumn:  null | { text, submitted }
 dialog:     null | { kind: 'renameColumn' | 'deleteColumn', columnId }
                | { kind: 'renameBoard' | 'deleteBoard' }
-               | { kind: 'discardQuickAdd', targetColumnId }
+               | { kind: 'discardInline', target: { kind: 'quickAdd', columnId } | { kind: 'addColumn' } }
 movingColumnId: string | null
 ```
 
@@ -134,13 +134,14 @@ movingColumnId: string | null
 - Enter submits and Shift+Enter is ignored, because titles are single-line. A pasted line break is left in the text and fails validation with the control-character message.
 - While a create runs, the field and buttons are disabled (D15). On success the reducer clears the text and focus returns to the field.
 - Outside clicks are handled with a `pointerdown` listener on `document` and a `focusout` check (`relatedTarget` outside the form). The form closes only when the text is empty after normalization.
-- Opening another column's quick add is not an outside click:
-  - If the open form's field is empty, it replaces the first form.
-  - If the field has text, the view model sets `dialog: { kind: 'discardQuickAdd', targetColumnId }` and shows the discard dialog (WBV-24, pending).
-    - It reuses the card detail's "Unsaved changes" pattern: a `core/ui` `Dialog` with "Keep editing" (secondary) and "Discard" (danger).
-    - "Discard" moves the quick add to the target column with empty text.
-    - "Keep editing", Escape and an outside click clear the dialog, then scroll the first form into view and focus its field.
-- While a create runs, "Add card" in the other columns is disabled, so the dialog never has to deal with a pending save.
+- Quick add and add column share one slot (WBV-24). `quickAdd` and `addColumn` are never both set. Opening another inline form (quick add → quick add, quick add → add column, add column → quick add) is not an outside click:
+  - If the open form's normalized text is empty, the new form replaces it.
+  - If it has text, the view model sets `dialog: { kind: 'discardInline', target }` and shows `DiscardInlineDialog`.
+    - It reuses the card detail's "Unsaved changes" pattern: a `core/ui` `Dialog` titled "Discard changes?" with "Keep editing" (secondary) and "Discard" (danger).
+    - The body depends on the open form: "The card you started in “{column}” hasn’t been added." or "The column you started hasn’t been added."
+    - "Discard" drops the text and opens the target form empty with focus.
+    - "Keep editing", Escape and a backdrop click clear the dialog, then scroll the first form into view and focus its field. The focus target is set by the view model, so Radix's return-focus to the trigger is turned off for this dialog.
+- While an inline form saves, "Add card" in other columns and "Add column" are disabled, so the dialog never has to deal with a pending save.
 - Enter is ignored while a create runs (F1).
 
 ### Add column and column menu
@@ -208,4 +209,4 @@ Board view strings live in their own namespace, `boardView` (`features/boards/i1
 - **[Shared `boards` folder]** Parallel work in the same feature folder. → Board view files stay under `features/boards/boardView/`, with their own namespace file. Only `features/boards/index.ts` and `src/app/i18n.ts` are shared, as one-line additions.
 - **[Seam drifts from the real API]** The action shapes are written before the endpoints exist. → They use only behavior from the shared specs (dense positions, move responses with all columns, field error codes). Chunk 35 adds the mapper and its tests.
 - **[Fake data in the running app]** The route shows sample data until chunk 35. → It is the same approach as the board list change, and it's replaced in one module.
-- **[Pending decision]** The discard dialog's copy and "Keep editing" behavior (WBV-24) were sent to the coordinator. → The spec and this design use the recommended options. If the answer differs, the requirement *Discarding a started card* and task 4.2 are updated before task group 4.
+- **[Focus after "Keep editing"]** Radix dialogs return focus to their trigger, but here focus has to go to the first form. → `onCloseAutoFocus` is prevented for this dialog and the view model focuses the field. A screen test checks it.

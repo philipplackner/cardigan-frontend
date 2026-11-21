@@ -212,6 +212,23 @@ Build the board view screen for chunk 21 (`web-board-view-ui`): columns with car
 - **Why**: User decision (follow-up), confirms D16 over Figma.
 - **Depends on**: D16
 
+### WBV-24 — Switching inline forms with started text
+- **Question**: What happens when the user opens another inline form while the open one has text?
+- **Decision**: Quick add and add column form one slot. Switching from a form with text (quick add → quick add, quick add → add column, add column → quick add) asks first:
+  - Title: "Discard changes?"
+  - Body: "The card you started in “{column}” hasn’t been added." or "The column you started hasn’t been added."
+  - Buttons: "Keep editing" (secondary) and "Discard" (danger).
+
+  The dialog behaves as follows:
+  - "Discard" drops the text, closes the form and opens the new one with focus.
+  - "Keep editing", Escape and a backdrop click close the dialog. The new form doesn't open, and the first one keeps its text, scrolls into view and gets focus.
+  - Empty forms close silently.
+  - Cancel and Escape in a field still discard without asking (D22).
+  - While an inline form saves, "Add card" in other columns and "Add column" are disabled.
+- **Alternatives**: Drop the text silently (rejected by the user); body naming the typed title; card detail's text unchanged.
+- **Why**: User decision (follow-up, 2026-11-21). Reuses the card detail's "Unsaved changes" pattern from Figma `9:7`. The extension to add column came from mobile and was accepted. Same for mobile.
+- **Depends on**: D22, WBV-22
+
 ## Facts
 
 - Figma page `9:6` has frames for: board (phone, tablet, desktop), loading, couldn't load, new board with default columns, all columns deleted, column menu, add column, rename column, delete column with cards, quick add, dragging, move failed, search + label filter, label filter popover and sheet, no results, board menu — source: `get_metadata 9:6`.
@@ -243,7 +260,3 @@ Build the board view screen for chunk 21 (`web-board-view-ui`): columns with car
 - The sidebar board list, the phone menu, the rename and delete board dialogs themselves (board list change).
 - The router, Query client, shell layout and text helper (web foundation change).
 - Real API functions, MSW handlers and E2E tests (chunks 35 and 39).
-
-## Deferred
-
-- WBV-24: opening "Add card" in another column while a quick add has text. The user rejected silently dropping the text and wants a discard dialog; copy and "Keep editing" behavior were sent to the coordinator — settle before: implementation of task group 4. Until then the spec keeps the first form open and asks with the dialog proposed in WBV-24 option A.
