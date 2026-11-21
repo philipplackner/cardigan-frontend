@@ -152,7 +152,8 @@ The foundation's empty `/` index route stays. Nothing in `src/app` provides a `B
 - **[Board list not reachable in the app until connect]** (D23) → Only the preview page shows it. The connect chunk's wiring is small because the exports are designed for it.
 - **[Title clipped by something other than scrolling]** (D24) → If an overlay or a `clip-path` hides the large title, the bar would raise as well. No such element exists on the board list; the preview check in 4.3 covers it.
 - **[`src/features/boards/` shared with the board view change]** (D17) → Board view adds its own files and rebases onto this change. This change keeps the public names stable: `BoardsDataAccess`, `BoardSummary`, `useBoards`, `RenameBoardDialog`, `DeleteBoardDialog`.
-- **[Seam drifts from the real API]** → The interface only uses fields and codes from `domain-board` and `api-errors`. If be-boards names the card count differently, only the connect mapper changes.
+- **[Seam drifts from the real API]** → The interface only uses fields and codes from `domain-board` and `api-errors`. If the backend names the card count differently, only the connect mapper changes.
+- **[`cardCount` comes from be-cards]** → There is no backend change for cards yet. `cardCount` on the board list item comes from the later be-cards change, not from be-boards. This change is not affected, because the test double provides `cardCount`. If `web-boards-connect` runs before be-cards, the connect change decides the placeholder (for example, hiding the card count).
 - **[`Intl` month names]** → `en-US` is fixed because the app is English only. A second language will need locale-aware formatting.
 - **[Moving key strings touches `transfer`]** → Its tests act as the regression check; the move is its own commit.
 
