@@ -6,6 +6,9 @@ See proposal.md › Why. The current state that shapes the approach:
 
 - **Dependencies:** this change builds on two changes that must land first:
   - The web foundation change (D4): TanStack Router with file routes in `src/app/routes`, the TanStack Query client, the empty shell layout and a normalize-and-count text helper in `core/utils`.
+    - A page's app bar goes into a shell top-bar slot.
+    - The router's not-found and pending components are blank for now.
+    - The Query client uses `staleTime: Infinity`, no automatic refetch, and `retry: false`.
   - The board list change (D5): the board summary type, the board list query, the rename and delete board dialogs, and the sidebar.
 - `src/core/ui` already has what the screen needs: `Column` (name, count, menu and footer slots; 300 px on phones), `Card` (a button with display ID, title and labels), `AddCardButton`, `AddColumnButton`, `AppBar`, `Menu`, `Dialog`, `Field`, `Input`, `TextArea`, `EmptyState`, `Skeleton`, `IconButton`, `Button`, `useToast` and `AppLayout`.
 - i18n (react-i18next with typed keys) and the screen test stack are in place. Each feature registers its namespace in `src/app/i18n.ts`.
@@ -65,7 +68,7 @@ An in-memory fake, `createFakeBoardViewActions(seed, options)`, lives in `featur
 ### Server state (D21)
 
 - **Query:** the board is one query, `boardViewKeys.detail(boardId)`. Its `queryFn` calls `loadBoard`. On `ok: false` it throws a `BoardViewLoadError` that carries the `ActionError`.
-  - `retry` is off for `notFound`.
+  - The foundation's defaults apply: `staleTime: Infinity`, no refetch on focus or reconnect, and `retry: false`. Returning to a board already in the cache shows the cached board without a request; the refresh button is the way to get changes from other devices.
   - On refetch errors Query keeps the previous data. That gives "the board stays" on a failed refresh (D16) without extra code.
 - **Mutations:** each change is a `useMutation` that calls the action. On success it writes the response into the cached board with a pure updater from `boardView/utils/applyChanges.ts`:
   - `addColumn` appends the column.
@@ -91,7 +94,8 @@ An in-memory fake, `createFakeBoardViewActions(seed, options)`, lives in `featur
 | `notFound` otherwise | Refetch the board, then the toast "“{name}” no longer exists. The board was reloaded." |
 | `outOfRange` | Refetch the board, then the stale-move toast (WBV-23) |
 
-- If any load returns `notFound`, the view model shows "This board no longer exists." through `useToast` and navigates to the board list route with `replace`. That covers the first load, a refresh, and a reload after a stale change.
+- If the first load returns `notFound` (no cached board), the view model throws the router's `notFound()`, so the foundation's not-found page shows.
+- If a later load returns `notFound`, the view model shows "This board no longer exists." through `useToast` and navigates to the board list route with `replace`. A later load is a refresh or a reload after a stale change (D23).
 - Field error codes map to the D13 messages:
   - `REQUIRED` → "Enter a name."
   - `TOO_LONG` → "Use at most {max} characters."
@@ -103,7 +107,7 @@ The structure follows the Root/Screen split from `react-presentation-mvi`, in `f
 
 - `BoardViewRoot({ boardId, actions, onOpenCard, onExport, onBoardDeleted })` calls `useBoardViewModel` and renders `BoardViewScreen`. It also renders the board list's rename and delete board dialogs (D5).
 - `BoardViewScreen` is driven by props only. It picks the state: loading, load error, no columns, or columns.
-- `BoardHeader` is the tablet/desktop header. `BoardAppBarContent` is the phone app bar content. Both are exported. The route puts each into the slot the foundation shell gives for page header and phone app bar content (D3). If the shell has no such slot, the header renders at the top of the content area and the app bar content goes to `AppLayout`'s `appBar`. The foundation change decides this.
+- `BoardHeader` is the tablet/desktop header at the top of the content area. `BoardAppBarContent` is the phone app bar. The route puts it into the shell's top-bar slot (D3).
 - `BoardColumns`, `BoardColumn`, `CardTile`, `QuickAddForm`, `AddColumnForm`, `ColumnMenu`, `RenameColumnDialog`, `DeleteColumnDialog`, `BoardSkeleton`.
 - **Hooks for the later changes:**
   - `CardTile` and `BoardColumn` take their data as props and render no drag code, so the drag & drop change can wrap them.
@@ -116,6 +120,7 @@ quickAdd:   null | { columnId, text, submitted }   // one at a time (D22)
 addColumn:  null | { text, submitted }
 dialog:     null | { kind: 'renameColumn' | 'deleteColumn', columnId }
                | { kind: 'renameBoard' | 'deleteBoard' }
+               | { kind: 'discardQuickAdd', targetColumnId }
 movingColumnId: string | null
 ```
 
@@ -129,7 +134,14 @@ movingColumnId: string | null
 - Enter submits and Shift+Enter is ignored, because titles are single-line. A pasted line break is left in the text and fails validation with the control-character message.
 - While a create runs, the field and buttons are disabled (D15). On success the reducer clears the text and focus returns to the field.
 - Outside clicks are handled with a `pointerdown` listener on `document` and a `focusout` check (`relatedTarget` outside the form). The form closes only when the text is empty after normalization.
-- Opening another column's quick add is not an outside click. Because only one form can be open (D22), it replaces the first form and drops its text, even when that text isn't empty.
+- Opening another column's quick add is not an outside click:
+  - If the open form's field is empty, it replaces the first form.
+  - If the field has text, the view model sets `dialog: { kind: 'discardQuickAdd', targetColumnId }` and shows the discard dialog (WBV-24, pending).
+    - It reuses the card detail's "Unsaved changes" pattern: a `core/ui` `Dialog` with "Keep editing" (secondary) and "Discard" (danger).
+    - "Discard" moves the quick add to the target column with empty text.
+    - "Keep editing", Escape and an outside click clear the dialog, then scroll the first form into view and focus its field.
+- While a create runs, "Add card" in the other columns is disabled, so the dialog never has to deal with a pending save.
+- Enter is ignored while a create runs (F1).
 
 ### Add column and column menu
 
@@ -154,7 +166,7 @@ movingColumnId: string | null
 ### Board menu, export and navigation (D5, L2)
 
 - The board menu items open the board list's rename and delete dialogs with the board summary built from the cached board. After a rename, the dialog's success path updates the board query's name with `setQueryData`, so the header changes without a reload.
-- After a delete, `onBoardDeleted` navigates to the board list.
+- After a delete, `onBoardDeleted` navigates to the board list without a toast (F3).
 - `onExport` comes from the route. The route calls `useExportBoard` from `transfer` and renders its `dialog`. Feature code never imports `transfer`.
 
 ### Route and data source
@@ -168,6 +180,15 @@ movingColumnId: string | null
 - Navigation to the board list.
 
 Until chunk 35, the app layer passes the in-memory fake seeded with sample boards, the same way the board list change wires its own data source. Chunk 35 swaps in the real actions in one place.
+
+### Accessible names (F4)
+
+The names come from the `boardView` namespace:
+- `IconButton` labels: "Back", "Board actions", "Actions for column “{name}”".
+- The `AddCardButton` label "Add card to “{name}”".
+- `AddColumnButton`: "Add column".
+
+`CardTile` sets `aria-label` to "{displayId}, {title}, labels {a}, {b}". The labels come in their displayed order, joined with ", ", and the labels part is left out when there are none. This replaces the visible text as the tile's name, so screen readers don't read the ID and title as one run-on string. Screen tests check each name with `getByRole(…, { name })`.
 
 ### i18n
 
@@ -187,8 +208,4 @@ Board view strings live in their own namespace, `boardView` (`features/boards/i1
 - **[Shared `boards` folder]** Parallel work in the same feature folder. → Board view files stay under `features/boards/boardView/`, with their own namespace file. Only `features/boards/index.ts` and `src/app/i18n.ts` are shared, as one-line additions.
 - **[Seam drifts from the real API]** The action shapes are written before the endpoints exist. → They use only behavior from the shared specs (dense positions, move responses with all columns, field error codes). Chunk 35 adds the mapper and its tests.
 - **[Fake data in the running app]** The route shows sample data until chunk 35. → It is the same approach as the board list change, and it's replaced in one module.
-- **[Pending decisions]** WBV-19, WBV-20, WBV-22 and WBV-23 were sent to the coordinator. → The spec and this design use the recommended options. If an answer differs, the affected requirement and tasks are updated before implementation.
-
-## Open Questions
-
-- The slot the foundation shell gives for page header and phone app bar content. Settled when task 1.1 rebases. It doesn't change the specs.
+- **[Pending decision]** The discard dialog's copy and "Keep editing" behavior (WBV-24) were sent to the coordinator. → The spec and this design use the recommended options. If the answer differs, the requirement *Discarding a started card* and task 4.2 are updated before task group 4.

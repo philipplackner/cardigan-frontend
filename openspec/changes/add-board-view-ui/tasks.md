@@ -7,11 +7,11 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 - Compare it with `get_screenshot` of the matching frame on page `9:6`. Tablet uses the desktop frames (D20).
 - Look frames up with `get_metadata 9:6`. Don't use node IDs copied from this file.
 
-**Before task group 2:** check the coordinator's answers to WBV-19, WBV-20, WBV-22 and WBV-23 (see decisions.md › Deferred). If an answer differs from the assumed option, update the spec, design and affected tasks first.
+**Before task group 4:** check the coordinator's answer to WBV-24 (see decisions.md › Deferred). If it differs from the assumed option, update the spec, design and task 4.2 first.
 
 ## 1. Prerequisites
 
-- [ ] 1.1 Rebase onto the merged web foundation and board list changes. Verify that TanStack Router, TanStack Query, the shell layout, the `core/utils` normalize-and-count helper, the board summary type, the board list query key and the rename/delete board dialogs exist. Record the shell's slot for page header and phone app bar content in design.md › Screen structure, and verify that all five gates pass before any new code
+- [ ] 1.1 Rebase onto the merged web foundation and board list changes. Verify that TanStack Router, TanStack Query, the shell layout, the `core/utils` normalize-and-count helper, the board summary type, the board list query key and the rename/delete board dialogs exist. Check that the shell's top-bar slot, the blank not-found component and the Query defaults (`staleTime: Infinity`, no auto refetch, `retry: false`) match design.md › Context, and verify that all five gates pass before any new code
 
 ## 2. Types, fake, pure logic and translations
 
@@ -24,7 +24,8 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 - [ ] 2.4 Add the `applyChanges` updaters (`addColumn`, `renameColumn`, `applyColumnPositions`, `removeColumn`, `addCard`) with unit tests. They must not mutate the input. Column order must follow the returned positions, and an unknown ID must leave the board unchanged. Verify they pass
 - [ ] 2.5 Add `handleActionError` with unit tests for every row of the table in design.md › Error handling, including `notFound` on delete counting as deleted and an unknown field code mapping to the control-character message
 - [ ] 2.6 Add `boardViewReducer` (quick add, add column, dialogs, moving column) with unit tests:
-  - Opening a second quick add replaces the first and drops its text.
+  - Opening a second quick add replaces an empty first form, and asks with `discardQuickAdd` when the first has text.
+  - "Discard" moves the form, and "Keep editing" keeps the first form and its text.
   - Submitted flags drive errors.
   - A column removed by a refetch clears the quick add and dialog state that point to it.
 - [ ] 2.7 Add the `boardView` namespace (`features/boards/i18n/boardView.json`) and register it in `src/app/i18n.ts`. It holds every string from page `9:6` that this change uses, the proposal copy and plural keys for cards. Verify each string matches Figma or the proposal character for character, including curly quotes and apostrophes
@@ -43,7 +44,9 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
   - Load success and load failure.
   - "Try again".
   - Enter on a tile calls `onOpenCard` with the card ID.
-  - A 404 opens the board list with "This board no longer exists."
+  - A 404 on the first load shows the not-found page without a toast.
+  - A 404 on refresh opens the board list with "This board no longer exists."
+  - The accessible names from spec › Accessible names: "Back", "Board actions", "Actions for column “{name}”", "Add card to “{name}”", "Add column", and tile names with and without labels.
 - [ ] 3.3 Add the board route in `src/app/routes` with the app layer's in-memory data source, `onOpenCard` as a no-op, navigation back to the board list, and the phone back button. Write a route test that the URL's board ID loads that board. Check Board (390, 834, 1440), Loading, Couldn’t load the board and New board with default columns against Figma
 
 ## 4. Quick add
@@ -54,10 +57,18 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
   - Escape and outside click with and without text.
   - Opening a second form.
   - A 201-character title and a pasted line break.
-  - Disabled controls and Escape while saving.
+  - Disabled controls, Escape and a second Enter while saving.
   - The add-card failure toast with the text kept.
   - A 404 on create reloading the board with the "no longer exists" toast.
-- [ ] 4.2 Check Quick add card (390, 1440) against Figma, including the "Enter to add" hint only on desktop and tablet
+- [ ] 4.2 Add the discard dialog ("Discard changes?", "The card you started in “{column}” hasn’t been added.", "Keep editing", "Discard") following the card detail's "Unsaved changes" pattern. Write feature tests:
+  - Discard opens the new form empty with focus.
+  - "Keep editing", Escape and an outside click keep the first form with its text, scrolled into view and focused.
+  - An empty first form closes without the dialog.
+  - "Add card" in other columns is disabled while a create runs.
+  - Cancel and Escape in the form still discard without asking.
+
+  Compare the dialog with Figma "Unsaved changes · Desktop 1440" and "· Phone 390" on page `9:7`.
+- [ ] 4.3 Check Quick add card (390, 1440) against Figma, including the "Enter to add" hint only on desktop and tablet
 
 ## 5. Add column and the empty board
 
@@ -84,8 +95,8 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 7. Board menu and refresh
 
-- [ ] 7.1 Add the board menu (Rename board, Export as JSON, Delete board) using the board list's dialogs and the injected `onExport`. A rename updates the header without a reload, and a delete navigates to the board list. In the route, wire `useExportBoard` from `transfer` and render its dialog. Write feature tests for rename and delete from the board view, and a route test that "Export as JSON" starts the export dialog
-- [ ] 7.2 Add refresh: the spinning button on tablet and desktop, none on phones, the board kept on failure with the refresh toast, and quick add text kept. Write feature tests for each scenario in spec › Refresh, including a card added by "another device" in the fake showing after refresh
+- [ ] 7.1 Add the board menu (Rename board, Export as JSON, Delete board) using the board list's dialogs and the injected `onExport`. A rename updates the header without a reload, and a delete navigates to the board list without a toast. In the route, wire `useExportBoard` from `transfer` and render its dialog. Write feature tests for rename and delete from the board view, and a route test that "Export as JSON" starts the export dialog
+- [ ] 7.2 Add refresh: the spinning button on tablet and desktop, none on phones, the board kept on failure with the refresh toast, and quick add text kept. Write feature tests for each scenario in spec › Refresh, including a card added by "another device" in the fake showing after refresh, an open add column form keeping its text, and a quick add form closing when its column was deleted elsewhere
 - [ ] 7.3 Invalidate the board list query after changes that alter the card count, and verify in a feature test that the sidebar's count updates after a quick add
 - [ ] 7.4 Check Board menu (390, 1440) against Figma
 

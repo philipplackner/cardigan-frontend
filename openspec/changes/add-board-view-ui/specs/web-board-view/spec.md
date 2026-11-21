@@ -91,11 +91,15 @@ When the first load fails for any reason other than a 404, the content area SHAL
 - **THEN** the board's columns are shown
 
 ### Requirement: Board no longer exists
-When loading the board, or any change to it, ends in a 404 for the board itself, the web app SHALL go to the board list and show the error toast "This board no longer exists."
+When a refresh, a reload after a stale change, or any change to a board that was already shown ends in a 404 for the board itself, the web app SHALL go to the board list and show the error toast "This board no longer exists." When the first load of a board ends in a 404, the web app SHALL show the app's not-found page instead.
 
-#### Scenario: Deleted on another device
-- **WHEN** the user opens a board that another device deleted
+#### Scenario: Deleted on another device while viewing
+- **WHEN** the user is viewing a board that another device deleted, and presses refresh
 - **THEN** the board list opens and the toast "This board no longer exists." shows
+
+#### Scenario: Unknown board ID
+- **WHEN** the user opens the URL of a board that doesn't exist
+- **THEN** the app's not-found page shows and no toast appears
 
 ### Requirement: Empty column
 A column without cards SHALL show the placeholder "No cards yet" above its "Add card" button.
@@ -116,15 +120,30 @@ A board with zero columns SHALL show "This board has no columns", "Add a column 
 - **THEN** the add column form opens with focus in its name field
 
 ### Requirement: Opening quick add
-"Add card" at the bottom of a column SHALL replace itself with the quick add form: a title field with focus, an "Add card" button and "Cancel". Desktop and tablet SHALL also show the hint "Enter to add". At most one quick add form SHALL be open on the board; opening one closes any other and drops its text.
+"Add card" at the bottom of a column SHALL replace itself with the quick add form: a title field with focus, an "Add card" button and "Cancel". Desktop and tablet SHALL also show the hint "Enter to add". At most one quick add form SHALL be open on the board. Opening one SHALL close an open form with an empty field without asking.
 
 #### Scenario: Open
 - **WHEN** the user presses "Add card" in "To do"
 - **THEN** the quick add form opens at the bottom of "To do" with focus in the title field
 
-#### Scenario: Second column
-- **WHEN** a quick add form with the text "Write docs" is open in "To do" and the user presses "Add card" in "Done"
-- **THEN** the form in "To do" closes without creating a card, and an empty form opens in "Done"
+#### Scenario: Second column with an empty form
+- **WHEN** an empty quick add form is open in "To do" and the user presses "Add card" in "Done"
+- **THEN** the form in "To do" closes and a form opens in "Done"
+
+### Requirement: Discarding a started card
+When "Add card" is pressed in another column while the open quick add form has text, the web app SHALL ask first with the dialog "Discard changes?", "The card you started in “{column}” hasn’t been added.", "Keep editing" and "Discard". "Discard" SHALL close the first form, drop its text and open the new one. "Keep editing", Escape or a click outside the dialog SHALL keep the first form with its text, scroll it into view and focus its field.
+
+#### Scenario: Discard
+- **WHEN** the quick add in "To do" contains "Write docs", the user presses "Add card" in "Done" and chooses "Discard"
+- **THEN** the form in "To do" closes without creating a card, and an empty form opens in "Done" with focus
+
+#### Scenario: Keep editing
+- **WHEN** the same dialog is shown and the user chooses "Keep editing"
+- **THEN** no form opens in "Done", and the form in "To do" still contains "Write docs" and has focus
+
+#### Scenario: Saving form
+- **WHEN** the card in the quick add of "To do" is being saved
+- **THEN** "Add card" in the other columns is disabled
 
 ### Requirement: Adding a card
 Pressing Enter in the title field or the form's "Add card" button SHALL create a card with the normalized title at the end of the column. When the card is created, it SHALL appear at the end of the column, and the field SHALL stay open, empty and focused. Enter on an empty or whitespace-only title SHALL do nothing.
@@ -138,7 +157,7 @@ Pressing Enter in the title field or the form's "Add card" button SHALL create a
 - **THEN** no card is created and no error shows
 
 ### Requirement: Closing quick add
-Escape and "Cancel" SHALL close the quick add form and drop its text. A click or focus move outside the form SHALL close it when the field is empty and SHALL keep it open with its text otherwise.
+Escape and "Cancel" SHALL close the quick add form and drop its text without asking. A click or focus move outside the form SHALL close it when the field is empty and SHALL keep it open with its text otherwise.
 
 #### Scenario: Escape with text
 - **WHEN** the title field contains "Write docs" and the user presses Escape
@@ -216,7 +235,7 @@ Each column's menu SHALL offer "Move left", "Move right", "Rename" and "Delete c
 - **THEN** the dialog closes, the column is gone and no error shows
 
 ### Requirement: Board menu
-The board menu SHALL offer "Rename board", "Export as JSON" and "Delete board". "Rename board" and "Delete board" SHALL open the same dialogs as in the board list. After a rename, the header SHALL show the new name. After a delete, the board list SHALL open. "Export as JSON" SHALL start the board export.
+The board menu SHALL offer "Rename board", "Export as JSON" and "Delete board". "Rename board" and "Delete board" SHALL open the same dialogs as in the board list. After a rename, the header SHALL show the new name. After a delete, the board list SHALL open without a toast. "Export as JSON" SHALL start the board export.
 
 #### Scenario: Rename from the board view
 - **WHEN** the user renames the board to "Cardigan v2" from the board menu
@@ -224,10 +243,10 @@ The board menu SHALL offer "Rename board", "Export as JSON" and "Delete board". 
 
 #### Scenario: Delete from the board view
 - **WHEN** the user deletes the board from the board menu
-- **THEN** the board list opens
+- **THEN** the board list opens and no toast shows
 
 ### Requirement: Refresh
-On tablet and desktop, the refresh button SHALL load the board again and spin while it loads. The current board SHALL stay visible, and an open quick add form SHALL keep its text. If the refresh fails, the board SHALL stay and the error toast "Couldn't refresh the board. Check your connection and try again." SHALL show.
+On tablet and desktop, the refresh button SHALL load the board again and spin while it loads. The current board SHALL stay visible, and an open quick add or add column form SHALL keep its text. A quick add form whose column no longer exists after the refresh SHALL close. If the refresh fails, the board SHALL stay and the error toast "Couldn't refresh the board. Check your connection and try again." SHALL show.
 
 #### Scenario: Refresh shows changes from another device
 - **WHEN** another device added a card and the user presses refresh
@@ -236,6 +255,10 @@ On tablet and desktop, the refresh button SHALL load the board again and spin wh
 #### Scenario: Refresh with an open quick add
 - **WHEN** the quick add field contains "Write docs" and the user presses refresh
 - **THEN** after the refresh the field still contains "Write docs"
+
+#### Scenario: Column of the open quick add was deleted elsewhere
+- **WHEN** the quick add in "Review" is open, another device deleted "Review", and the user presses refresh
+- **THEN** "Review" and its quick add form are gone after the refresh
 
 #### Scenario: Refresh fails
 - **WHEN** the refresh fails without a response
@@ -268,11 +291,15 @@ A field error returned for a name or title SHALL show under that field with the 
 - **THEN** "Use at most 30 characters." shows under the field and the dialog stays open
 
 ### Requirement: Saving state
-While a column add, rename or delete, or a card add, is saving, the submit button SHALL show a spinner, the fields and "Cancel" SHALL be disabled, and Escape or a click outside SHALL NOT close the dialog or form. The submit button SHALL be disabled only while a validation error shows or a save runs. A success SHALL show no toast.
+While a column add, rename or delete, or a card add, is saving, the submit button SHALL show a spinner, the fields and "Cancel" SHALL be disabled, and Escape or a click outside SHALL NOT close the dialog or form. In the inline quick add and add column forms, Enter SHALL be ignored while saving. The submit button SHALL be disabled only while a validation error shows or a save runs. A success SHALL show no toast.
 
 #### Scenario: Escape while saving
 - **WHEN** a rename is saving and the user presses Escape
 - **THEN** the dialog stays open
+
+#### Scenario: Enter while adding a card
+- **WHEN** a card is being added and the user presses Enter again
+- **THEN** no second card is created
 
 #### Scenario: Success
 - **WHEN** a column is renamed successfully
@@ -310,3 +337,18 @@ When a change returns 404 for a column or `OUT_OF_RANGE` for a move, the web app
 #### Scenario: Board gone during recovery
 - **WHEN** the reload after a stale change returns 404 for the board
 - **THEN** the board list opens and the toast "This board no longer exists." shows
+
+### Requirement: Accessible names
+Controls without visible text, and controls whose visible text is ambiguous, SHALL have these accessible names: "Back" (phone back button), "Board actions" (board menu button), "Actions for column “{name}”" (column menu button), "Add card to “{name}”" (a column's "Add card"), "Add column" (add column button). A card tile's accessible name SHALL be "{displayId}, {title}, labels {a}, {b}", without the labels part when it has none.
+
+#### Scenario: Column controls
+- **WHEN** a screen reader reaches the column "Review"
+- **THEN** its menu button is announced as "Actions for column “Review”" and its add button as "Add card to “Review”"
+
+#### Scenario: Card tile with labels
+- **WHEN** a screen reader reaches the tile of `CRD-118` "Decide card ordering" with the labels `api` and `Bug`
+- **THEN** it is announced as "CRD-118, Decide card ordering, labels api, Bug"
+
+#### Scenario: Card tile without labels
+- **WHEN** a screen reader reaches the tile of `CRD-121` "Define export file format v1" without labels
+- **THEN** it is announced as "CRD-121, Define export file format v1"

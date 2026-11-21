@@ -149,6 +149,69 @@ Build the board view screen for chunk 21 (`web-board-view-ui`): columns with car
 - **Why**: Follows from D1.
 - **Depends on**: D1
 
+### WBV-19 — Card count of zero
+- **Question**: Figma's new-board frames show "0 cards", but D9 drops zero parts. Which wins?
+- **Decision**: D9. With no cards, the desktop header shows name and key only, and the phone subtitle shows only the key.
+- **Alternatives**: Always show the count, including "0 cards".
+- **Why**: User decision (follow-up, 2026-11-21). Matches the board list.
+- **Depends on**: D9
+
+### WBV-20 — Header while loading or after a load error
+- **Question**: What does the header show before the board has loaded?
+- **Decision**: The name and key from the board list data the shell already has, or no title when the board isn't in it. The refresh button shows and reloads like "Try again". The ⋯ menu is hidden until the board has loaded.
+- **Alternatives**: Show a working ⋯ menu from the board-list summary.
+- **Why**: User decision (follow-up).
+- **Depends on**: D5
+
+### WBV-22 — Add column form after adding
+- **Question**: Does the add column form close after a successful add?
+- **Decision**: It closes, the new column appears at the end and scrolls into view, and focus moves to its "Add card". In the "This board has no columns" state, "Add column" opens the same form in place of the empty state.
+- **Alternatives**: Keep the form open for the next column, like quick add.
+- **Why**: User decision (follow-up).
+- **Depends on**: —
+
+### WBV-23 — Stale column move copy
+- **Question**: The D23 "no longer exists" text is wrong for a stale move of a column that still exists. Which text?
+- **Decision**: A missing column keeps D23's "“{name}” no longer exists. The board was reloaded." A stale column move (`OUT_OF_RANGE`) shows "Couldn't move “{name}”. The board changed on another device, so it was reloaded."
+- **Alternatives**: D23's text for both.
+- **Why**: User decision (follow-up). Shared copy with mobile.
+- **Depends on**: D23
+
+### F1 — Inline forms while saving and during refresh
+- **Question**: How do quick add and add column behave while saving, on failure and during a refresh?
+- **Decision**: While saving, the Add button shows a spinner, the field and Cancel are disabled and Enter is ignored. On failure the text stays and an error toast shows. A refresh runs while an inline form is open and keeps its text. A form whose column disappeared in the refresh closes.
+- **Alternatives**: —
+- **Why**: User decision (follow-up), aligned with mobile.
+- **Depends on**: D15, D16, D22
+
+### F2 — Quick add validation of pasted text
+- **Question**: What happens when pasted text makes a title invalid?
+- **Decision**: The D13 messages show under the field ("Use at most 200 characters.", "Use a single line without control characters."), first on submit, then live (D12).
+- **Alternatives**: —
+- **Why**: User decision (follow-up, raised by mobile).
+- **Depends on**: D12, D13, D22
+
+### F3 — Deleting the board from the board view
+- **Question**: What happens after "Delete board" from the board ⋯ menu?
+- **Decision**: The board list opens. No toast.
+- **Alternatives**: —
+- **Why**: User decision (follow-up). Matches D15 (no success toast).
+- **Depends on**: D5, D15
+
+### F4 — Accessible names
+- **Question**: Which accessible names do icon-only and composite controls get?
+- **Decision**: "Back", "Board actions", "Actions for column “{name}”", "Add card to “{name}”", "Add column". A card tile reads "{displayId}, {title}, labels {a}, {b}" (without the labels part when it has none). Other controls follow the same style.
+- **Alternatives**: —
+- **Why**: User decision (follow-up).
+- **Depends on**: —
+
+### F5 — Refresh on web phones
+- **Question**: Figma's phone frames show a refresh button. Does the web phone layout get one?
+- **Decision**: No. Web phones have no refresh control; the browser reload covers it. Desktop and tablet keep the button.
+- **Alternatives**: Follow Figma's phone button.
+- **Why**: User decision (follow-up), confirms D16 over Figma.
+- **Depends on**: D16
+
 ## Facts
 
 - Figma page `9:6` has frames for: board (phone, tablet, desktop), loading, couldn't load, new board with default columns, all columns deleted, column menu, add column, rename column, delete column with cards, quick add, dragging, move failed, search + label filter, label filter popover and sheet, no results, board menu — source: `get_metadata 9:6`.
@@ -167,6 +230,10 @@ Build the board view screen for chunk 21 (`web-board-view-ui`): columns with car
 - Text is normalized (CRLF to LF, NFC, trim) and counted in code points; single-line fields reject control characters — source: `text-length`.
 - `core/ui` already has `Column`, `Card`, `AddCardButton`, `AddColumnButton`, `AppBar`, `Menu`, `Dialog`, `Field`, `Input`, `TextArea`, `EmptyState`, `Skeleton`, `IconButton`, `Button`, `Toast` and `AppLayout` — source: `src/core/ui/index.ts`.
 - The app has no router, no TanStack Query and no `core/utils` yet; `App.tsx` returns `null` — source: `src/app/App.tsx`, `package.json`.
+- The web foundation shell puts a page's app bar into a shell top-bar slot — source: coordinator, from the web foundation session.
+- The foundation's router not-found and pending components are blank for now. An unknown board ID on first load shows that blank not-found until a design exists — source: coordinator, from the web foundation session.
+- The foundation's Query client uses `staleTime: Infinity`, no automatic refetch and `retry: false` — source: coordinator, from the web foundation session.
+- Figma Card detail (`9:7`) has an "Unsaved changes" dialog: "Discard changes?", "Your changes to CRD-109 haven’t been saved.", "Keep editing", "Discard" — source: Plugin API read of page `9:7`.
 
 ## Out of scope
 
@@ -179,7 +246,4 @@ Build the board view screen for chunk 21 (`web-board-view-ui`): columns with car
 
 ## Deferred
 
-- WBV-19: whether the header shows "0 cards" (Figma new-board frames) or drops it (D9) — settle before: implementation. This change assumes D9 (dropped).
-- WBV-20: header content and ⋯ menu while loading or after a load error — settle before: implementation. This change assumes the name and key from the board list data, refresh shown, ⋯ menu hidden until loaded.
-- WBV-22: whether the add column form closes after adding — settle before: implementation. This change assumes it closes, scrolls the new column into view and moves focus to its "Add card".
-- WBV-23: copy for a stale column move — settle before: implementation. This change assumes "Couldn't move “{name}”. The board changed on another device, so it was reloaded."
+- WBV-24: opening "Add card" in another column while a quick add has text. The user rejected silently dropping the text and wants a discard dialog; copy and "Keep editing" behavior were sent to the coordinator — settle before: implementation of task group 4. Until then the spec keeps the first form open and asks with the dialog proposed in WBV-24 option A.
