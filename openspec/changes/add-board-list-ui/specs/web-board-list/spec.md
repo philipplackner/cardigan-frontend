@@ -22,10 +22,10 @@ When the viewport is not a phone, the board list SHALL show boards as a grid of 
 - **THEN** 6 board rows show in one list, the app bar has + and ⋯, and there is no refresh button
 
 ### Requirement: Board order
-The board list and the sidebar's board section SHALL show boards in the order the repository returns them, which is the order of `api-conventions` — *Board list order*. The client SHALL NOT sort them again.
+The board list and the sidebar's board section SHALL show boards in the order the backend returns them, which is the order of `api-conventions` — *Board list order*. The client SHALL NOT sort them again.
 
 #### Scenario: Server order kept
-- **WHEN** the repository returns "Raytracer" before "Cardigan v1"
+- **WHEN** the backend returns "Raytracer" before "Cardigan v1"
 - **THEN** "Raytracer" is listed before "Cardigan v1" in the board list and in the sidebar
 
 ### Requirement: Board tile and row content
@@ -73,14 +73,14 @@ On a phone, the large "Boards" title SHALL scroll with the list under the pinned
 While the first load of the boards runs, the board list SHALL show skeleton tiles (tablet and desktop) or skeleton rows (phone) in place of boards. The header actions SHALL stay available.
 
 #### Scenario: First load
-- **WHEN** the board list opens and the repository has not answered yet
+- **WHEN** the board list opens and the boards have not arrived yet
 - **THEN** skeletons show and the New board button can be used
 
 ### Requirement: Empty state
 When the boards have loaded and there are none, the board list SHALL show the empty state with the title "No boards yet", the text "Create a board to start adding cards, or import a board from a JSON export.", and the buttons New board and Import.
 
 #### Scenario: No boards
-- **WHEN** the repository returns no boards
+- **WHEN** the backend returns no boards
 - **THEN** "No boards yet" shows with New board and Import
 
 ### Requirement: Load error state

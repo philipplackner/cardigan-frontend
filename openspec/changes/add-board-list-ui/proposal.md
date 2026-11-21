@@ -2,7 +2,7 @@
 
 ## Why
 
-The board list is the home screen after login (chunk 20, `web-board-list-ui`), and `src/features/boards/` is still empty. The backend has no board endpoints yet. This change builds the full board list UI against a repository interface now, so `web-boards-connect` only has to plug in the real API, and the board view can reuse the board dialogs.
+The board list is the home screen after login (chunk 20, `web-board-list-ui`), and `src/features/boards/` is still empty. The backend has no board endpoints yet. This change builds the full board list UI against a small data-access interface now, so `web-boards-connect` only has to plug in the real API, and the board view can reuse the board dialogs.
 
 ## What Changes
 
@@ -17,13 +17,13 @@ The board list is the home screen after login (chunk 20, `web-board-list-ui`), a
 - **Reuse by the board view** (D17, D22): Rename and Delete report renamed, deleted or unchanged to the screen that opened them.
 - **Tile and row menu**: Rename, Delete board. Icon-only controls get accessible names in the agreed style (D21).
 - **Sidebar and phone menu** (D15): "All boards", the sidebar's BOARDS list and "+ New board"; the phone ⋯ menu with "Signed in as {email}", Import board, Labels and Log out. Email and logout come from auth's `useSession()`; the email is hidden while it's unknown.
-- **No route yet** (D23): the foundation's empty `/` route stays. The board list shows on the dev preview page; `web-boards-connect` mounts it at `/` with the real repository.
+- **No route yet** (D23): the foundation's empty `/` route stays. The board list shows on the dev preview page; `web-boards-connect` mounts it at `/` with the real data access.
 - **Copy without a design** (D6, D10, D11, D13). Shared with the mobile app:
   - Name errors: "Enter a name.", "Use at most {n} characters.", "Use a single line without control characters."
   - Toasts: "Couldn't create the board.", "Couldn't save the board.", "Couldn't delete “{name}”." (each + " Check your connection and try again."), "“{name}” no longer exists.", "Couldn't refresh your boards. Check your connection and try again."
   - Relative time: "Just now", "N minutes ago", "N hours ago", "Yesterday", "Oct 9", "Oct 9, 2025".
 - **Shared key check** (D7): the board key check and its error strings move from `transfer` to `core/utils` and the `common` translations; `transfer` uses them.
-- **Data access** (D16, D17): a `BoardsRepository` interface and board summary type, with test doubles for tests and the dev preview page.
+- **Data access** (D16, D17): a `BoardsDataAccess` interface and board summary type, with test doubles for tests and the dev preview page.
 
 Not breaking. The import key clash dialog keeps the same behavior and copy after the key check moves.
 
@@ -56,8 +56,8 @@ This change implements or depends on these `cardigan-shared-specs` requirements:
   - `src/features/boards/` (api interface, components, hooks, utils, types, translations).
   - `src/core/utils/` (board key check, key prefill), `src/core/i18n/` (common key error and name error strings).
   - `src/features/transfer/` (switch to the shared key check and strings).
-  - `src/preview/` (board list section with an in-memory repository).
+  - `src/preview/` (board list section with an in-memory data access).
 - **Depends on**: the web foundation change (TanStack Router, TanStack Query, React Hook Form, Zod, shell layout, text normalize helper). It must land first.
-- **Other changes**: the web board view change adds files in `src/features/boards/` and reuses the Rename and Delete dialogs and `BoardsRepository`; it rebases onto this change. The web auth change provides `useSession()` with the email and logout action.
+- **Other changes**: the web board view change adds files in `src/features/boards/` and reuses the Rename and Delete dialogs and `BoardsDataAccess`; it rebases onto this change. The web auth change provides `useSession()` with the email and logout action.
 - **No new dependencies** beyond what the foundation change adds.
 - **Not touched**: the backend, shared specs, real API calls and navigation wiring (`web-boards-connect`).

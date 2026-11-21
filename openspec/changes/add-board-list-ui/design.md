@@ -25,7 +25,7 @@ See proposal.md › Why. Current state that shapes the approach:
 
 ## Decisions
 
-### The seam: `BoardsRepository` (D16, D17)
+### The seam: `BoardsDataAccess` (D16, D17)
 
 `features/boards/types.ts`:
 
@@ -50,7 +50,7 @@ type BoardsErrorKind =
   | { kind: 'invalid'; fields: BoardFieldError[] } // 400 / 409 with field errors
   | { kind: 'other' }                             // network, 5xx, anything else
 
-interface BoardsRepository {
+interface BoardsDataAccess {
   listBoards(): Promise<BoardSummary[]>          // server order (D3)
   createBoard(input: { name: string; key: string }): Promise<BoardSummary>
   renameBoard(id: string, name: string): Promise<BoardSummary>
@@ -60,17 +60,15 @@ interface BoardsRepository {
 
 Methods reject with a `BoardsError` (an `Error` subclass carrying a `BoardsErrorKind`). Rejection instead of a result union fits TanStack Query, whose `queryFn` and `mutationFn` signal failure by throwing.
 
-The repository reaches the hooks through `BoardsRepositoryProvider` (React context) in `features/boards`. The app layer provides it. The preview page and tests provide `createInMemoryBoardsRepository(seed, options)`, which keeps boards in memory (with a `createdAt` it doesn't expose), sorts them like `api-conventions` › *Board list order* (D3), enforces the key rules, and can be told to fail the next call with a given kind or to hold a call until released (for loading and saving states).
+The interface reaches the hooks through `BoardsDataAccessProvider` (React context) in `features/boards`. The app layer provides it. The preview page and tests provide `createInMemoryBoardsDataAccess(seed, options)`, which keeps boards in memory (with a `createdAt` it doesn't expose), sorts them like `api-conventions` › *Board list order* (D3), enforces the key rules, and can be told to fail the next call with a given kind or to hold a call until released (for loading and saving states).
 
-`web-boards-connect` implements the interface with plain API functions on the generated client and maps `DataError` to `BoardsErrorKind`. That mapper applies `api-errors` › *Clients handle unknown error codes by status*.
+`BoardsDataAccess` is only the seam for whatever data layer `web-boards-connect` brings in. It is not a repository layer. In connect, the data layer follows `react-data-layer` as usual: plain API functions on the generated client, mappers, `DataError`. The object connect provides only points the four methods at those functions and maps `DataError` to `BoardsErrorKind`, applying `api-errors` › *Clients handle unknown error codes by status*. Connect may also replace the seam with direct calls to the API functions if that turns out simpler; the screens only depend on the hooks.
 
 Alternatives: plain API functions with MSW now (rejected: there is no contract to write handlers against, and "never invent an endpoint" forbids guessing one). Injected callbacks like `TransferActions` (rejected: the board view needs the same calls, so one object passed once is simpler).
 
-**Conflict to note:** `react-data-layer` says "plain functions, no repository layer". The user chose a repository interface for the UI chunks (breakdown and D16). The interface is a thin seam over the API functions that connect adds, so the API functions still follow the skill. The skill or AGENTS.md should mention this exception.
-
 ### Server state (D3, D10, D11, D19)
 
-- `boardsQueryOptions(repository)` with key `['boards']`. `useBoards()` reads it. The board list, the sidebar section and the local key clash check all read the same cache entry, so they never disagree.
+- `boardsQueryOptions(dataAccess)` with key `['boards']`. `useBoards()` reads it. The board list, the sidebar section and the local key clash check all read the same cache entry, so they never disagree.
 - The foundation's defaults already fit: `retry: false` keeps mutations from repeating (`api-conventions` › *Retries after a lost response*) and shows the error state at once; `staleTime: Infinity` without focus or mount refetches means boards load once and change only through Refresh, Try again or an invalidation after a mutation (the breakdown's "intentional refresh"). Invalidation still refetches the active query.
 - Refresh and Try again call `refetch()`. The screen derives:
   - `loading`: no data and fetching (first load or Try again after an error)
@@ -133,25 +131,25 @@ CSS grid with `repeat(auto-fill, minmax(260px, 1fr))` inside the main area. With
 
 ### No route in this change (D23)
 
-The foundation's empty `/` index route stays. Nothing in `src/app` provides a `BoardsRepository` yet. `web-boards-connect` mounts `BoardListRoot`, `BoardsSidebarSection` and the import flow at `/` with the real repository, and wires `account` from `useSession()`. This change exposes everything that wiring needs from `features/boards/index.ts`, and the preview page shows the same composition with the in-memory repository.
+The foundation's empty `/` index route stays. Nothing in `src/app` provides a `BoardsDataAccess` yet. `web-boards-connect` mounts `BoardListRoot`, `BoardsSidebarSection` and the import flow at `/` with the real data access, and wires `account` from `useSession()`. This change exposes everything that wiring needs from `features/boards/index.ts`, and the preview page shows the same composition with the in-memory data access.
 
 ### Preview
 
-`src/preview/sections/BoardListSection.tsx` mounts `BoardListRoot` and `BoardsSidebarSection` inside `AppLayout` with an in-memory repository and controls to: seed 0, 6 or 14 boards; fail the next load, refresh, create, rename or delete with `other` or `notFound`; hold the next call. It uses `transfer`'s import flow with a fake, as `TransferPlayground` does.
+`src/preview/sections/BoardListSection.tsx` mounts `BoardListRoot` and `BoardsSidebarSection` inside `AppLayout` with an in-memory data access and controls to: seed 0, 6 or 14 boards; fail the next load, refresh, create, rename or delete with `other` or `notFound`; hold the next call. It uses `transfer`'s import flow with a fake, as `TransferPlayground` does.
 
 ### Tests
 
-- Unit: `keyFromName`, `checkBoardKey`, `checkSingleLineText`, `formatRelativeTime`, the view-model dialog reducer, the in-memory repository's ordering and key rules.
+- Unit: `keyFromName`, `checkBoardKey`, `checkSingleLineText`, `formatRelativeTime`, the view-model dialog reducer, the in-memory data access's ordering and key rules.
 - Screen: `BoardListScreen` per state with props only; each dialog Screen.
-- Feature: `BoardListRoot` with the in-memory repository and a fresh `QueryClient`: load, empty, error and Try again, refresh success and failure, create (prefill, local checks, local clash, server clash, server field errors, failure + reload, success callback), rename (unchanged, success, 404), delete (success, 404, failure), sidebar section states.
-- No `vi.mock`. The only fakes are the in-memory repository, the `IntersectionObserver` stub and fixed time.
+- Feature: `BoardListRoot` with the in-memory data access and a fresh `QueryClient`: load, empty, error and Try again, refresh success and failure, create (prefill, local checks, local clash, server clash, server field errors, failure + reload, success callback), rename (unchanged, success, 404), delete (success, 404, failure), sidebar section states.
+- No `vi.mock`. The only fakes are the in-memory data access, the `IntersectionObserver` stub and fixed time.
 
 ## Risks / Trade-offs
 
 - **[Foundation not landed]** → This change can't start implementation until the web foundation change is merged. Task 1 checks this.
 - **[Board list not reachable in the app until connect]** (D23) → Only the preview page shows it. The connect chunk's wiring is small because the exports are designed for it.
 - **[Title clipped by something other than scrolling]** (D24) → If an overlay or a `clip-path` hides the large title, the bar would raise as well. No such element exists on the board list; the preview check in 4.3 covers it.
-- **[`src/features/boards/` shared with the board view change]** (D17) → Board view adds its own files and rebases onto this change. This change keeps the public names stable: `BoardsRepository`, `BoardSummary`, `useBoards`, `RenameBoardDialog`, `DeleteBoardDialog`.
+- **[`src/features/boards/` shared with the board view change]** (D17) → Board view adds its own files and rebases onto this change. This change keeps the public names stable: `BoardsDataAccess`, `BoardSummary`, `useBoards`, `RenameBoardDialog`, `DeleteBoardDialog`.
 - **[Seam drifts from the real API]** → The interface only uses fields and codes from `domain-board` and `api-errors`. If be-boards names the card count differently, only the connect mapper changes.
 - **[`Intl` month names]** → `en-US` is fixed because the app is English only. A second language will need locale-aware formatting.
 - **[Moving key strings touches `transfer`]** → Its tests act as the regression check; the move is its own commit.

@@ -4,7 +4,7 @@ Confirmed with Philipp Lackner on 2026-11-21, through the coordinator session (c
 
 ## Summary
 
-Build the `boards` feature's board list UI for chunk 20 (`web-board-list-ui`): the board grid (tablet/desktop) and phone list, loading, empty and error states, refresh, New board, Rename board and Delete board dialogs, the sidebar's board section and the phone ⋯ menu. Data comes through a `BoardsRepository` interface with test doubles; the connect chunk adds the real API. The change builds on the web foundation change, which adds TanStack Router, TanStack Query, the empty shell layout and the text normalize helper.
+Build the `boards` feature's board list UI for chunk 20 (`web-board-list-ui`): the board grid (tablet/desktop) and phone list, loading, empty and error states, refresh, New board, Rename board and Delete board dialogs, the sidebar's board section and the phone ⋯ menu. Data comes through a `BoardsDataAccess` interface with test doubles; the connect chunk adds the real API. The change builds on the web foundation change, which adds TanStack Router, TanStack Query, the empty shell layout and the text normalize helper.
 
 ## Decisions
 
@@ -12,7 +12,7 @@ Build the `boards` feature's board list UI for chunk 20 (`web-board-list-ui`): t
 - **Question**: Figma's delete text names the column count. Where does that count come from?
 - **Decision**: Drop the column count. The body is "Its {n} cards will be deleted too. This can't be undone." The board summary needs `cardCount` only.
 - **Alternatives**: `columnCount` in the list response; fetch the board when the dialog opens.
-- **Why**: User decision. Keeps the list response small and avoids an undrawn loading state.
+- **Why**: User decision. Keeps the list response small and avoids an undrawn loading state. A deliberate deviation from the Figma text, approved by the user on 2026-11-21.
 - **Depends on**: —
 
 ### D2 — Counts and plurals [C-D9]
@@ -95,7 +95,7 @@ Build the `boards` feature's board list UI for chunk 20 (`web-board-list-ui`): t
 - **Question**: Every Figma phone frame shows a refresh icon button in the app bar, and the "pull to refresh" note is app-only. Does the web phone keep the button?
 - **Decision**: No. Web phones have no refresh control; the app bar has only + and ⋯. The load error state keeps Try again.
 - **Alternatives**: Keep the button as drawn in Figma.
-- **Why**: User decision, confirmed through the coordinator after the Figma conflict was raised. A deliberate deviation from Figma.
+- **Why**: User decision, confirmed through the coordinator after the Figma conflict was raised. A deliberate deviation from Figma, approved by the user on 2026-11-21.
 - **Depends on**: D11
 
 ### D13 — Relative "Updated" time [C-D10]
@@ -128,14 +128,14 @@ Build the `boards` feature's board list UI for chunk 20 (`web-board-list-ui`): t
 
 ### D16 — Foundation and data access [C-D4, C-D6]
 - **Question**: Does this change add the router and server state?
-- **Decision**: No. A separate web foundation change (session web-foundation) adds TanStack Router, TanStack Query, React Hook Form and Zod, the empty shell layout (sidebar frame with the brand, main area, and a top-bar slot where pages put their `AppBar`), a temporary empty `/` index route, and the text normalize-and-count helper in `core/utils`. Query defaults: `staleTime: Infinity`, no refetch on focus, reconnect or mount, `retry: false`. This change builds on it. Data goes through a `BoardsRepository` interface, with test doubles in tests and on the dev preview page. No fake API layer.
+- **Decision**: No. A separate web foundation change (session web-foundation) adds TanStack Router, TanStack Query, React Hook Form and Zod, the empty shell layout (sidebar frame with the brand, main area, and a top-bar slot where pages put their `AppBar`), a temporary empty `/` index route, and the text normalize-and-count helper in `core/utils`. Query defaults: `staleTime: Infinity`, no refetch on focus, reconnect or mount, `retry: false`. This change builds on it. Data goes through a `BoardsDataAccess` interface, with test doubles in tests and on the dev preview page. No fake API layer. The interface is only the seam that the data layer from `web-boards-connect` plugs into. It is not a repository layer; that data layer follows `react-data-layer` (plain API functions). The user confirmed this through the coordinator on 2026-11-21, with no change to the skill or AGENTS.md.
 - **Alternatives**: Add router and Query here; plain callbacks without Query.
 - **Why**: User decision. One owner for shared setup across the web sessions.
 - **Depends on**: —
 
 ### D17 — Shared board pieces for the board view [C-D5]
 - **Question**: Who owns the board summary type and the rename/delete dialogs?
-- **Decision**: The board list owns `BoardsRepository`, the board summary type and reusable Rename board and Delete board dialogs. The board view reuses them from its ⋯ menu, adds its own files in the same `boards` folder and rebases onto this change.
+- **Decision**: The board list owns `BoardsDataAccess`, the board summary type and reusable Rename board and Delete board dialogs. The board view reuses them from its ⋯ menu, adds its own files in the same `boards` folder and rebases onto this change.
 - **Alternatives**: Each screen builds its own.
 - **Why**: User decision.
 - **Depends on**: D16
@@ -165,7 +165,7 @@ Build the `boards` feature's board list UI for chunk 20 (`web-board-list-ui`): t
 - **Question**: Which accessible names do the icon-only controls get?
 - **Decision**: The style agreed across web sessions ("Back", "Board actions", "Actions for column “{name}”", "Add card to “{name}”", "Add column"). For this change: "Actions for board “{name}”" (tile and row menu), "Menu" (phone ⋯), "New board" (phone +), "Refresh", "Log out".
 - **Alternatives**: —
-- **Why**: User accepted the style; the names here follow it.
+- **Why**: User accepted the style and approved these names on 2026-11-21.
 - **Depends on**: —
 
 ### D22 — Dialog results for the caller
@@ -177,8 +177,8 @@ Build the `boards` feature's board list UI for chunk 20 (`web-board-list-ui`): t
 
 ### D23 — Index route
 - **Question**: Does this change mount the board list in the app?
-- **Decision**: No. The foundation's empty `/` index route stays until `web-boards-connect`, which mounts the board list with the real repository. This change shows the board list only on the dev preview page. There is no placeholder repository in `src/app`.
-- **Alternatives** (rejected): Replace `/` now, with an app-layer repository whose calls all fail, so `/` shows "Couldn't load your boards" until connect.
+- **Decision**: No. The foundation's empty `/` index route stays until `web-boards-connect`, which mounts the board list with the real data access. This change shows the board list only on the dev preview page. There is no placeholder repository in `src/app`.
+- **Alternatives** (rejected): Replace `/` now, with an app-layer data access whose calls all fail, so `/` shows "Couldn't load your boards" until connect.
 - **Why**: User decision through the coordinator on 2026-11-21, after the first version of this change proposed the placeholder.
 - **Depends on**: D16
 
