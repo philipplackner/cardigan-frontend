@@ -3,18 +3,18 @@
 Each group ends in its own commit once all five gates pass (`typecheck`, `lint`, `format:check`, `test`, `build`).
 
 **Checking against Figma:**
-- Open the board view on the dev server (route or preview playground) at 390 px, 834 px and 1440 px wide, in light and dark system themes.
+- Open the board view playground on the preview page at 390 px, 834 px and 1440 px wide, in light and dark system themes.
 - Compare it with `get_screenshot` of the matching frame on page `9:6`. Tablet uses the desktop frames (D20).
 - Look frames up with `get_metadata 9:6`. Don't use node IDs copied from this file.
 
 ## 1. Prerequisites
 
-- [ ] 1.1 Rebase onto the merged web foundation and board list changes. Verify that TanStack Router, TanStack Query, the shell layout, the `core/utils` normalize-and-count helper, the board summary type, `useBoards` and the rename/delete board dialogs exist. Check that the shell's top-bar slot, the blank not-found component and the Query defaults (`staleTime: Infinity`, no auto refetch, `retry: false`) match design.md › Context. Check that `BoardsDataAccess`, `BoardsDataAccessProvider`, `createInMemoryBoardsDataAccess`, `BoardSummary`, `useBoards`, `RenameBoardDialog` and `DeleteBoardDialog` exist as design.md expects. Verify that all five gates pass before any new code
+- [ ] 1.1 Rebase onto the merged web foundation and board list changes. Verify that TanStack Router, TanStack Query, the shell layout, the `core/utils` normalize-and-count helper, the board summary type, `useBoards` and the rename/delete board dialogs exist. Check that the shell's top-bar slot, the blank not-found component and the Query defaults (`staleTime: Infinity`, no auto refetch, `retry: false`) match design.md › Context. Check that `BoardsDataAccess`, `BoardsDataAccessProvider`, `createInMemoryBoardsDataAccess`, `BoardSummary`, `useBoards`, `RenameBoardDialog`, `DeleteBoardDialog`, `boardsQueryOptions` and `sampleBoards` exist as design.md expects, and how the board list renders its route without a data-access provider. Verify that all five gates pass before any new code
 
 ## 2. Types, in-memory data access, pure logic and translations
 
 - [ ] 2.1 Add `features/boards/boardView/types.ts` (`BoardDetail`, `BoardColumn`, `BoardCard`, `BoardViewError`, `BoardViewDataAccess`, `BoardViewDataAccessProvider`) as in design.md, and verify `npm run typecheck` passes
-- [ ] 2.2 Add `createInMemoryBoardViewDataAccess` in `boardView/testing/` with dense positions, rejecting with `outOfRange` for out-of-range moves and `notFound` for unknown IDs, and options to fail or hang the next call. Add unit tests:
+- [ ] 2.2 Add `createInMemoryBoardViewDataAccess` in `boardView/testing/`, seeded by default from `sampleBoards` (same IDs, names and keys, card counts matching, "Cardigan v1" with the Figma columns and cards), with dense positions, rejecting with `outOfRange` for out-of-range moves and `notFound` for unknown IDs, and options to fail or hang the next call. Add unit tests:
   - Positions stay 0..n-1 after create, move and delete.
   - Moving to n rejects with `outOfRange`.
   - A forced failure rejects with the given error once.
@@ -46,7 +46,7 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
   - A 404 on the first load shows the not-found page without a toast.
   - A 404 on refresh opens the board list with "This board no longer exists."
   - The accessible names from spec › Accessible names: "Back", "Board actions", "Actions for column “{name}”", "Add card to “{name}”", "Add column", and tile names with and without labels.
-- [ ] 3.3 Add the board route in `src/app/routes` with `BoardViewDataAccessProvider` and the in-memory data access in the app layer, `onOpenCard` as a no-op, navigation back to the board list, and the phone back button. Write a route test that the URL's board ID loads that board. Check Board (390, 834, 1440), Loading, Couldn’t load the board and New board with default columns against Figma
+- [ ] 3.3 Add the board route in `src/app/routes` with `onOpenCard` as a no-op, navigation back to the board list, and the phone back button. The app layer provides no data access (F6). Add a first board view playground to the preview page with `createInMemoryBoardViewDataAccess`. Write route tests: with a test-only provider, the URL's board ID loads that board; without a provider, the content area is empty. Check Board (390, 834, 1440), Loading, Couldn’t load the board and New board with default columns against Figma
 
 ## 4. Quick add
 
@@ -95,14 +95,14 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 7. Board menu and refresh
 
-- [ ] 7.1 Add the board menu (Rename board, Export as JSON, Delete board) using `RenameBoardDialog` and `DeleteBoardDialog` and their `onClose` results, and the injected `onExport`. A rename updates the header without a reload, and a delete navigates to the board list without a toast. In the route, wire `useExportBoard` from `transfer` and render its dialog. Write feature tests for rename, unchanged rename, delete, and a rename that reports `deleted` (board list with "This board no longer exists."), and a route test that "Export as JSON" starts the export dialog
+- [ ] 7.1 Add the board menu (Rename board, Export as JSON, Delete board) using `RenameBoardDialog` and `DeleteBoardDialog` and their `onClose` results, and the injected `onExport`. A rename updates the header without a reload, and a delete navigates to the board list without a toast. In the route, wire `useExportBoard` from `transfer` and render its dialog. Write feature tests for rename, unchanged rename, delete, and a rename that reports `deleted` (the board list opens and only the dialog's own toast shows), and a route test that "Export as JSON" starts the export dialog
 - [ ] 7.2 Add refresh: the spinning button on tablet and desktop, none on phones, the board kept on failure with the refresh toast, and quick add text kept. Write feature tests for each scenario in spec › Refresh, including a card added by "another device" in the fake showing after refresh, an open add column form keeping its text, and a quick add form closing when its column was deleted elsewhere
 - [ ] 7.3 Invalidate the query behind `useBoards` after changes that alter the card count, and verify in a feature test that the sidebar's count updates after a quick add
 - [ ] 7.4 Check Board menu (390, 1440) against Figma
 
 ## 8. Preview and integration checks
 
-- [ ] 8.1 Add a board view playground to the preview page with the in-memory data access and controls to make the next call fail (network, 404, `outOfRange`, field error) or hang. Verify every state from task groups 3–7 can be reached there
+- [ ] 8.1 Extend the board view playground with controls to make the next call fail (network, 404, `outOfRange`, field error) or hang. Verify every state from task groups 3–7 can be reached there
 - [ ] 8.2 Walk through the board with the keyboard only: open a card, quick add, add column, each column menu item, both dialogs, the board menu and refresh. Verify focus returns to the trigger after each dialog closes, or to the column's menu button for menu items
 - [ ] 8.3 Run all five gates on a clean checkout of the branch and verify they pass
 
@@ -110,5 +110,5 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 - The card drag & drop change wraps `CardTile` and `BoardColumn`, adds dnd-kit and optimistic card moves with rollback.
 - The search & filter change adds the header controls and passes filtered columns to `BoardColumns`.
-- Chunks 35 and 39 add the real board, column and card data access, the `DataError` → `BoardViewError` mapper, MSW handlers and E2E tests, and replace the in-memory data source.
+- Chunks 35 and 39 add the real board, column and card data access, the `DataError` → `BoardViewError` mapper, MSW handlers and E2E tests, and provide `BoardViewDataAccessProvider` in the app layer.
 - Archive the change after review.

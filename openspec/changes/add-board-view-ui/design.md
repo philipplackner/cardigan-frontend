@@ -83,7 +83,7 @@ An in-memory implementation, `createInMemoryBoardViewDataAccess(seed, options)`,
   - `addCard` appends the card to its column.
 
   No mutation invalidates the board query (spec › Saves apply the response). The updaters are unit-tested.
-- **Board list cache:** after a change that alters the card count or the board's updated time, the view model invalidates the query behind `useBoards` (owned by the board list change). The sidebar and board list then stay correct without a reload of the board itself.
+- **Board list cache:** after a change that alters the card count or the board's updated time, the view model invalidates the `['boards']` query from the board list's `boardsQueryOptions`, which backs `useBoards`. The sidebar and board list then stay correct without a reload of the board itself.
 - **Refresh:** `refetch()` on the board query. The button spins while `isFetching && !isPending`. A refetch error shows the refresh toast.
 - **Alternatives:** optimistic updates (rejected by D21) and invalidate-and-refetch after each change (rejected by D21).
 
@@ -175,7 +175,7 @@ movingColumnId: string | null
   - `{ kind: 'renamed', board }`: `setQueryData` writes the new name into the board query, so the header changes without a reload.
   - `{ kind: 'unchanged' }`: nothing.
   - `{ kind: 'deleted' }` from `DeleteBoardDialog`: `onBoardDeleted` navigates to the board list without a toast (F3).
-  - `{ kind: 'deleted' }` from `RenameBoardDialog`: the board was deleted elsewhere (a rename 404 reports `deleted`). This is handled like any board 404 while viewing: go to the board list with "This board no longer exists." (D23).
+  - `{ kind: 'deleted' }` from `RenameBoardDialog`: the board was deleted elsewhere (a rename 404 reports `deleted`). The dialog already showed "“{name}” no longer exists.", so the view model only navigates to the board list, without a toast of its own. The call site knows which dialog it opened, so it tells the two `deleted` results apart.
 - `onExport` comes from the route. The route calls `useExportBoard` from `transfer` and renders its `dialog`. Feature code never imports `transfer`.
 
 ### Route and data source
@@ -187,7 +187,9 @@ movingColumnId: string | null
 - `onExport` from `useExportBoard`.
 - Navigation to the board list.
 
-The app layer wraps the routes in `BoardViewDataAccessProvider` next to `BoardsDataAccessProvider`. Until chunk 35, it passes `createInMemoryBoardViewDataAccess` seeded with the same sample boards as `createInMemoryBoardsDataAccess`, the same way the board list wires its data access. Chunk 35 swaps in the real implementation in one place.
+The app has no in-memory data (F6). The app layer provides `BoardViewDataAccessProvider` only when chunk 35 brings the real data layer, together with `BoardsDataAccessProvider`. Until then, the board route shows an empty content area, the same way `/` stays empty in the board list change. Task 1.1 checks how the board list renders its route without a provider, and `BoardViewRoot` does the same.
+
+In-memory data lives only in tests and on the preview page. `createInMemoryBoardViewDataAccess` builds its default boards from the board list's `sampleBoards` (`features/boards/testing/sampleBoards.ts`). It uses the same IDs, names and keys, and columns and cards that match each board's card count. The Figma board "Cardigan v1" gets the columns and cards from page `9:6`.
 
 ### Accessible names (F4)
 
@@ -207,7 +209,7 @@ Board view strings live in their own namespace, `boardView` (`features/boards/i1
 - **Unit:** `validateName`, `boardViewReducer`, the `applyChanges` updaters, `handleBoardViewError`, and the in-memory data access's position handling.
 - **Screen:** `BoardViewScreen` per state (loading with and without a known name, load error, no columns, empty columns, board with cards), the header plurals, and the column menu's disabled items. Rendered with props only.
 - **Feature:** `BoardViewRoot` with a real `QueryClient`, a memory router and the in-memory data access, driven with user-event. It covers every scenario in the spec: quick add rules, add column, move/rename/delete, failures, field errors, refresh, stale recovery and board not found.
-- **Route:** the board route renders with the in-memory data access and the board list route as the 404 target.
+- **Route:** with a test-only `BoardViewDataAccessProvider` around the router, the board route loads the board from the URL and uses the board list route as the 404 target. Without a provider it renders an empty content area.
 - No `vi.mock`. The only fakes are the in-memory data-access implementations.
 
 ## Risks / Trade-offs
@@ -215,5 +217,5 @@ Board view strings live in their own namespace, `boardView` (`features/boards/i1
 - **[Two prerequisite changes]** The foundation and board list changes must land first, and the shell slot API isn't final. → Task group 1 rebases and checks what they actually expose before any screen code. Differences are fixed in this change's design before implementation goes on.
 - **[Shared `boards` folder]** Parallel work in the same feature folder. → Board view files stay under `features/boards/boardView/`, with their own namespace file. Only `features/boards/index.ts` and `src/app/i18n.ts` are shared, as one-line additions.
 - **[Seam drifts from the real API]** The action shapes are written before the endpoints exist. → They use only behavior from the shared specs (dense positions, move responses with all columns, field error codes). Chunk 35 adds the mapper and its tests.
-- **[Fake data in the running app]** The route shows sample data until chunk 35. → It is the same approach as the board list change, and it's replaced in one module.
+- **[No board view in the running app before chunk 35]** The route shows an empty content area until the real data layer exists (F6). → The preview page shows every state with in-memory data, and Figma checks run there.
 - **[Focus after "Keep editing"]** Radix dialogs return focus to their trigger, but here focus has to go to the first form. → `onCloseAutoFocus` is prevented for this dialog and the view model focuses the field. A screen test checks it.

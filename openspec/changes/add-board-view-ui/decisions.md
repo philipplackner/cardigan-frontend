@@ -229,6 +229,13 @@ Build the board view screen for chunk 21 (`web-board-view-ui`): columns with car
 - **Why**: User decision (follow-up, 2026-11-21). Reuses the card detail's "Unsaved changes" pattern from Figma `9:7`. The extension to add column came from mobile and was accepted. Same for mobile.
 - **Depends on**: D22, WBV-22
 
+### F6 — No in-memory data in the app
+- **Question**: Does the running app show in-memory sample data until the connect chunk?
+- **Decision**: No. In-memory data access exists only in tests and on the preview page. The app layer provides `BoardViewDataAccessProvider` (and `BoardsDataAccessProvider`) when chunk 35 brings the real data layer. Until then, the board route shows an empty content area, like `/`.
+- **Alternatives**: Wire the in-memory data access into the app until chunk 35.
+- **Why**: User decision, recorded as D23 in `add-board-list-ui` and relayed by web-boardlist.
+- **Depends on**: D6
+
 ## Facts
 
 - Figma page `9:6` has frames for: board (phone, tablet, desktop), loading, couldn't load, new board with default columns, all columns deleted, column menu, add column, rename column, delete column with cards, quick add, dragging, move failed, search + label filter, label filter popover and sheet, no results, board menu — source: `get_metadata 9:6`.
@@ -249,6 +256,9 @@ Build the board view screen for chunk 21 (`web-board-view-ui`): columns with car
 - The app has no router, no TanStack Query and no `core/utils` yet; `App.tsx` returns `null` — source: `src/app/App.tsx`, `package.json`.
 - The web foundation shell puts a page's app bar into a shell top-bar slot — source: coordinator, from the web foundation session.
 - The foundation's router not-found and pending components are blank for now. An unknown board ID on first load shows that blank not-found until a design exists — source: coordinator, from the web foundation session.
+- The board list exports `sampleBoards` (`features/boards/testing/sampleBoards.ts`): the 14 Figma boards with fixed IDs, keys, card counts and times. `createInMemoryBoardsDataAccess` uses it by default — source: web-boardlist, commit 34dcef6.
+- `RenameBoardDialog` shows "“{name}” no longer exists." itself before it reports `deleted` for a rename 404 — source: web-boardlist, `add-board-list-ui` › *Rename result*.
+- The board list query key is `['boards']`, exported with `boardsQueryOptions` — source: web-boardlist.
 - The foundation's Query client uses `staleTime: Infinity`, no automatic refetch and `retry: false` — source: coordinator, from the web foundation session.
 - Figma Card detail (`9:7`) has an "Unsaved changes" dialog: "Discard changes?", "Your changes to CRD-109 haven’t been saved.", "Keep editing", "Discard" — source: Plugin API read of page `9:7`.
 

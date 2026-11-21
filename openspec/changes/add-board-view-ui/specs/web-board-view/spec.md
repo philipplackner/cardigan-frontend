@@ -91,7 +91,7 @@ When the first load fails for any reason other than a 404, the content area SHAL
 - **THEN** the board's columns are shown
 
 ### Requirement: Board no longer exists
-When a refresh, a reload after a stale change, or any change to a board that was already shown ends in a 404 for the board itself, the web app SHALL go to the board list and show the error toast "This board no longer exists." When the first load of a board ends in a 404, the web app SHALL show the app's not-found page instead.
+When a refresh, a reload after a stale change, or any change made in the board view to a board that was already shown ends in a 404 for the board itself, the web app SHALL go to the board list and show the error toast "This board no longer exists." When the first load of a board ends in a 404, the web app SHALL show the app's not-found page instead.
 
 #### Scenario: Deleted on another device while viewing
 - **WHEN** the user is viewing a board that another device deleted, and presses refresh
@@ -266,6 +266,10 @@ The board menu SHALL offer "Rename board", "Export as JSON" and "Delete board". 
 #### Scenario: Rename from the board view
 - **WHEN** the user renames the board to "Cardigan v2" from the board menu
 - **THEN** the header shows "Cardigan v2"
+
+#### Scenario: Board deleted elsewhere during a rename
+- **WHEN** the user renames the board from the board menu and the board list's rename dialog reports that the board no longer exists
+- **THEN** the board list opens, and only the rename dialog's own "no longer exists" toast shows, not "This board no longer exists."
 
 #### Scenario: Delete from the board view
 - **WHEN** the user deletes the board from the board menu
