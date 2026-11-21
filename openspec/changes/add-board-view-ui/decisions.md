@@ -24,7 +24,7 @@ Build the board view screen for chunk 21 (`web-board-view-ui`): columns with car
 
 ### D4 — Router, Query and shell
 - **Question**: Which change adds TanStack Router, TanStack Query and the shell?
-- **Decision**: A separate web foundation change (session web-foundation) adds TanStack Router, TanStack Query, the empty shell layout and a text normalize-and-count helper in `core/utils`. This change adds only its route and screen on top of it.
+- **Decision**: A separate web foundation change (session web-foundation) adds TanStack Router, TanStack Query, the empty shell layout and a text normalize-and-count helper in `core/utils`. This change adds its screen on top of it. The route itself moved to chunk 35 (F6).
 - **Alternatives**: The board list change adds them; this change adds them; preview only.
 - **Why**: User decision (recommended option).
 - **Depends on**: —
@@ -231,7 +231,7 @@ Build the board view screen for chunk 21 (`web-board-view-ui`): columns with car
 
 ### F6 — No in-memory data in the app
 - **Question**: Does the running app show in-memory sample data until the connect chunk?
-- **Decision**: No. In-memory data access exists only in tests and on the preview page. The app layer provides `BoardViewDataAccessProvider` (and `BoardsDataAccessProvider`) when chunk 35 brings the real data layer. Until then this change mounts nothing in the app, the same as the board list: no route renders board view components without a provider. Chunk 35 adds the board route together with the providers. This replaces the "add your route" part of D4 for this change.
+- **Decision**: No. In-memory data access exists only in tests and on the preview page. The app layer provides `BoardViewDataAccessProvider` (and `BoardsDataAccessProvider`) when chunk 35 brings the real data layer. Until then this change mounts nothing in the app, the same as the board list: no route renders board view components without a provider. Chunk 35 adds the board route together with the providers. This replaces the "add your route" part of D4: the `/boards/$boardId` route moves to chunk 35 together with real data. The user confirmed this through the coordinator on 2026-11-21.
 - **Alternatives**: Wire the in-memory data access into the app until chunk 35.
 - **Why**: User decision, recorded as D23 in `add-board-list-ui` and relayed by web-boardlist.
 - **Depends on**: D6
