@@ -4,7 +4,7 @@ Confirmed with Philipp Lackner on 2026-11-21, through the coordinator session (c
 
 ## Summary
 
-Build the board view screen for chunk 21 (`web-board-view-ui`): columns with card tiles from phone to desktop, quick add, the column menu (move left/right, rename, delete), add column, the board ⋯ menu, refresh, and the loading, error and empty states. Board data comes through an injected set of board actions and lives in the TanStack Query cache. Everything waits for the server except card moves, which belong to the later drag & drop change. The screen is a route on top of the web foundation change and reuses the board list change's rename and delete board dialogs.
+Build the board view screen for chunk 21 (`web-board-view-ui`): columns with card tiles from phone to desktop, quick add, the column menu (move left/right, rename, delete), add column, the board ⋯ menu, refresh, and the loading, error and empty states. Board data comes through a data-access interface passed in from the app layer and lives in the TanStack Query cache. Everything waits for the server except card moves, which belong to the later drag & drop change. The screen is a route on top of the web foundation change and reuses the board list change's rename and delete board dialogs.
 
 ## Decisions
 
@@ -31,14 +31,14 @@ Build the board view screen for chunk 21 (`web-board-view-ui`): columns with car
 
 ### D5 — Sharing `features/boards` with board list
 - **Question**: How do board list and board view share the `boards` feature folder?
-- **Decision**: Board list owns the board summary type and the reusable rename and delete board dialogs. Board view reuses those dialogs from its ⋯ menu and keeps its own types, board actions, translation namespace and components in separate files. This change rebases onto the board list change.
+- **Decision**: Board list owns the board summary type and the reusable rename and delete board dialogs. Board view reuses those dialogs from its ⋯ menu and keeps its own types, data-access interface, translation namespace and components in separate files. This change rebases onto the board list change.
 - **Alternatives**: Two feature folders.
 - **Why**: User decision (recommended option).
 - **Depends on**: —
 
 ### D6 — Data access before endpoints exist
 - **Question**: How does the UI get and change board data without board, column or card endpoints?
-- **Decision**: The board view receives its board actions (load board, create, rename, move and delete a column, create a card) injected from the app layer. Tests and the preview use an in-memory fake whose results follow the shared specs. The connect chunks (35, 39) add the real API.
+- **Decision**: The board view receives a data-access interface (load board, create, rename, move and delete a column, create a card) from the app layer. It is only the interface the later data layer plugs into, not a repository layer. Tests and the preview use an in-memory implementation whose results follow the shared specs. The connect chunks (35, 39) add the real API.
 - **Alternatives**: API functions and MSW against guessed paths; wait for the backend.
 - **Why**: User decision (recommended option). Same approach as `add-import-export-ui` D17.
 - **Depends on**: —

@@ -2,7 +2,7 @@
 
 ## Why
 
-Users need to open a board and work with its columns and cards (chunk 21, `web-board-view-ui`). The `boards` feature has no board view yet, and the backend has no board, column or card endpoints. This change builds the board screen against injected board actions, so chunks 35 and 39 only plug in the real API. Drag & drop and search & filter follow as their own changes (D1).
+Users need to open a board and work with its columns and cards (chunk 21, `web-board-view-ui`). The `boards` feature has no board view yet, and the backend has no board, column or card endpoints. This change builds the board screen against a data-access interface, so chunks 35 and 39 only plug in the real API. Drag & drop and search & filter follow as their own changes (D1).
 
 ## What Changes
 
@@ -36,7 +36,7 @@ Users need to open a board and work with its columns and cards (chunk 21, `web-b
   - "This board no longer exists."
   - Discard dialog (WBV-24): "Discard changes?", "The card you started in “{column}” hasn’t been added." or "The column you started hasn’t been added.", "Keep editing", "Discard".
   - Empty column delete: "Delete column “{name}”?", "This can’t be undone.", "Delete column".
-- **Injected board actions** (D6): load board, create/rename/move/delete column, create card. Tests and the preview use an in-memory fake.
+- **Board data access** (D6): an interface (load board, create/rename/move/delete column, create card) that the data layer from chunk 35 plugs into. It is not a repository layer. Tests, the preview and the app until chunk 35 use an in-memory implementation.
 
 Not breaking. This change builds on the web foundation change (router, Query, shell, text helper) and the board list change (board summary type, rename/delete board dialogs). Both must land first.
 
@@ -74,7 +74,7 @@ This change implements or depends on these `cardigan-shared-specs` requirements:
   - `src/features/boards/` (board view components, hooks, utils, types, `boardView` translations; separate files from the board list).
   - `src/app/routes/` (the board route).
   - `src/app/i18n.ts` (namespace registration).
-  - `src/preview/` (board view playground with the in-memory fake).
+  - `src/preview/` (board view playground with the in-memory data access).
 - **Depends on**: the web foundation change (TanStack Router, TanStack Query, shell, `core/utils` text helper) and the board list change (board summary type, rename/delete board dialogs, sidebar).
 - **New dependencies**: none beyond those the foundation change adds.
 - **Not touched**: the backend, shared specs, `core/ui`, the `transfer` feature, card detail, real API calls.

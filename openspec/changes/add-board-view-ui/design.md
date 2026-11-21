@@ -30,48 +30,52 @@ See proposal.md › Why. The current state that shapes the approach:
 
 ## Decisions
 
-### The seam: `BoardViewActions` (D6)
+### The seam: `BoardViewDataAccess` (D6)
 
-`features/boards/boardView/types.ts` defines the domain types and the actions the app layer passes in. These are separate files from the board list (D5).
+`features/boards/boardView/types.ts` defines the domain types and the data-access interface the app layer passes in. These are separate files from the board list (D5). They follow the board list's `BoardsDataAccess` in naming and error style.
 
 ```ts
 type BoardCard = { id: string; number: number; title: string; position: number; labels: CardLabel[] }
 type BoardColumn = { id: string; name: string; position: number; cards: BoardCard[] }
 type BoardDetail = { id: string; name: string; key: string; columns: BoardColumn[] }
 
-type ActionError =
-  | { kind: 'notFound' }                                      // 404
-  | { kind: 'outOfRange' }                                    // 400 position/OUT_OF_RANGE
-  | { kind: 'field'; field: 'name' | 'title'; code: string; max?: number } // 400/409 field error
-  | { kind: 'other' }                                         // network, 5xx, unknown
+class BoardViewError extends Error {
+  kind:
+    | { kind: 'notFound' }                                         // 404
+    | { kind: 'outOfRange' }                                       // 400 position/OUT_OF_RANGE
+    | { kind: 'invalid'; fields: { field: 'name' | 'title'; code: string; max?: number }[] } // 400/409 field errors
+    | { kind: 'other' }                                            // network, 5xx, unknown
+}
 
-type Result<T> = { ok: true; value: T } | { ok: false; error: ActionError }
-
-type BoardViewActions = {
-  loadBoard(boardId: string): Promise<Result<BoardDetail>>
-  createColumn(boardId: string, name: string): Promise<Result<BoardColumn>>
-  renameColumn(columnId: string, name: string): Promise<Result<BoardColumn>>
-  moveColumn(columnId: string, position: number): Promise<Result<{ id: string; position: number }[]>>
-  deleteColumn(columnId: string): Promise<Result<void>>
-  createCard(columnId: string, title: string): Promise<Result<BoardCard>>
+type BoardViewDataAccess = {
+  loadBoard(boardId: string): Promise<BoardDetail>
+  createColumn(boardId: string, name: string): Promise<BoardColumn>
+  renameColumn(columnId: string, name: string): Promise<BoardColumn>
+  moveColumn(columnId: string, position: number): Promise<{ id: string; position: number }[]>
+  deleteColumn(columnId: string): Promise<void>
+  createCard(columnId: string, title: string): Promise<BoardCard>
 }
 ```
 
-- **What it is:** `BoardViewActions` is only the interface that the later data layer plugs into. It is not a repository layer, and nothing here adds one. Chunk 35 fills it with plain API functions as in `react-data-layer`.
-- **Why a result union and not `DataError`:** `core/api` has no board code yet. The same reasoning applies as in `add-import-export-ui`. Chunk 35 writes one mapper from `DataError` to `ActionError`, and that mapper applies `api-errors` › *Clients handle unknown error codes by status*.
+Every method rejects with a `BoardViewError` on failure, the same way `BoardsDataAccess` rejects with `BoardsError`.
+
+- **What it is:** `BoardViewDataAccess` is only the data-access interface that the data layer from chunk 35 (`web-boards-connect`) plugs into. It is not a repository layer, and nothing here adds one. Chunk 35 fills it with plain API functions as in `react-data-layer`.
+- **Why its own error and not `DataError`:** `core/api` has no board code yet. Chunk 35 maps `DataError` to `BoardViewError` in one place, and that mapper applies `api-errors` › *Clients handle unknown error codes by status*. Rejecting fits TanStack Query, whose `queryFn` and `mutationFn` signal failure by throwing.
 - **Why `notFound` has no target:** a 404 on a column change can't say whether the column or the whole board is gone. The view model always reloads the board after a 404. A 404 on that reload means the board is gone. The exception is a 404 on delete, which counts as deleted (D15).
 - **Alternatives:**
   - API functions with MSW now. Rejected: needs invented paths.
-  - A generic repository class. Rejected: CLAUDE.md asks for plain functions. The seam is a plain object of functions that chunk 35 builds from API functions.
+  - A result union instead of rejecting. Rejected: the board list's interface rejects, and both live in the same feature.
 
-An in-memory fake, `createFakeBoardViewActions(seed, options)`, lives in `features/boards/boardView/testing/`. It keeps positions dense as in `domain-ordering` and returns `outOfRange` for out-of-range moves. Options let a test make the next call fail with a given error or hang until released. Tests and the preview use it. The route wiring is described below.
+The interface reaches `BoardViewRoot` through `BoardViewDataAccessProvider`, set by the app layer, the same way `BoardsDataAccessProvider` passes the board list's.
+
+An in-memory implementation, `createInMemoryBoardViewDataAccess(seed, options)`, lives in `features/boards/boardView/testing/`. It keeps positions dense as in `domain-ordering` and rejects with `outOfRange` for out-of-range moves. Options let a test make the next call fail with a given error or hang until released. Tests and the preview use it. The route wiring is described below.
 
 ### Server state (D21)
 
-- **Query:** the board is one query, `boardViewKeys.detail(boardId)`. Its `queryFn` calls `loadBoard`. On `ok: false` it throws a `BoardViewLoadError` that carries the `ActionError`.
+- **Query:** the board is one query, `boardViewKeys.detail(boardId)`. Its `queryFn` calls `loadBoard`, which rejects with a `BoardViewError` on failure.
   - The foundation's defaults apply: `staleTime: Infinity`, no refetch on focus or reconnect, and `retry: false`. Returning to a board already in the cache shows the cached board without a request; the refresh button is the way to get changes from other devices.
   - On refetch errors Query keeps the previous data. That gives "the board stays" on a failed refresh (D16) without extra code.
-- **Mutations:** each change is a `useMutation` that calls the action. On success it writes the response into the cached board with a pure updater from `boardView/utils/applyChanges.ts`:
+- **Mutations:** each change is a `useMutation` that calls the data-access method. On success it writes the response into the cached board with a pure updater from `boardView/utils/applyChanges.ts`:
   - `addColumn` appends the column.
   - `renameColumn` replaces the column's name.
   - `applyColumnPositions` re-sorts all columns by the returned positions.
@@ -79,17 +83,17 @@ An in-memory fake, `createFakeBoardViewActions(seed, options)`, lives in `featur
   - `addCard` appends the card to its column.
 
   No mutation invalidates the board query (spec › Saves apply the response). The updaters are unit-tested.
-- **Board list cache:** after a change that alters the card count or the board's updated time, the view model invalidates the board list query (owned by the board list change). The sidebar and board list then stay correct without a reload of the board itself.
+- **Board list cache:** after a change that alters the card count or the board's updated time, the view model invalidates the query behind `useBoards` (owned by the board list change). The sidebar and board list then stay correct without a reload of the board itself.
 - **Refresh:** `refetch()` on the board query. The button spins while `isFetching && !isPending`. A refetch error shows the refresh toast.
 - **Alternatives:** optimistic updates (rejected by D21) and invalidate-and-refetch after each change (rejected by D21).
 
 ### Error handling
 
-`boardView/utils/handleActionError.ts` maps an `ActionError` from a mutation to one outcome:
+`boardView/utils/handleBoardViewError.ts` maps a `BoardViewError` from a mutation to one outcome:
 
 | Error | Outcome |
 |---|---|
-| `field` | Field error under the input; the form stays open (spec › Server field errors) |
+| `invalid` | Field error under the input; the form stays open (spec › Server field errors) |
 | `other` | Error toast for the action; the form stays open with its input (D15) |
 | `notFound` on delete | Treat as deleted: remove the column locally, close the dialog |
 | `notFound` otherwise | Refetch the board, then the toast "“{name}” no longer exists. The board was reloaded." |
@@ -106,7 +110,7 @@ An in-memory fake, `createFakeBoardViewActions(seed, options)`, lives in `featur
 
 The structure follows the Root/Screen split from `react-presentation-mvi`, in `features/boards/boardView/components/`:
 
-- `BoardViewRoot({ boardId, actions, onOpenCard, onExport, onBoardDeleted })` calls `useBoardViewModel` and renders `BoardViewScreen`. It also renders the board list's rename and delete board dialogs (D5).
+- `BoardViewRoot({ boardId, onOpenCard, onExport, onBoardDeleted })` reads the data access from its provider, calls `useBoardViewModel` and renders `BoardViewScreen`. It also renders the board list's rename and delete board dialogs (D5).
 - `BoardViewScreen` is driven by props only. It picks the state: loading, load error, no columns, or columns.
 - `BoardHeader` is the tablet/desktop header at the top of the content area. `BoardAppBarContent` is the phone app bar. The route puts it into the shell's top-bar slot (D3).
 - `BoardColumns`, `BoardColumn`, `CardTile`, `QuickAddForm`, `AddColumnForm`, `ColumnMenu`, `RenameColumnDialog`, `DeleteColumnDialog`, `BoardSkeleton`.
@@ -167,8 +171,11 @@ movingColumnId: string | null
 
 ### Board menu, export and navigation (D5, L2)
 
-- The board menu items open the board list's rename and delete dialogs with the board summary built from the cached board. After a rename, the dialog's success path updates the board query's name with `setQueryData`, so the header changes without a reload.
-- After a delete, `onBoardDeleted` navigates to the board list without a toast (F3).
+- The board menu items open the board list's `RenameBoardDialog` and `DeleteBoardDialog` with a `BoardSummary` built from the cached board. Their `onClose(result)` drives what happens next:
+  - `{ kind: 'renamed', board }`: `setQueryData` writes the new name into the board query, so the header changes without a reload.
+  - `{ kind: 'unchanged' }`: nothing.
+  - `{ kind: 'deleted' }` from `DeleteBoardDialog`: `onBoardDeleted` navigates to the board list without a toast (F3).
+  - `{ kind: 'deleted' }` from `RenameBoardDialog`: the board was deleted elsewhere (a rename 404 reports `deleted`). This is handled like any board 404 while viewing: go to the board list with "This board no longer exists." (D23).
 - `onExport` comes from the route. The route calls `useExportBoard` from `transfer` and renders its `dialog`. Feature code never imports `transfer`.
 
 ### Route and data source
@@ -176,12 +183,11 @@ movingColumnId: string | null
 `src/app/routes/boards.$boardId.tsx` (the exact file name follows the foundation's route layout) renders `BoardViewRoot` with:
 
 - `boardId` from the path params.
-- `actions` from the app layer's board data module.
 - `onOpenCard` (a no-op until card detail lands).
 - `onExport` from `useExportBoard`.
 - Navigation to the board list.
 
-Until chunk 35, the app layer passes the in-memory fake seeded with sample boards, the same way the board list change wires its own data source. Chunk 35 swaps in the real actions in one place.
+The app layer wraps the routes in `BoardViewDataAccessProvider` next to `BoardsDataAccessProvider`. Until chunk 35, it passes `createInMemoryBoardViewDataAccess` seeded with the same sample boards as `createInMemoryBoardsDataAccess`, the same way the board list wires its data access. Chunk 35 swaps in the real implementation in one place.
 
 ### Accessible names (F4)
 
@@ -198,11 +204,11 @@ Board view strings live in their own namespace, `boardView` (`features/boards/i1
 
 ### Tests
 
-- **Unit:** `validateName`, `boardViewReducer`, the `applyChanges` updaters, `handleActionError`, and the fake's position handling.
+- **Unit:** `validateName`, `boardViewReducer`, the `applyChanges` updaters, `handleBoardViewError`, and the in-memory data access's position handling.
 - **Screen:** `BoardViewScreen` per state (loading with and without a known name, load error, no columns, empty columns, board with cards), the header plurals, and the column menu's disabled items. Rendered with props only.
-- **Feature:** `BoardViewRoot` with a real `QueryClient`, a memory router and the fake actions, driven with user-event. It covers every scenario in the spec: quick add rules, add column, move/rename/delete, failures, field errors, refresh, stale recovery and board not found.
-- **Route:** the board route renders with the fake actions and the board list route as the 404 target.
-- No `vi.mock`. The only fakes are the injected actions.
+- **Feature:** `BoardViewRoot` with a real `QueryClient`, a memory router and the in-memory data access, driven with user-event. It covers every scenario in the spec: quick add rules, add column, move/rename/delete, failures, field errors, refresh, stale recovery and board not found.
+- **Route:** the board route renders with the in-memory data access and the board list route as the 404 target.
+- No `vi.mock`. The only fakes are the in-memory data-access implementations.
 
 ## Risks / Trade-offs
 
