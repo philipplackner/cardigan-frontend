@@ -10,7 +10,6 @@ import {
   CloudOffIcon,
   EmptyState,
   IconButton,
-  MoreIcon,
   PageHeader,
   PlusIcon,
   RefreshIcon,
@@ -26,6 +25,7 @@ import {
 import { useNewBoardDialog } from '../hooks/NewBoardDialogContext'
 import type { BoardSummary } from '../types'
 import { BoardMenu } from './BoardMenu'
+import { PhoneMenu } from './PhoneMenu'
 import { BoardRowSkeletons, BoardTileSkeletons } from './BoardListSkeletons'
 import { DeleteBoardDialog } from './DeleteBoardDialog'
 import { RenameBoardDialog } from './RenameBoardDialog'
@@ -98,6 +98,8 @@ export function BoardListScreen({
   onNewBoard,
   renderBoardLink,
   importAction,
+  account,
+  onOpenLabels,
 }: BoardListScreenProps) {
   const { t } = useTranslation('boards')
   const { t: tCommon } = useTranslation()
@@ -170,7 +172,12 @@ export function BoardListScreen({
         data-new-board
         onClick={onNewBoard}
       />
-      <IconButton size="large" icon={MoreIcon} label={t('phoneMenu.label')} />
+      <PhoneMenu
+        email={account.email}
+        onImport={importAction.open}
+        onOpenLabels={onOpenLabels}
+        onLogOut={account.onLogOut}
+      />
     </>
   )
 
