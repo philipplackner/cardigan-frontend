@@ -7,18 +7,14 @@ Defines the web-only behavior of the board screen: layout per screen size, heade
 ## ADDED Requirements
 
 ### Requirement: Board content area
-The board view SHALL render only the content area of the app shell for one board, given by the board's ID. The sidebar and the phone menu are not part of it. Tablet SHALL use the desktop layout of every state. The web app SHALL NOT show the board view before real board data is available.
+The board view SHALL render only the content area of the app shell for one board, given by the board's ID. The sidebar and the phone menu are not part of it. Tablet SHALL use the desktop layout of every state.
 
 #### Scenario: Opening a board
 - **WHEN** the board view is shown for the board "Cardigan v1"
 - **THEN** the content area shows that board's header and columns, and no sidebar of its own
 
-#### Scenario: Before real data exists
-- **WHEN** the app runs without a board data source
-- **THEN** no board view is mounted in the app
-
 #### Scenario: Tablet
-- **WHEN** the viewport is 834 px wide
+- **WHEN** the viewport is 834 × 1194 px
 - **THEN** every board view state uses the desktop layout
 
 ### Requirement: Board header on tablet and desktop
@@ -37,11 +33,11 @@ When the viewport is not a phone, the header SHALL show the board name, the key 
 - **THEN** the header shows the name and key without a count
 
 ### Requirement: Board app bar on phones
-On a phone, the app bar SHALL show a back button that goes to the board list, the board name, a subtitle with the key and the card count ("CRD · 12 cards"), and the board menu button. The count SHALL be left out of the subtitle when the board has no cards. There SHALL be no refresh control on a phone.
+On a phone, the app bar SHALL show a back button that goes to the board list, the board name, a subtitle with the key and the card count ("CRD · 12 cards"), and the board menu button. The count SHALL be left out of the subtitle when the board has no cards. The phone app bar content SHALL contain the back button, the name, the subtitle and the board menu button, and SHALL NOT contain a refresh control.
 
 #### Scenario: Phone app bar
-- **WHEN** the board "Cardigan v1" with 12 cards is shown on a phone
-- **THEN** the app bar shows back, "Cardigan v1", "CRD · 12 cards" and the board menu button, and no refresh button
+- **WHEN** the phone app bar content is rendered for "Cardigan v1" with 12 cards
+- **THEN** it contains "Back", "Cardigan v1", "CRD · 12 cards" and "Board actions", and no button named "Refresh"
 
 #### Scenario: Back
 - **WHEN** the user taps back in the app bar
@@ -56,7 +52,7 @@ Columns SHALL be shown side by side in ascending position order, each with its n
 
 #### Scenario: Phone swipe
 - **WHEN** a board with four columns is shown on a phone and the user swipes sideways
-- **THEN** the columns scroll and stop wherever the swipe ends
+- **THEN** the column row scrolls horizontally and has no scroll snapping
 
 ### Requirement: Card tiles
 Each column SHALL show its cards in ascending position order. Each tile SHALL show the card's display ID, its title and its labels sorted as defined in `domain-card`. A tile without labels SHALL show no label row.
@@ -77,14 +73,14 @@ While the board loads for the first time, the content area SHALL show skeleton c
 
 #### Scenario: Board known from the list
 - **WHEN** the user opens "Cardigan v1" from the sidebar and the board is still loading
-- **THEN** the header shows "Cardigan v1" and `CRD`, and the content area shows skeleton columns
+- **THEN** the header shows "Cardigan v1", `CRD` and the refresh button, no board menu button and no card count, and the content area shows skeleton columns
 
 #### Scenario: Deep link before the list loads
 - **WHEN** the user opens a board URL directly and neither the board nor the board list has loaded yet
 - **THEN** the header shows no title and the content area shows skeleton columns
 
 ### Requirement: Load error state
-When the first load fails for any reason other than a 404, the content area SHALL show "Couldn’t load this board", "Check your connection and try again." and a "Try again" button. "Try again" and the refresh button SHALL load the board again.
+When the first load fails for any reason other than a 404, the content area SHALL show "Couldn’t load this board", "Check your connection and try again." and a "Try again" button. "Try again" and the refresh button SHALL load the board again. The header SHALL be the same as in the loading state.
 
 #### Scenario: Network failure
 - **WHEN** the first load of the board fails without a response
@@ -94,8 +90,12 @@ When the first load fails for any reason other than a 404, the content area SHAL
 - **WHEN** the user presses "Try again" and the load succeeds
 - **THEN** the board's columns are shown
 
+#### Scenario: Refresh from the error state
+- **WHEN** the load error state shows and the user presses refresh and the load succeeds
+- **THEN** the board's columns are shown
+
 ### Requirement: Board no longer exists
-When a refresh, a reload after a stale change, or any change made in the board view to a board that was already shown ends in a 404 for the board itself, the web app SHALL go to the board list and show the error toast "This board no longer exists." When the first load of a board ends in a 404, the web app SHALL show the app's not-found page instead.
+When a refresh, or the reload that follows a 404 or `OUT_OF_RANGE` from a change, returns 404, the web app SHALL go to the board list and show the error toast "This board no longer exists." A 404 on deleting a column SHALL NOT trigger a reload (see *Deleting a column*). When the first load of a board ends in a 404, the web app SHALL show the app's not-found page instead.
 
 #### Scenario: Deleted on another device while viewing
 - **WHEN** the user is viewing a board that another device deleted, and presses refresh
@@ -124,7 +124,7 @@ A board with zero columns SHALL show "This board has no columns", "Add a column 
 - **THEN** the add column form opens with focus in its name field
 
 ### Requirement: Opening quick add
-"Add card" at the bottom of a column SHALL replace itself with the quick add form: a title field with focus, an "Add card" button and "Cancel". Desktop and tablet SHALL also show the hint "Enter to add". Only one inline form SHALL be open at a time, as defined in *One inline form at a time*.
+"Add card" at the bottom of a column SHALL replace itself with the quick add form: a title field with focus, an "Add card" button and "Cancel". Desktop and tablet SHALL also show the hint "Enter to add". The hint SHALL be hidden under the `phone` condition from `web-design-system`. Only one inline form SHALL be open at a time, as defined in *One inline form at a time*.
 
 #### Scenario: Open
 - **WHEN** the user presses "Add card" in "To do"
@@ -147,7 +147,6 @@ At most one inline form (a quick add or the add column form) SHALL be open on th
 
 ### Requirement: Discarding started text
 When the user opens another inline form while the open one has text, the web app SHALL ask with "Discard changes?", "Keep editing" and "Discard". The body SHALL be "The card you started in “{column}” hasn’t been added." for a quick add and "The column you started hasn’t been added." for the add column form. "Discard" SHALL drop the text, close that form and open the new one with focus.
-
 #### Scenario: Quick add to quick add
 - **WHEN** the quick add in "To do" contains "Write docs", the user presses "Add card" in "Done" and chooses "Discard"
 - **THEN** the form in "To do" closes without creating a card, and an empty form opens in "Done" with focus
@@ -164,6 +163,13 @@ When the user opens another inline form while the open one has text, the web app
 - **WHEN** the quick add contains "Write docs" and the user presses Escape in its field
 - **THEN** the form closes without the dialog
 
+### Requirement: Leaving the board with started text
+Leaving the board (back, another board, browser navigation) SHALL drop the text of an open inline form without asking.
+
+#### Scenario: Another board
+- **WHEN** the quick add in "To do" contains "Write docs" and the user opens another board from the sidebar
+- **THEN** the other board opens without the "Discard changes?" dialog
+
 ### Requirement: Keeping started text
 "Keep editing", Escape on the dialog and a click outside the dialog SHALL close the dialog without opening the new form. The first form SHALL keep its text, scroll into view and get focus.
 
@@ -176,7 +182,7 @@ When the user opens another inline form while the open one has text, the web app
 - **THEN** the same happens as for "Keep editing"
 
 ### Requirement: Adding a card
-Pressing Enter in the title field or the form's "Add card" button SHALL create a card with the normalized title at the end of the column. When the card is created, it SHALL appear at the end of the column, and the field SHALL stay open, empty and focused. Enter on an empty or whitespace-only title SHALL do nothing.
+Pressing Enter in the title field or the form's "Add card" button SHALL create a card with the normalized title at the end of the column. When the card is created, it SHALL appear at the end of the column, and the field SHALL stay open, empty and focused. Enter or the form's "Add card" button on an empty or whitespace-only title SHALL do nothing and show no error. "Enter a name." applies to column names only.
 
 #### Scenario: Add two cards in a row
 - **WHEN** the user types "Write docs", presses Enter, then types "Fix login" and presses Enter
@@ -186,8 +192,12 @@ Pressing Enter in the title field or the form's "Add card" button SHALL create a
 - **WHEN** the title field contains only spaces and the user presses Enter
 - **THEN** no card is created and no error shows
 
+#### Scenario: Empty title with the button
+- **WHEN** the title field is empty and the user presses the form's "Add card" button
+- **THEN** no card is created and no error shows
+
 ### Requirement: Closing quick add
-Escape and "Cancel" SHALL close the quick add form and drop its text without asking. A click or focus move outside the form SHALL close it when the field is empty and SHALL keep it open with its text otherwise.
+Escape and "Cancel" SHALL close the quick add form and drop its text without asking. A click or focus move outside the form SHALL close it when the field is empty after normalization and SHALL keep it open with its text otherwise.
 
 #### Scenario: Escape with text
 - **WHEN** the title field contains "Write docs" and the user presses Escape
@@ -200,6 +210,14 @@ Escape and "Cancel" SHALL close the quick add form and drop its text without ask
 #### Scenario: Click outside when empty
 - **WHEN** the title field is empty and the user clicks elsewhere on the board
 - **THEN** the form closes
+
+#### Scenario: Click outside with only spaces
+- **WHEN** the title field contains only spaces and the user clicks elsewhere on the board
+- **THEN** the form closes
+
+#### Scenario: Tab out with text
+- **WHEN** the title field contains "Write docs" and the user tabs out of the form
+- **THEN** the form stays open with "Write docs"
 
 ### Requirement: Adding a column
 "Add column" after the last column SHALL open an inline form with a "Name" field, an "Add column" button and "Cancel". Submitting a valid name SHALL create the column at the end. The form SHALL then close, the new column SHALL scroll into view and focus SHALL move to its "Add card". Escape and "Cancel" SHALL close the form.
@@ -233,6 +251,10 @@ Each column's menu SHALL offer "Move left", "Move right", "Rename" and "Delete c
 #### Scenario: Move fails
 - **WHEN** the move of "To do" fails without a response
 - **THEN** the columns keep their order and the error toast "Couldn't move “To do”. Check your connection and try again." shows
+
+#### Scenario: Move running
+- **WHEN** the move of "To do" is still running and the user opens the menu of "Done"
+- **THEN** "Move left" and "Move right" are disabled and "Rename" and "Delete column" are enabled
 
 ### Requirement: Renaming a column
 "Rename" SHALL open the "Rename column" dialog with a "Name" field holding the current name, "Cancel" and "Save". Saving a valid, different name SHALL rename the column and close the dialog. Saving a name that is unchanged after normalization SHALL close the dialog without a request.
@@ -279,12 +301,20 @@ The board menu SHALL offer "Rename board", "Export as JSON" and "Delete board". 
 - **WHEN** the user deletes the board from the board menu
 - **THEN** the board list opens and no toast shows
 
+#### Scenario: Export
+- **WHEN** the user chooses "Export as JSON" in the board menu of "Cardigan v1"
+- **THEN** the app layer is asked to export "Cardigan v1"
+
 ### Requirement: Refresh
-On tablet and desktop, the refresh button SHALL load the board again and spin while it loads. The current board SHALL stay visible, and an open quick add or add column form SHALL keep its text. A quick add form whose column no longer exists after the refresh SHALL close. If the refresh fails, the board SHALL stay and the error toast "Couldn't refresh the board. Check your connection and try again." SHALL show.
+On tablet and desktop, the refresh button SHALL load the board again and spin and set `aria-busy` while it loads. The current board SHALL stay visible, and an open quick add or add column form SHALL keep its text. A quick add form whose column no longer exists after the refresh SHALL close. If the refresh fails, the board SHALL stay and the error toast "Couldn't refresh the board. Check your connection and try again." SHALL show.
 
 #### Scenario: Refresh shows changes from another device
 - **WHEN** another device added a card and the user presses refresh
-- **THEN** the new card appears and the rest of the board stays in place
+- **THEN** the new card appears at the end of its column and all other columns and cards are unchanged
+
+#### Scenario: Refresh running
+- **WHEN** a refresh is running
+- **THEN** the refresh button has `aria-busy="true"` and the columns stay visible
 
 #### Scenario: Refresh with an open quick add
 - **WHEN** the quick add field contains "Write docs" and the user presses refresh
@@ -340,22 +370,41 @@ While a column add, rename or delete, or a card add, is saving, the submit butto
 - **THEN** no toast shows
 
 ### Requirement: Save failures
-When a save fails without a response, with a 5xx or with an unknown error, the dialog or form SHALL stay open with its input and an error toast SHALL show: "Couldn't add the card.", "Couldn't add the column.", "Couldn't rename “{name}”.", "Couldn't move “{name}”." or "Couldn't delete “{name}”.", each followed by " Check your connection and try again."
+When a save fails without a response, with a 5xx or with an unknown error, the dialog or form SHALL stay open with its input and an error toast SHALL show: "Couldn't add the card.", "Couldn't add the column.", "Couldn't rename “{name}”.", "Couldn't move “{name}”." or "Couldn't delete “{name}”.", each followed by " Check your connection and try again." In every toast, `{name}` is the column's name as currently shown on the board, not the text typed in the form.
 
 #### Scenario: Add card fails
 - **WHEN** adding the card "Write docs" fails without a response
 - **THEN** the quick add field still contains "Write docs" and the toast "Couldn't add the card. Check your connection and try again." shows
 
+#### Scenario: Rename fails
+- **WHEN** renaming "Review" to "In review" fails without a response
+- **THEN** the toast reads "Couldn't rename “Review”. Check your connection and try again."
+
 #### Scenario: Delete fails
 - **WHEN** deleting the column "Review" fails with 500
 - **THEN** the dialog stays open and the toast "Couldn't delete “Review”. Check your connection and try again." shows
 
+### Requirement: Reload after an unknown outcome
+After a column add, card add or column move fails without a response or with a 5xx, the web app SHALL also load the board again in the background, keeping the form's text, so that a change the server applied shows before the user tries again.
+
+#### Scenario: Add card applied but the response was lost
+- **WHEN** adding the card "Write docs" fails without a response but the server created it
+- **THEN** after the reload the card shows in the column, the field still contains "Write docs", and the add-card toast shows
+
 ### Requirement: Saves apply the response
 Every successful change SHALL update the shown board from the change's response, without loading the whole board again. A column move SHALL apply the positions of all columns from its response.
 
-#### Scenario: Column added
-- **WHEN** a column is added successfully
-- **THEN** it appears without another board load
+#### Scenario: Every change type
+- **WHEN** a card is added, a column is added, renamed, moved and deleted, each successfully
+- **THEN** each change is shown and the board was loaded only once in total
+
+#### Scenario: Move response differs from a local swap
+- **WHEN** the board shows "To do", "In progress", "Done", another device moved "Done" to the first position, and the user moves "To do" right
+- **THEN** the columns are shown in the order of the move response: "Done", "In progress", "To do"
+
+#### Scenario: Save during a refresh
+- **WHEN** a refresh is running and a card is added before it finishes
+- **THEN** the card is still shown after the refresh ends
 
 ### Requirement: Stale data recovery
 When a change returns 404 for a column or `OUT_OF_RANGE` for a move, the web app SHALL load the board again and show an error toast. A missing column SHALL show "“{name}” no longer exists. The board was reloaded." A stale column move SHALL show "Couldn't move “{name}”. The board changed on another device, so it was reloaded."
@@ -365,12 +414,12 @@ When a change returns 404 for a column or `OUT_OF_RANGE` for a move, the web app
 - **THEN** the board loads again without "Review" and the toast "“Review” no longer exists. The board was reloaded." shows
 
 #### Scenario: Stale column move
-- **WHEN** the board shows 4 columns, another device deleted one, and "Move right" on the third column returns `OUT_OF_RANGE`
-- **THEN** the board loads again and the toast "Couldn't move “{name}”. The board changed on another device, so it was reloaded." shows
+- **WHEN** the board shows "To do", "In progress", "Review", "Done", another device deleted "To do", and the user chooses "Move right" on "Review", which returns `OUT_OF_RANGE`
+- **THEN** the board loads again without "To do" and the toast "Couldn't move “Review”. The board changed on another device, so it was reloaded." shows
 
 #### Scenario: Board gone during recovery
 - **WHEN** the reload after a stale change returns 404 for the board
-- **THEN** the board list opens and the toast "This board no longer exists." shows
+- **THEN** the board list opens, the toast "This board no longer exists." shows, and the "no longer exists. The board was reloaded." toast does not show
 
 ### Requirement: Accessible names
 Controls without visible text, and controls whose visible text is ambiguous, SHALL have these accessible names: "Back" (phone back button), "Board actions" (board menu button), "Actions for column “{name}”" (column menu button), "Add card to “{name}”" (a column's "Add card"), "Add column" (add column button). A card tile's accessible name SHALL be "{displayId}, {title}, labels {a}, {b}", without the labels part when it has none.

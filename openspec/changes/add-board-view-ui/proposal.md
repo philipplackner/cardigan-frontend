@@ -2,7 +2,7 @@
 
 ## Why
 
-Users need to open a board and work with its columns and cards (chunk 21, `web-board-view-ui`). The `boards` feature has no board view yet, and the backend has no board, column or card endpoints. This change builds the board screen against a data-access interface, so chunks 35 and 39 only plug in the real API. Drag & drop and search & filter follow as their own changes (D1).
+Users need to open a board and work with its columns and cards (chunk 21, `web-board-view-ui`). The `boards` feature has no board view yet, the backend has board and column endpoints (be-boards) but no card endpoints yet, and the web app has no data layer for any of them. This change builds the board screen against a data-access interface, so chunks 35 and 39 only plug in the real API. Drag & drop and search & filter follow as their own changes (D1).
 
 ## What Changes
 
@@ -22,7 +22,7 @@ Users need to open a board and work with its columns and cards (chunk 21, `web-b
 - **Saving and errors** (D12, D13, D15, D21, D23):
   - Every change waits for the server and applies the response to the cached board.
   - Name and title errors use the shared generic copy.
-  - Network or 5xx failures keep the form open and show an error toast.
+  - Network or 5xx failures keep the form open and show an error toast. After a failed create or move, the board reloads in the background, so a change the server applied shows before the user tries again.
   - A missing column or a stale move reloads the board and shows a toast.
 - **Copy without a design**. These strings are shared with mobile. Please review them:
   - "Couldn't add the card. Check your connection and try again."
@@ -48,7 +48,7 @@ Not breaking. This change builds on the web foundation change (router, Query, sh
 
 ### Modified Capabilities
 
-None. The `core/ui` components already cover the screen's parts.
+- `web-design-system`: dialogs may opt out of returning focus to their opener when the screen moves focus elsewhere (the discard dialog). `core/ui` `Dialog` gets an optional `returnFocus` prop for this; the other `core/ui` components already cover the screen's parts.
 
 ### Shared-spec requirements
 
@@ -66,14 +66,16 @@ This change implements or depends on these `cardigan-shared-specs` requirements:
 - `text-length` › *Text is normalized before validation*, *Length is counted in Unicode code points*, *Invalid characters are rejected*: client checks for names and titles.
 - `api-conventions` › *Move target is the final position*, *Move responses contain all affected items*, *Clients recover from a stale move*: column moves.
 - `api-conventions` › *Deleting a missing resource is not found*: a 404 on delete counts as deleted.
+- `api-conventions` › *Retries after a lost response*: reload after an unknown-outcome failure.
 - `api-errors` › *Error text is for developers only*, *Clients handle unknown error codes by status*, *Field errors identify the field and rule*, *Limit errors carry the limit*: messages come from codes, never from `detail`.
 
 ## Impact
 
 - **Code**:
-  - `src/features/boards/` (board view components, hooks, utils, types, `boardView` translations; separate files from the board list).
+  - `src/features/boards/boardView/` (board view components, hooks, utils, types; separate files from the board list) and `src/features/boards/i18n/boardView.json`.
+  - `src/core/ui/Dialog.tsx` (optional `returnFocus` prop).
   - `src/app/i18n.ts` (namespace registration). No route is added (F6).
   - `src/preview/` (board view playground with the in-memory data access).
 - **Depends on**: the web foundation change (TanStack Router, TanStack Query, shell, `core/utils` text helper) and the board list change (board summary type, rename/delete board dialogs, sidebar).
 - **New dependencies**: none beyond those the foundation change adds.
-- **Not touched**: the backend, shared specs, `core/ui`, the `transfer` feature, card detail, real API calls.
+- **Not touched**: the backend, shared specs, `core/ui` apart from `Dialog`, the `transfer` feature, card detail, real API calls.
