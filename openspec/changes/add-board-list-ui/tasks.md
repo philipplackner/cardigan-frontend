@@ -45,7 +45,7 @@ Commit after each logical chunk once all five gates pass (AGENTS.md › Git Work
 
 - [x] 7.1 Add `src/preview/sections/BoardListSection.tsx` with `NewBoardDialogProvider`, the in-memory data access, seed, failure, apply-then-fail and null-email controls, and the import flow fake. Walk through every Figma frame on page 9:5 at 390, 834 and 1440 px in light and dark mode and note any difference. At each size, verify the right region (phone or tablet/desktop) is visible, the grid has 2 columns at 834 px and 4 at 1440 px, and dialogs on a phone use the New board phone layout
 - [x] 7.2 Walk through the board list with the keyboard only (open a board, open a menu, rename, delete, create, refresh, Try again, phone menu) and verify focus lands on the name field when a dialog opens and returns to its trigger when it closes, or moves as in spec › *Delete result* when the trigger is gone
-- [ ] 7.3 Run all five gates on a clean checkout of the branch and verify they pass
+- [x] 7.3 Run all five gates on a clean checkout of the branch and verify they pass
 
 ## Workflow follow-up
 
