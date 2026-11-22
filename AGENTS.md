@@ -158,7 +158,7 @@ Scope is **register, login, refresh, logout only**. No email verification, no pa
 - Refresh tokens rotate on every use. Serialize refreshes across tabs with the Web Locks API and broadcast logout with a `BroadcastChannel`, as in `react-security`.
 - On logout or a failed refresh: clear the token, clear the Query cache, remove user-scoped storage, go to login. The "Session expired" state in Figma is shown when the session ended without an explicit logout.
 - **Backend dependency:** the cookie-based refresh for web needs a backend change (cookie for web, body token for mobile). Until the spec shows it, don't build the refresh flow against a guessed contract. Ask.
-- Public auth endpoints are rate limited per email. A `429` comes with code `RATE_LIMIT_EXCEEDED` and a `Retry-After` header. There is no design for this state yet, so ask before building its UI.
+- Log in and register are rate limited per email. Refresh and log out are never rate limited. A `429` comes with code `RATE_LIMITED` and a `Retry-After` header. The auth screens show it in the error banner (see `openspec/specs/web-auth`).
 
 ### Theme
 
@@ -248,8 +248,7 @@ Ask before building anything that depends on these:
 
 - The backend's OpenAPI snapshot. The backend is still the Spring Initializr skeleton and doesn't have the snapshot folder yet. Until it exists, there is no contract to generate from.
 - The backend change for the web refresh cookie.
-- Designs for: rate limit (`429`), network error, offline, not-found page.
-- Whether refresh and logout get a rate limit (still open on the backend).
+- Designs for: network error and offline outside the auth screens, not-found page.
 - The OpenAPI code generator.
 - Final breakpoints.
 
