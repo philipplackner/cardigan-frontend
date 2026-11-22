@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Button, DownloadIcon, Key, PageHeader } from '@/core/ui'
+import { Button, DownloadIcon, Key, PageHeader, UploadIcon } from '@/core/ui'
 import {
-  ImportTrigger,
   useExportBoard,
+  useImportFlow,
   type ExportResult,
   type ImportBoard,
   type ImportResult,
@@ -153,6 +153,13 @@ export function TransferPlayground() {
     })
   }
 
+  const { open: openImport, dialogs: importDialogs } = useImportFlow({
+    importBoard,
+    findBoardNameByKey: (key) =>
+      boards.find((board) => board.key === key)?.name,
+    onBoardsChanged: () => addLog('onBoardsChanged → board list reloads'),
+  })
+
   const { start: startExport, dialog: exportDialog } = useExportBoard({
     exportBoard: (boardId) => {
       const board = boards.find((candidate) => candidate.id === boardId)
@@ -180,15 +187,9 @@ export function TransferPlayground() {
         title="Boards"
         meta={`${boards.length} boards`}
         actions={
-          <ImportTrigger
-            importBoard={importBoard}
-            findBoardNameByKey={(key) =>
-              boards.find((board) => board.key === key)?.name
-            }
-            onBoardsChanged={() =>
-              addLog('onBoardsChanged → board list reloads')
-            }
-          />
+          <Button variant="secondary" icon={UploadIcon} onClick={openImport}>
+            Import
+          </Button>
         }
       />
       <main className="mx-auto flex w-full max-w-[720px] flex-col gap-24 px-20 py-24 phone:px-16">
@@ -241,6 +242,7 @@ export function TransferPlayground() {
         </section>
       </main>
       {exportDialog}
+      {importDialogs}
     </div>
   )
 }

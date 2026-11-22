@@ -8,8 +8,6 @@
     "failed": "Couldn't export “{{name}}”. Check your connection and try again."
   },
   "import": {
-    "button": "Import",
-    "menuItem": "Import board",
     "title": "Import board",
     "description": "Choose a .json file exported from Cardigan. It’s added as a new board; your other boards don’t change.",
     "dropTitle": "Drop a board export here",
@@ -30,14 +28,7 @@
     "bodyUnnamed": "One of your boards already uses the key {{key}}. Enter another key for the imported board.",
     "keyLabel": "Key",
     "keyHelp": "2–5 uppercase letters. Can’t be changed later.",
-    "keyUsed": "You already have a board with the key {{key}}.",
     "cancel": "Cancel import",
-    "submit": "Import",
-    "keyErrors": {
-      "required": "Enter a key.",
-      "tooShort": "Use at least 2 letters.",
-      "tooLong": "Use at most 5 letters.",
-      "invalidFormat": "Use only the letters A–Z."
-    }
+    "submit": "Import"
   }
 }

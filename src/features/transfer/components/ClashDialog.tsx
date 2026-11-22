@@ -1,7 +1,8 @@
 import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Dialog, Field, Input } from '@/core/ui'
-import type { ImportReducerState, KeyFieldError } from '../hooks/importReducer'
+import { boardKeyErrorMessageKey } from '@/core/utils/boardKey'
+import type { ImportReducerState } from '../hooks/importReducer'
 import { useLastPresent } from '../hooks/useLastPresent'
 import type { ImportScreenAction } from './ImportScreen'
 
@@ -12,37 +13,22 @@ type ClashDialogProps = {
   onAction: (action: ImportScreenAction) => void
 }
 
-function useKeyErrorText() {
-  const { t } = useTranslation('transfer')
-  return (error: KeyFieldError) => {
-    switch (error.code) {
-      case 'REQUIRED':
-        return t('clash.keyErrors.required')
-      case 'TOO_SHORT':
-        return t('clash.keyErrors.tooShort')
-      case 'TOO_LONG':
-        return t('clash.keyErrors.tooLong')
-      default:
-        return t('clash.keyErrors.invalidFormat')
-    }
-  }
-}
-
 export function ClashDialog({
   state: currentState,
   onAction,
 }: ClashDialogProps) {
   const { t } = useTranslation('transfer')
+  const { t: tCommon } = useTranslation()
   const state = useLastPresent(currentState)
-  const keyErrorText = useKeyErrorText()
   const formId = useId()
   const clashingKey = state?.usedKeys.at(-1) ?? ''
   const isUsedKey = state ? state.usedKeys.includes(state.keyValue) : false
   const error = !state
     ? undefined
     : isUsedKey
-      ? t('clash.keyUsed', { key: state.keyValue })
-      : state.fieldError && keyErrorText(state.fieldError)
+      ? tCommon('keyErrors.alreadyUsed', { key: state.keyValue })
+      : state.fieldError &&
+        tCommon(boardKeyErrorMessageKey(state.fieldError.code))
 
   return (
     <Dialog

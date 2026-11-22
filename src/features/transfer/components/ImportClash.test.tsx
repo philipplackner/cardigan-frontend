@@ -1,9 +1,10 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { ToastProvider } from '@/core/ui'
+import { Button, ToastProvider } from '@/core/ui'
+import { useImportFlow } from '../hooks/useImportFlow'
+import type { ImportFlowParams } from '../hooks/useImportViewModel'
 import type { ImportBoard, ImportResult } from '../types'
-import { ImportTrigger } from './ImportTrigger'
 
 function exportFile(key = 'CRD', name = 'board-backup.json') {
   return new File(
@@ -33,12 +34,22 @@ function importAnswering(...results: ImportResult[]) {
   )
 }
 
+function ImportHost(props: ImportFlowParams) {
+  const { open, dialogs } = useImportFlow(props)
+  return (
+    <>
+      <Button onClick={open}>Import</Button>
+      {dialogs}
+    </>
+  )
+}
+
 function setup(importBoard: ImportBoard) {
   const onBoardsChanged = vi.fn()
   const user = userEvent.setup()
   render(
     <ToastProvider closeLabel="Close">
-      <ImportTrigger
+      <ImportHost
         importBoard={importBoard}
         findBoardNameByKey={(key) => LOADED_BOARDS[key]}
         onBoardsChanged={onBoardsChanged}
