@@ -48,8 +48,8 @@ Every group ends with all five gates passing (`typecheck`, `lint`, `format:check
 
 ## 5. Screens
 
-- [ ] 5.1 Add `AuthLayout` with the phone and tablet/desktop layouts from Figma 9:4. Before building, look at every size of the Log in and Register frames with `get_metadata` and `get_design_context`. Verify with a screen test for the brand, the heading level and the link sentence, and by comparing the preview at 390, 834 and 1440 px with the Figma frames.
-- [ ] 5.2 Add `LoginForm`, `LoginScreen` and `LoginRoot`. Verify with screen and Root tests (fakes) for each `web-auth` scenario on log in:
+- [x] 5.1 Add `AuthLayout` with the phone and tablet/desktop layouts from Figma 9:4. Before building, look at every size of the Log in and Register frames with `get_metadata` and `get_design_context`. Verify with a screen test for the brand, the heading level and the link sentence, and by comparing the preview at 390, 834 and 1440 px with the Figma frames.
+- [x] 5.2 Add `LoginForm`, `LoginScreen` and `LoginRoot`. Verify with screen and Root tests (fakes) for each `web-auth` scenario on log in:
   - The empty screen; the untouched submit with focus on the email field.
   - The malformed email that is sent.
   - Logging in… with disabled fields and values kept.
@@ -59,7 +59,7 @@ Every group ends with all five gates passing (`typecheck`, `lint`, `format:check
   - The session expired banner kept while typing, kept on a submit that field errors block, and replaced on a submit that sends a request.
   - `onLoggedIn` on success.
   - The `autocomplete` values.
-- [ ] 5.3 Add `PasswordRules`, `RegisterForm`, `RegisterScreen` and `RegisterRoot`. Verify with screen and Root tests (fakes) for each `web-auth` scenario on register:
+- [x] 5.3 Add `PasswordRules`, `RegisterForm`, `RegisterScreen` and `RegisterRoot`. Verify with screen and Root tests (fakes) for each `web-auth` scenario on register:
   - Live rules before blur, with the screen reader state text.
   - Errors after blur and then live.
   - Mismatch updating when the password changes.
@@ -71,7 +71,7 @@ Every group ends with all five gates passing (`typecheck`, `lint`, `format:check
   - Server `INVALID_FORMAT` on email, `PASSWORD_TOO_WEAK` on the password (invalid, no text, no banner) and an unknown code on email ("Enter a valid email address.").
   - An unknown server field, alone and together with a known one → only the generic banner.
   - `onRegistered` on success.
-- [ ] 5.4 Check keyboard-only use and the D18 labels on both screens: tab order, Enter submits, the banner is announced (`role="alert"` for errors, `role="status"` for session expired), the forms are named by their titles, and the rules are a list named "Password requirements" with "Met" or "Not met" before each rule. Verify with screen tests that query by role and name, and with a manual keyboard pass on the preview page.
+- [x] 5.4 Check keyboard-only use and the D18 labels on both screens: tab order, Enter submits, the banner is announced (`role="alert"` for errors, `role="status"` for session expired), the forms are named by their titles, and the rules are a list named "Password requirements" with "Met" or "Not met" before each rule. Verify with screen tests that query by role and name, and with a manual keyboard pass on the preview page.
 
 ## 6. Preview page and docs
 
