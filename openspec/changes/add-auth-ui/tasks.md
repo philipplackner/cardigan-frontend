@@ -8,11 +8,11 @@ Every group ends with all five gates passing (`typecheck`, `lint`, `format:check
 
 ## 2. Session interface in `core/auth`
 
-- [ ] 2.1 Add `AuthSession`, `SessionContext` and `useSession` in `src/core/auth/SessionContext.ts`, `SessionProvider` in `SessionProvider.tsx`, and `createFakeSession` in `fakeSession.ts`, as in `design.md`. Verify with tests:
+- [x] 2.1 Add `AuthSession`, `SessionContext` and `useSession` in `src/core/auth/SessionContext.ts`, `SessionProvider` in `SessionProvider.tsx`, and `createFakeSession` in `fakeSession.ts`, as in `design.md`. Verify with tests:
   - `useSession` returns the provided email (also `null`) and `logOut`.
   - It throws a clear error outside a provider.
   - The fake calls `onLogOut` once per `logOut`.
-- [ ] 2.2 Check that the oxlint import boundaries allow `features/*` → `core/auth` and still reject `core/auth` → `features/*`. Verify with the boundary test in `src/app/lintBoundaries.test.ts`, adding a case if none covers `core/auth`.
+- [x] 2.2 Check that the oxlint import boundaries allow `features/*` → `core/auth` and still reject `core/auth` → `features/*`. Verify with the boundary test in `src/app/lintBoundaries.test.ts`, adding a case if none covers `core/auth`.
 
 ## 3. Rules, texts and error mapping
 

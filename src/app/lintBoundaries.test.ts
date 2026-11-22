@@ -26,6 +26,16 @@ const FORBIDDEN: { file: string; source: string; rule: string }[] = [
     rule: RULES.restrictedImports,
   },
   {
+    file: 'src/core/auth/coreAuthImportsFeature.ts',
+    source: "export { LoginRoot } from '@/features/auth/index'",
+    rule: RULES.restrictedImports,
+  },
+  {
+    file: 'src/core/auth/coreAuthClimbsIntoFeatures.ts',
+    source: "export { a } from '../../features/auth/a'",
+    rule: RULES.restrictedImports,
+  },
+  {
     file: 'src/core/coreImportsApp.ts',
     source: "export { App } from '@/app/App'",
     rule: RULES.restrictedImports,
@@ -90,6 +100,10 @@ const ALLOWED: { file: string; source: string }[] = [
   {
     file: 'src/features/boards/components/featureImportsOwnAndCore.ts',
     source: "export { a } from '../api/a'\nexport { b } from '@/core/ui/a'",
+  },
+  {
+    file: 'src/features/boards/components/featureImportsCoreAuth.ts',
+    source: "export { useSession } from '@/core/auth/SessionContext'",
   },
   {
     file: 'src/app/appImportsFeature.ts',
