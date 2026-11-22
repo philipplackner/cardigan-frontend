@@ -2,6 +2,11 @@ export * from './icons'
 export { AddCardButton } from './AddCardButton'
 export { AddColumnButton } from './AddColumnButton'
 export { AppBar } from './AppBar'
+export {
+  AppBarSlot,
+  AppBarSlotProvider,
+  AppBarSlotTarget,
+} from './layout/AppBarSlot'
 export { AppLayout } from './layout/AppLayout'
 export { Avatar } from './Avatar'
 export { Banner } from './Banner'
