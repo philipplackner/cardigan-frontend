@@ -9,5 +9,10 @@
     "tooLong": "Use at most 5 letters.",
     "invalidFormat": "Use only the letters A–Z.",
     "alreadyUsed": "You already have a board with the key {{key}}."
+  },
+  "nameErrors": {
+    "required": "Enter a name.",
+    "tooLong": "Use at most {{n}} characters.",
+    "invalidCharacter": "Use a single line without control characters."
   }
 }
