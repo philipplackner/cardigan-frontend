@@ -4,8 +4,8 @@ Commit after each logical chunk once all five gates pass (AGENTS.md › Git Work
 
 ## 1. Prerequisites
 
-- [ ] 1.1 Verify the web foundation change has landed on this branch's base: TanStack Router, TanStack Query, React Hook Form and Zod are installed, the app `QueryClient` has the defaults from design.md, the shell layout with its top-bar slot and the temporary `/` route exist, and `normalizeText` and `checkText` are in `core/utils/text.ts`. If not, stop and tell the coordinator (cardiganapp-18)
-- [ ] 1.2 Verify auth's `useSession()` with `email: string | null` and a logout action exists. If not, build against the `account` prop only; the app-layer wiring belongs to `web-boards-connect` (D23)
+- [x] 1.1 Verify the web foundation change has landed on this branch's base: TanStack Router, TanStack Query, React Hook Form and Zod are installed, the app `QueryClient` has the defaults from design.md, the shell layout with its top-bar slot and the temporary `/` route exist, and `normalizeText` and `checkText` are in `core/utils/text.ts`. If not, stop and tell the coordinator (cardiganapp-18)
+- [x] 1.2 Verify auth's `useSession()` with `email: string | null` and a logout action exists. If not, build against the `account` prop only; the app-layer wiring belongs to `web-boards-connect` (D23)
 
 ## 2. Shared key and name checks
 
