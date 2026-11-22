@@ -223,6 +223,8 @@
   --spacing-sidebar-desktop: 248px;
   --spacing-panel-tablet: 420px;
   --spacing-panel-desktop: 452px;
+  /* Board list grid: as many columns as tiles of at least this width fit. */
+  --spacing-board-tile-min: 260px;
 
   --radius-1: 1px;
   --radius-2: 2px;
