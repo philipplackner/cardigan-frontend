@@ -38,13 +38,13 @@ Every group ends with all five gates passing (`typecheck`, `lint`, `format:check
 
 ## 4. Request state and view-models
 
-- [ ] 4.1 Add `types.ts` (`LogIn`, `Register`, `AuthResult`, `AuthFailure`, `FieldFailure`) and `authRequestReducer`. Verify with reducer unit tests:
+- [x] 4.1 Add `types.ts` (`LogIn`, `Register`, `AuthResult`, `AuthFailure`, `FieldFailure`) and `authRequestReducer`. Verify with reducer unit tests:
   - Session expired as the initial banner.
   - `submitted` clears any banner.
   - Each failure kind maps to its banner or to no banner.
   - `rateLimited` with `retryAfterSeconds: null` maps to the generic banner.
   - `edited` clears only `invalidCredentials`.
-- [ ] 4.2 Add `useLoginViewModel` and `useRegisterViewModel`: the double-submit guard, calling the injected function, routing `emailUsed` and `invalidFields` to the form and the other failures to the reducer, and calling `onLoggedIn` or `onRegistered`. Verify with tests on fake injected functions, including a second submit event while the first is pending that makes no second call, and a success after the Root unmounted that still calls `onLoggedIn` or `onRegistered`.
+- [x] 4.2 Add `useLoginViewModel` and `useRegisterViewModel`: the double-submit guard, calling the injected function, routing `emailUsed` and `invalidFields` to the form and the other failures to the reducer, and calling `onLoggedIn` or `onRegistered`. Verify with tests on fake injected functions, including a second submit event while the first is pending that makes no second call, and a success after the Root unmounted that still calls `onLoggedIn` or `onRegistered`.
 
 ## 5. Screens
 
