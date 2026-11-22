@@ -75,7 +75,7 @@ Every group ends with all five gates passing (`typecheck`, `lint`, `format:check
 
 ## 6. Preview page and docs
 
-- [ ] 6.1 Add `src/preview/sections/AuthSection.tsx`:
+- [x] 6.1 Add `src/preview/sections/AuthSection.tsx`:
   - Both screens with a fake `logIn`/`register`, and a scenario picker (success, wrong credentials, email used, 429 with 12 s and 61 s, network error, slow request).
   - A session expired toggle.
   - A `Sidebar` account row fed by `createFakeSession`.
