@@ -82,7 +82,7 @@ Every group ends with all five gates passing (`typecheck`, `lint`, `format:check
 
   Verify by opening the preview page and going through every scenario in light and dark mode at 390, 834 and 1440 px.
 - [x] 6.2 Update `AGENTS.md` (which `CLAUDE.md` includes) as described in `design.md` → Docs. Verify by reading the section against `api-auth-tokens` and `api-errors`.
-- [ ] 6.3 After the last commit, run the five gates on a clean working tree. Verify that all of them pass.
+- [x] 6.3 After the last commit, run the five gates on a clean working tree. Verify that all of them pass.
 
 ## Workflow follow-up
 
