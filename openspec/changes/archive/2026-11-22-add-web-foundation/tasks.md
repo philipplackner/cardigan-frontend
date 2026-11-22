@@ -34,5 +34,5 @@
 
 ## Workflow follow-up
 
-- Tell web auth, board list, board view and labels which files they add or edit (design.md "Route files", "Shell composition").
-- Archive the change after review.
+- [x] Tell web auth, board list, board view and labels which files they add or edit (design.md "Route files", "Shell composition"). D2, D4 and the design now name the connect changes; board view uses `checkText` instead of the dropped `checkSingleLineText`.
+- [x] Archive the change (no review requested).

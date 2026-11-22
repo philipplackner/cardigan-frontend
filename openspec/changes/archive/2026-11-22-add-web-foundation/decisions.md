@@ -10,14 +10,14 @@ Add the web foundation that web auth, web board list and web board view build on
 
 ### D1 — Route tree shape (WF-1)
 - **Question**: How is the route tree structured?
-- **Decision**: One pathless layout route `_authenticated` renders the app shell. Signed-in pages nest under it: `/` (board list), `/boards/$boardId` (board view), `/labels` (labels), each added by its feature change. `/login` and `/register` sit at the top level and render without the shell.
+- **Decision**: One pathless layout route `_authenticated` renders the app shell. Signed-in pages nest under it: `/` (board list), `/boards/$boardId` (board view), `/labels` (labels). `web-boards-connect` mounts the board list and board view routes; the labels change adds its own. `/login` and `/register` (added by `web-auth-connect`) sit at the top level and render without the shell.
 - **Alternatives**: Separate `_authenticated` (guard) and `_shell` (layout) routes.
 - **Why**: Every signed-in page uses the same shell in Figma; login and register have none.
 - **Depends on**: —
 
 ### D2 — How the guard attaches (WF-2)
 - **Question**: How does the session guard attach before auth-connect exists?
-- **Decision**: This change adds `_authenticated` without `beforeLoad`. auth-connect adds `beforeLoad` with `ensureSession()` and the redirect to `/login?redirect=<href>`. Web auth owns the `redirect` search param on `/login` and the safe same-origin check for landing on the previous page after login.
+- **Decision**: This change adds `_authenticated` without `beforeLoad`. `web-auth-connect` adds `beforeLoad` with `ensureSession()` and the redirect to `/login?redirect=<href>`. `web-auth-connect` also owns the `redirect` search param on `/login` and the safe same-origin check for landing on the previous page after login.
 - **Alternatives**: A stub guard backed by a `core/auth` session interface that always says "signed in".
 - **Why**: No fake session behavior to remove later.
 - **Depends on**: D1
@@ -31,14 +31,14 @@ Add the web foundation that web auth, web board list and web board view build on
 
 ### D4 — Who fills the sidebar (WF-4)
 - **Question**: Which change fills which part of the sidebar?
-- **Decision**: This change renders the sidebar frame with the brand only. Board list adds the "All boards" nav item, the Boards section and "New board". Labels adds the "Labels" nav item. Auth adds the account footer (email + log out). `Sidebar`'s `mainNav`, `boards` and `account` become optional. The shell composes feature components in `src/app`, because features can't import each other.
+- **Decision**: This change renders the sidebar frame with the brand only. Board list adds the "All boards" nav item, the Boards section and "New board". Labels adds the "Labels" nav item. Board list builds the account footer (`sidebarAccount`), fed with the email and log out from auth's `useSession()`. `web-boards-connect` passes the board list's pieces to `Sidebar` in `AppShell`. `Sidebar`'s `mainNav`, `boards` and `account` become optional. The shell composes feature components in `src/app`, because features can't import each other.
 - **Alternatives**: This change also owns the "All boards" and "Labels" nav items, and labels adds a placeholder route now.
 - **Why**: A typed link to `/labels` can't exist before the labels route does.
 - **Depends on**: D1
 
 ### D5 — `/` before board list lands (WF-5)
 - **Question**: What does `/` show before the board list exists?
-- **Decision**: A temporary index route under the shell with an empty main area. The board list change replaces it.
+- **Decision**: A temporary index route under the shell with an empty main area. `web-boards-connect` replaces it with the board list.
 - **Alternatives**: No index route, so `/` falls to not-found.
 - **Depends on**: D1
 
@@ -98,7 +98,7 @@ Add the web foundation that web auth, web board list and web board view build on
 ## Out of scope
 
 - Any sidebar, top bar or page content (board list, labels, auth).
-- The real session guard, `ensureSession()` and the login redirect (auth-connect, web auth).
+- The real session guard, `ensureSession()` and the login redirect (`web-auth-connect`).
 - `DataError`, the HTTP client and the retry rule (web-api-client).
 - MSW (added by the first change with feature tests).
 - The board key check (board list).

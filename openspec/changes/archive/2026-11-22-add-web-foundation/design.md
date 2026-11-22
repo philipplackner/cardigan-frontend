@@ -7,7 +7,7 @@ See proposal.md for why. The repo already has the design system (`src/core/ui`),
 ## Goals / Non-Goals
 
 **Goals:**
-- A route tree that web auth, board list, board view and labels can each add one route file to, without touching each other's files.
+- A route tree that `web-auth-connect`, `web-boards-connect` and labels can each add route files to, without touching each other's files.
 - A shell whose sidebar parts and phone top bar the feature changes fill in independently.
 - One text helper that every form uses for the shared text-length rule.
 
@@ -39,7 +39,7 @@ src/app/
 - Plugin in `vite.config.ts` before `react()`: `tanstackRouter({ target: 'react', routesDirectory: './src/app/routes', generatedRouteTree: './src/app/routeTree.gen.ts', autoCodeSplitting: true })`. `routeTree.gen.ts` is also added to `.prettierignore`.
 - `createAppRouter` sets `context: { queryClient }`, `defaultPreload: 'intent'`, `defaultPreloadStaleTime: 0`, and `BlankPage` as default pending and error component (D6). `BlankPage` doesn't log.
 - Route errors are caught by TanStack Router's React error boundary, and React 19's default `onCaughtError` and `onUncaughtError` log to the console in production too. So `src/main.tsx` passes `onCaughtError` and `onUncaughtError` to `createRoot`, built by `createRootErrorHandlers(isDev)` in `src/app/rootErrorHandlers.ts`. Both log with `console.error` only when `import.meta.env.DEV` and do nothing otherwise.
-- Later changes add files only: `routes/login.tsx`, `routes/register.tsx` (web auth), `routes/_authenticated/index.tsx` replaced (board list), `routes/_authenticated/boards/$boardId.tsx` (board view), `routes/_authenticated/labels.tsx` (labels). auth-connect adds `beforeLoad` to `_authenticated.tsx` (D2).
+- Later changes add files only: `routes/login.tsx`, `routes/register.tsx` (`web-auth-connect`), `routes/_authenticated/index.tsx` replaced and `routes/_authenticated/boards/$boardId.tsx` (`web-boards-connect`), `routes/_authenticated/labels.tsx` (labels). `web-auth-connect` adds `beforeLoad` to `_authenticated.tsx` (D2). The web auth, board list and board view UI changes mount nothing in `src/app`.
 - `__root.tsx` renders `Outlet` only, so not-found outside the shell is a blank page. A `notFound()` thrown inside `_authenticated` renders blank inside the shell.
 - Alternative: code-based routes. Rejected: CLAUDE.md and the routing skill set file-based routes.
 
@@ -50,7 +50,7 @@ src/app/
 - `appBar`: the top-bar slot target (below).
 - `children`: `<Outlet />`.
 
-Feature changes edit `AppShell` to pass their components (for example `<BoardNavList />` from boards, `<AccountFooter />` from auth). `src/app` may import every feature, so features stay independent (D4). Brand name and nav label come from the `common` translation namespace (new keys `appName`, `mainNavigation`), copy taken from Figma (brand "Cardigan").
+Connect changes edit `AppShell` to pass feature components (for example the board list's sidebar pieces and `sidebarAccount`, fed from auth's `useSession()`, in `web-boards-connect`). `src/app` may import every feature, so features stay independent (D4). Brand name and nav label come from the `common` translation namespace (new keys `appName`, `mainNavigation`), copy taken from Figma (brand "Cardigan").
 
 ### Phone top-bar slot (D3)
 
