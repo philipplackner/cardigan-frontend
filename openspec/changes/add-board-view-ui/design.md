@@ -174,7 +174,7 @@ movingColumnId: string | null
 
 ### Validation (D12, D13)
 
-Column names (max 30) and card titles (max 200) use the board list's `checkSingleLineText` from `core/utils/textField.ts` and the `common` `nameErrors.*` strings. Server field codes map through the same codes (`REQUIRED`, `TOO_LONG`, `INVALID_CHARACTER`). The board view adds no validation helper or error strings of its own.
+Column names (max 30) and card titles (max 200) use the foundation's `checkText(value, { kind: 'singleLine', max })` from `core/utils/text.ts`, send its returned `value`, and map its errors to the `common` `nameErrors.*` strings with the board list's mapping. Server field codes map through the same codes (`REQUIRED`, `TOO_LONG`, `INVALID_CHARACTER`). The board view adds no validation helper or error strings of its own.
 
 ### Board menu, export and navigation (D5, L2)
 

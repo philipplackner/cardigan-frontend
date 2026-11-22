@@ -50,5 +50,6 @@ Commit after each logical chunk once all five gates pass (AGENTS.md › Git Work
 ## Workflow follow-up
 
 - Send the coordinator (cardiganapp-18) the commit that moved the key check and the public `boards` exports, so the board view session can rebase.
-- Ask the coordinator to correct add-web-foundation's D4 to "Board list adds the account footer; auth provides the email and log out", and to send mobile the key prefill details (NFD, ASCII letters only, no locale rules), the rounding of relative times and the `en-US` digit grouping.
+- Done: add-web-foundation's D4 now says board list builds the account footer and auth provides the email and log out.
+- Ask the coordinator to send mobile the key prefill details (NFD, ASCII letters only, no locale rules), the rounding of relative times and the `en-US` digit grouping.
 - Archive the change after review.

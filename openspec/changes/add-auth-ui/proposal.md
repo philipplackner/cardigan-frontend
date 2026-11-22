@@ -83,4 +83,4 @@ This change implements or depends on these `cardigan-shared-specs` requirements:
 - **Other changes**:
   - The web board list change reads the session interface for the email and log out.
   - `web-auth-connect` implements the injected calls, the real session, the routes and the redirect after log in.
-  - The web foundation change's notes that "web auth" adds `/login`, `/register`, the `redirect` param and the account footer are out of date. Routes and the redirect belong to `web-auth-connect` (D1, D8). The sidebar footer and phone menu belong to board list, fed from `useSession()` (D3). The foundation change should update its D2, D4 and design.md "Route files" / "Shell composition" to match.
+  - The web foundation change's notes that "web auth" adds `/login`, `/register`, the `redirect` param and the account footer were out of date. Routes and the redirect belong to `web-auth-connect` (D1, D8). The sidebar footer and phone menu belong to board list, fed from `useSession()` (D3). Resolved: the foundation's D2, D4 and design.md "Route files" / "Shell composition" now say this.
