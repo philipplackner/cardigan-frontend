@@ -24,3 +24,7 @@ export {
 } from './components/BoardListScreen'
 export { boardsQueryOptions, useBoards } from './api/boardsQueries'
 export type { BoardDialogResult } from './hooks/boardDialogResult'
+export { NewBoardDialogProvider } from './components/NewBoardDialogProvider'
+export { useNewBoardDialog } from './hooks/NewBoardDialogContext'
+export { RenameBoardDialog } from './components/RenameBoardDialog'
+export { DeleteBoardDialog } from './components/DeleteBoardDialog'
