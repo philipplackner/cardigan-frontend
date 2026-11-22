@@ -1,4 +1,6 @@
 {
+  "appName": "Cardigan",
   "cancel": "Cancel",
-  "close": "Close"
+  "close": "Close",
+  "mainNavigation": "Main"
 }
