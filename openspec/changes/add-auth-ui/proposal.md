@@ -33,7 +33,7 @@ Users need to register, log in, see when their session has expired, and log out 
 - **Session interface** in `core/auth` (D3, D7, D11, D13): exposes the signed-in user's email (`null` while it loads after a reload) and a log out action, with a fake for tests and the preview page. The board list change reads it for the sidebar and the phone menu. Log out has no confirmation.
 - **Injected calls** (D1, D13): the screens take log in and register functions that return result types, and report success to the host. Tests use fakes. The screens are shown on the dev preview page and are not mounted on a route yet.
 - **Dependencies** (D14): none of its own. React Hook Form, Zod and `@hookform/resolvers` come from the web foundation change.
-- **Docs** (D12): `CLAUDE.md` uses the shared spec's `RATE_LIMITED` code and describes rate limiting as per email for log in and register only.
+- **Docs** (D12): `AGENTS.md` (included by `CLAUDE.md`) uses the shared spec's `RATE_LIMITED` code and describes rate limiting as per email for log in and register only.
 
 Not breaking. Nothing changes for users until `web-auth-connect` mounts the screens.
 
@@ -79,7 +79,8 @@ This change implements or depends on these `cardigan-shared-specs` requirements:
   - `src/preview/sections/AuthSection.tsx` and the preview page wiring.
   - `src/app/` i18n namespace registration.
 - **Dependencies**: none added. React Hook Form, Zod and `@hookform/resolvers` come from the web foundation change.
-- **Docs**: `CLAUDE.md` rate limit paragraph.
+- **Docs**: `AGENTS.md` rate limit bullet and Open Items.
 - **Other changes**:
   - The web board list change reads the session interface for the email and log out.
   - `web-auth-connect` implements the injected calls, the real session, the routes and the redirect after log in.
+  - The web foundation change's notes that "web auth" adds `/login`, `/register`, the `redirect` param and the account footer are out of date. Routes and the redirect belong to `web-auth-connect` (D1, D8). The sidebar footer and phone menu belong to board list, fed from `useSession()` (D3). The foundation change should update its D2, D4 and design.md "Route files" / "Shell composition" to match.

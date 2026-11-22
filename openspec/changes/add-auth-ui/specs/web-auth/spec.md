@@ -51,7 +51,15 @@ Under the register password field, four rules SHALL show: "12+ characters", "Low
 - **THEN** all four rules show a check
 
 #### Scenario: Length counts code points
-- **WHEN** the password is eleven letters and digits followed by one emoji, and contains a lowercase letter, an uppercase letter and a digit
+- **WHEN** the password is ten ASCII letters and digits with a lowercase letter, an uppercase letter and a digit, followed by U+1F600 (😀)
+- **THEN** "12+ characters" shows a cross
+
+#### Scenario: Twelve code points with an emoji
+- **WHEN** the password is eleven ASCII letters and digits with a lowercase letter, an uppercase letter and a digit, followed by U+1F600
+- **THEN** "12+ characters" shows a check
+
+#### Scenario: Emoji with a modifier counts as two
+- **WHEN** the password is ten ASCII letters and digits with a lowercase letter, an uppercase letter and a digit, followed by 👍🏽 (U+1F44D U+1F3FD)
 - **THEN** "12+ characters" shows a check
 
 ### Requirement: Register email check
@@ -71,6 +79,10 @@ Before sending, the register form SHALL check that the email is filled in, has a
 
 ### Requirement: Register password checks
 Before sending, the register form SHALL check the password against the `domain-user` rule and the `text-length` rules for passwords, and that the repeated password equals the password. Errors SHALL read "Enter your password." (empty), "Password can't contain tabs or line breaks." (a control character or unpaired surrogate), "Password can't be longer than 128 characters." (over 128 code points), "Repeat your password." (empty repeat) and "Passwords don't match."
+
+#### Scenario: 128 code points with emoji are accepted
+- **WHEN** the user leaves the register password field holding 120 ASCII characters that meet all four rules followed by eight U+1F600
+- **THEN** the password field shows no error
 
 #### Scenario: Password over the limit
 - **WHEN** the user leaves the register password field holding a password of 129 code points that meets all four rules
@@ -96,8 +108,19 @@ Before sending, the register form SHALL check the password against the `domain-u
 - **WHEN** the user submits with an empty repeat field
 - **THEN** the repeat field shows "Repeat your password."
 
+### Requirement: One password error at a time
+The register password SHALL show only the first error in this order: empty, a control character or unpaired surrogate, a broken live rule (no text, see Unmet password rules on submit), over 128 code points.
+
+#### Scenario: Weak password with a tab
+- **WHEN** the user leaves the register password field holding `abc\tdef`
+- **THEN** the password field shows "Password can't contain tabs or line breaks."
+
+#### Scenario: Weak password over the limit
+- **WHEN** the user leaves the register password field holding 129 lowercase letters
+- **THEN** the password field is marked invalid with no error text, and "Uppercase letter" and "Digit" show a cross
+
 ### Requirement: Unmet password rules on submit
-When the user submits the register form with a non-empty password that breaks a rule shown in the live list, the password field SHALL show its error state and the unmet rules SHALL stay as crosses. No error text SHALL show under the rules for this case.
+When the user submits the register form with a non-empty password without control characters that breaks a rule shown in the live list, the password field SHALL show its error state and the unmet rules SHALL stay as crosses. No error text SHALL show under the rules for this case.
 
 #### Scenario: Submit a weak password
 - **WHEN** the user submits the register form with the password `abcdefghijkl`
@@ -127,15 +150,15 @@ A field error SHALL first show when the field loses focus, or when the user subm
 - **THEN** the mismatch error disappears
 
 ### Requirement: Request in progress
-While a log in or register request runs, all fields SHALL be disabled. The button SHALL show a spinner and the label "Logging in…" or "Creating account…", and SHALL NOT start a second request. When the request ends, the fields SHALL be enabled again.
+While a log in or register request runs, all fields SHALL be disabled. The button SHALL show a spinner and the label "Logging in…" or "Creating account…", and SHALL NOT start a second request. When the request ends, the fields SHALL be enabled again. Leaving the screen while a request runs SHALL NOT cancel it. If the request succeeds after the screen is gone, the host SHALL still be told, so the app never holds a session it doesn't know about. Failures after leaving SHALL be ignored.
 
 #### Scenario: Logging in
 - **WHEN** the user submits a valid log in form
 - **THEN** both fields are disabled and the button shows a spinner and "Logging in…"
 
 #### Scenario: Double submit
-- **WHEN** a register request runs and the user presses Enter in a field
-- **THEN** no second request is sent
+- **WHEN** a register request runs and the form receives another submit event
+- **THEN** the register function is not called a second time
 
 ### Requirement: Wrong email or password
 When log in fails with `INVALID_CREDENTIALS`, the screen SHALL show the error banner "Email or password is incorrect." above the fields. It SHALL keep both values and show the password field in its error state. The banner and the password error state SHALL clear on the next edit of either field.
@@ -187,29 +210,48 @@ When log in or register fails with 429 `RATE_LIMITED`, the screen SHALL show the
 - **THEN** the rate limit banner shows, not the wrong credentials banner
 
 ### Requirement: Other failures
-When log in or register fails with a network error, a 5xx, a response that isn't problem details, or a code the form does not handle, the screen SHALL show the error banner "Couldn't reach Cardigan. Check your connection and try again." and keep all values. A `VALIDATION_FAILED` response SHALL show each field error under its field with the matching text from the field check requirements. If a field error can't be shown, the generic banner SHALL show.
+When log in or register fails with a network error, a 5xx, a response that isn't problem details, or a code the form does not handle, the screen SHALL show the error banner "Couldn't reach Cardigan. Check your connection and try again." and keep all values.
 
 #### Scenario: No network
 - **WHEN** the register request can't reach the server
 - **THEN** the generic banner shows and all values stay
 
+### Requirement: Server field errors
+A `VALIDATION_FAILED` response SHALL show each field error under its field with the text from the field check requirements. A `password` code without a text, including `TOO_SHORT` and `PASSWORD_TOO_WEAK`, SHALL mark the field invalid with no text. An `email` code without a text SHALL show "Enter a valid email address." If any entry names another field, only the generic banner SHALL show.
+
 #### Scenario: Server field error
 - **WHEN** register fails with 400 `VALIDATION_FAILED` and a field error `INVALID_FORMAT` for `email`
 - **THEN** the email field shows "Enter a valid email address."
+
+#### Scenario: Server weak password
+- **WHEN** register fails with 400 `VALIDATION_FAILED` and `PASSWORD_TOO_WEAK` for `password`
+- **THEN** the password field is marked invalid with no error text and no banner shows
+
+#### Scenario: Unknown code on the email
+- **WHEN** register fails with 400 `VALIDATION_FAILED` and a code the form has no text for on `email`
+- **THEN** the email field shows "Enter a valid email address." and no banner shows
 
 #### Scenario: Unknown field
 - **WHEN** register fails with 400 `VALIDATION_FAILED` and only a field error for `refreshTokenTransport`
 - **THEN** the generic banner shows
 
+#### Scenario: Known and unknown field together
+- **WHEN** register fails with 400 `VALIDATION_FAILED` with `INVALID_FORMAT` for `email` and an entry for `refreshTokenTransport`
+- **THEN** only the generic banner shows
+
 ### Requirement: Banners clear on the next submit
-A banner from a failed request SHALL stay until the next submit or, for wrong credentials, the next edit. Submitting SHALL remove the current banner before the new request starts. Only one banner SHALL show at a time.
+A banner from a failed request SHALL stay until the next submit that sends a request or, for wrong credentials, the next edit. Submitting SHALL remove the current banner before the new request starts. A submit that field errors block SHALL keep the banner. Only one banner SHALL show at a time.
 
 #### Scenario: Retry after network failure
 - **WHEN** the generic banner shows and the user submits again
 - **THEN** the banner disappears while the request runs
 
+#### Scenario: Blocked submit keeps the banner
+- **WHEN** the session expired banner shows and the user submits with an empty email
+- **THEN** no request is sent and the session expired banner stays
+
 ### Requirement: Session expired state
-When the host opens log in with the session expired flag, the screen SHALL show the info banner "Your session has expired. Log in again to continue." above the fields, with empty fields. The banner SHALL stay while the user types and SHALL go away on the next submit. Leaving the screen SHALL end the state.
+When the host opens log in with the session expired flag, the screen SHALL show the info banner "Your session has expired. Log in again to continue." above the fields, with empty fields. The banner SHALL stay while the user types and SHALL go away on the next submit that sends a request.
 
 #### Scenario: Session expired
 - **WHEN** log in opens with the session expired flag
@@ -231,19 +273,19 @@ After a successful log in or register, the screen SHALL report the success to th
 - **THEN** the host is told the user is logged in, and no second log in is needed
 
 ### Requirement: Session interface for the app
-The app SHALL give the app shell the signed-in user's email and a log out action from one in-memory session source, without a request per screen. The email SHALL be unknown while it is still being loaded after a reload. It SHALL NOT be kept in browser storage. Log out SHALL end the session at once, without a confirmation, and SHALL ignore a failed server response. After log out the log in screen SHALL show without a banner.
+The app SHALL give the app shell the signed-in user's email and a log out action through one session interface, so screens don't request the email themselves. The email SHALL be unknown until the session has loaded it. Log out SHALL NOT ask for a confirmation.
 
 #### Scenario: Email in the shell
-- **WHEN** a user who logged in as `ann@example.com` sees the app shell
-- **THEN** the email shown is `ann@example.com`
+- **WHEN** the session holds the email `ann@example.com`
+- **THEN** the app shell gets `ann@example.com` from the session interface
 
-#### Scenario: Email after a reload
-- **WHEN** the page reloads while the user is signed in and the email has not loaded yet
-- **THEN** the session reports the email as unknown, and no browser storage holds it
+#### Scenario: Email not loaded yet
+- **WHEN** the session has not loaded the email
+- **THEN** the session interface reports the email as unknown
 
-#### Scenario: Log out with a server error
-- **WHEN** the user logs out and the server answers 500
-- **THEN** the session ends and the log in screen shows without a banner
+#### Scenario: Log out without confirmation
+- **WHEN** the user chooses log out
+- **THEN** the session's log out action runs once, with no confirmation
 
 ### Requirement: Auth layout per size
 The log in and register screens SHALL follow the Figma layouts: on phones the brand, title and form start at the top without a card; on tablet and desktop the brand and a card with the form are centered. Inputs and buttons SHALL use the touch size on phones.

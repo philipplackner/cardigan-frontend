@@ -31,7 +31,8 @@
 
 ```
 src/core/auth/
-  session.tsx          AuthSession type, SessionProvider, useSession()
+  SessionContext.ts    AuthSession type, SessionContext, useSession()
+  SessionProvider.tsx  SessionProvider
   fakeSession.ts       createFakeSession() for tests and the preview page
 src/features/auth/
   types.ts             LogIn, Register, AuthResult, AuthFailure
@@ -43,12 +44,14 @@ src/features/auth/
   i18n/en.json         "auth" namespace
 ```
 
-`core/auth` is the only place both auth and board list can import from, so the session interface lives there (D13). The `react-security` skill also puts session state in `core/auth`. Connect replaces the fake with the real session in the same module, so callers don't change.
+`core/auth` is the only place both auth and board list can import from, so the session interface lives there (D13). The `react-security` skill also puts session state in `core/auth`. Connect replaces the fake with the real session behind the same provider, so callers don't change.
+
+`session.ts` stays free for the token and status store from `react-security`, which `web-auth-connect` adds. Connect provides `SessionProvider` once in `App.tsx` with a value built from that store. This is an app-wide object, not a Context for swapping implementations in tests, so it fits `react-project-structure`. The file split follows `ToastContext.ts`/`Toast.tsx`, which also keeps `react/only-export-components` happy.
 
 ### Session interface
 
 ```ts
-// src/core/auth/session.tsx
+// src/core/auth/SessionContext.ts and SessionProvider.tsx
 export type AuthSession = {
   /** The signed-in user's email as the backend returned it (lowercased). `null` while it loads after a reload. */
   email: string | null
@@ -61,8 +64,15 @@ export function useSession(): AuthSession // throws outside a SessionProvider
 
 - `logOut` is fire and forget (D7). The UI reacts to the session ending, not to a promise, so a failing server call can't leave the user signed in.
 - `useSession` throws outside a provider. The shell only renders for a signed-in user, so a missing provider is a programming error, not a state to design for.
+- After `logOut`, the host removes the signed-in tree, including `SessionProvider`, in the same update that ends the session. Until then the provider keeps its last value. `AuthSession` has no signed-out state, and consumers never see one.
 - `createFakeSession({ email, onLogOut })` returns an `AuthSession` for tests and the preview page.
 - `email` comes from the log in or register response. After a reload, `web-auth-connect` restores the session with a refresh, then calls `GET /api/v1/users/me` once and fills `email`. Until then it is `null` (D11). It lives in memory only, never in browser storage. If the restore fails with a network error or a 5xx, the app still opens as signed in, and the board list's own load error shows (D17). The board list change gets the interface through the coordinator.
+- `web-auth-connect` specifies and tests the behavior behind the interface, which this change can't build:
+  - The email is never kept in browser storage.
+  - Log out ends the session at once, ignores a failed server response for the UI, and lands on log in without a banner (D7).
+  - **Pending log out (web only).** The refresh cookie is httpOnly, so only the server can clear it. When the log out request fails, the app keeps a non-personal "log out pending" marker in `localStorage`. While the marker exists, the app doesn't restore a session on load. It sends the log out request again first, and removes the marker only after the server confirmed the log out or after a new successful log in. Without this, a reload after a failed log out signs the previous user back in on a shared computer.
+  - A session the user ended with log out, in this tab or another tab, is never reported as expired. A refresh rejected after log out started doesn't set the session expired flag.
+  - Leaving the log in screen ends the session expired state.
 
 Alternative: a plain module with `getEmail()`/`subscribe` like the skill's token store. Rejected for now because nothing outside React reads the email. Connect can still back the provider with such a store.
 
@@ -90,9 +100,10 @@ export type Register = (input: { email: string; password: string }) => Promise<A
 ### Forms
 
 - React Hook Form with `zodResolver`, `mode: 'onTouched'` and `reValidateMode: 'onChange'`. This gives D4 exactly: the first error on blur or submit, then live. `shouldFocusError` (the default) moves focus to the first field in error on submit.
-- The password field registers with `deps: ['repeatPassword']`, so "Passwords don't match." updates when the password changes.
+- The password field's `onChange` calls `trigger('repeatPassword')` only when the repeat field is touched or the form was submitted (`getFieldState('repeatPassword').isTouched || formState.isSubmitted`). This keeps "Passwords don't match." live after the repeat field showed an error, and never shows an error on an untouched repeat field. `deps` is not used, because it validates the dependent field even when it is untouched.
 - The live rules don't use form errors. `PasswordRules` reads the password with `useWatch` and calls `passwordRules(value)`, which returns the four booleans. It shows them from the first keystroke, independent of the touched state.
-- The register schema's password check reports a special key `rulesUnmet` when one of the four rules fails. `fieldErrorText` renders no text for it, but the field still gets `aria-invalid` and the danger border. The submit therefore shows the red field and the crosses without an extra message.
+- The register schema's password check reports a special key `rulesUnmet` when one of the four rules fails. `fieldErrorText` renders no text for it. The submit therefore shows the red field and the crosses without an extra message.
+- The password `Input` gets `isInvalid` when the field has any form error, including `rulesUnmet`, or when `banner === 'invalidCredentials'`. `Field` gets `error` only when `fieldErrorText` returns text, because `Field` treats an empty error as no error.
 - Fields get `disabled` from the view-model's `isSubmitting` through `Input`'s own prop, not through React Hook Form's `disabled` option. That option would drop the values.
 - `autocomplete`:
   - Log in: `username` on the email and `current-password` on the password.
@@ -116,7 +127,7 @@ export type Register = (input: { email: string; password: string }) => Promise<A
 
   All of this runs on the NFC form, without trimming. Character classes use `\p{Ll}`, `\p{Lu}`, `\p{Nd}` with the `u` flag. `INVALID_CHARACTER` reads "Password can't contain tabs or line breaks." and `TOO_LONG` reads "Password can't be longer than 128 characters." (D15).
 - **Password (log in)**: only `""` → `REQUIRED`.
-- **Repeat password**: `""` → `REQUIRED`, otherwise it must equal the password, raw → `mismatch`.
+- **Repeat password**: `""` → `REQUIRED`, otherwise it must equal the password, raw → `mismatch`. The mismatch check is an object-level refinement with a `when` condition that only requires `password` and `repeatPassword` to be strings. It runs even when email or the password rules have issues. Zod 4 skips object refinements by default once any field has an issue.
 
 ### Request state and banners
 
@@ -137,17 +148,19 @@ The initial banner is `'sessionExpired'` when `isSessionExpired` is set (D9).
 
 - **Field failures** from the server go to the form through `setError`:
   - `emailUsed` → email with the text "An account with this email already exists."
-  - `invalidFields` entries for `email` or `password` → the same texts as the client codes.
+  - `invalidFields` entries for `email` or `password` with a client code → the same texts as the client codes.
+  - `password` with `TOO_SHORT`, `PASSWORD_TOO_WEAK` or an unknown code → `rulesUnmet` (danger border, no text).
+  - `email` with an unknown code → "Enter a valid email address."
 
-  If any entry names another field or an unknown code, the reducer gets `failed({ kind: 'other' })` instead. Clearing on edit is React Hook Form's normal behavior once the field changes.
-- **Wrong credentials** also set a password error with an empty text, for the danger border (D10). The form's `onChange` dispatches `edited`, which clears the banner and that error.
+  If any entry names a field the form doesn't show, the reducer gets `failed({ kind: 'other' })` and no field error from that response is set. Clearing on edit is React Hook Form's normal behavior once the field changes.
+- **Wrong credentials** set no form error. The password border comes from the reducer's banner (D10), so the form's `onChange` dispatches `edited`, which clears the banner and the border together.
 - **Accessible names** (D18):
   - `PasswordRule` gets `stateLabel` "Met" or "Not met".
   - The rules render as a list labelled "Password requirements".
   - Each form is labelled by its title.
   - Error banners use `role="alert"`, and the session expired banner uses `role="status"`.
 - **Double submit**: blocked by checking `isSubmitting` in the view-model before calling the injected function. Disabled fields alone don't stop Enter, because the button stays focusable.
-- **Success** calls `onLoggedIn` or `onRegistered` and shows nothing itself.
+- **Success** calls `onLoggedIn` or `onRegistered` and shows nothing itself. If the Root unmounted while the request ran, the success callback still fires so the host knows about the session, and a failure is ignored.
 
 ### Rate limit text
 
@@ -171,7 +184,9 @@ An `auth` namespace in `src/features/auth/i18n/en.json`, registered where the ap
 
 ### Docs
 
-`CLAUDE.md` → Authentication: replace `RATE_LIMIT_EXCEEDED` with `RATE_LIMITED`. Say that log in and register are limited per email, and that refresh and log out are never limited. Drop the matching item from "Open Items" (D12).
+`AGENTS.md` (which `CLAUDE.md` includes) (D12):
+- Authentication: replace the last bullet with: "Log in and register are rate limited per email. Refresh and log out are never rate limited. A `429` comes with code `RATE_LIMITED` and a `Retry-After` header. The auth screens show it in the error banner (see `openspec/specs/web-auth`)."
+- Open Items: delete "Whether refresh and logout get a rate limit (still open on the backend)." and change "Designs for: rate limit (`429`), network error, offline, not-found page." to "Designs for: network error and offline outside the auth screens, not-found page."
 
 ## Risks / Trade-offs
 

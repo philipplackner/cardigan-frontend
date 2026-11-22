@@ -8,7 +8,7 @@ Every group ends with all five gates passing (`typecheck`, `lint`, `format:check
 
 ## 2. Session interface in `core/auth`
 
-- [ ] 2.1 Add `AuthSession`, `SessionProvider` and `useSession` in `src/core/auth/session.tsx`, and `createFakeSession` in `fakeSession.ts`, as in `design.md`. Verify with tests:
+- [ ] 2.1 Add `AuthSession`, `SessionContext` and `useSession` in `src/core/auth/SessionContext.ts`, `SessionProvider` in `SessionProvider.tsx`, and `createFakeSession` in `fakeSession.ts`, as in `design.md`. Verify with tests:
   - `useSession` returns the provided email (also `null`) and `logOut`.
   - It throws a clear error outside a provider.
   - The fake calls `onLogOut` once per `logOut`.
@@ -30,9 +30,11 @@ Every group ends with all five gates passing (`typecheck`, `lint`, `format:check
   - Whitespace email; 254/255 code points; `  Ann@Example.com ` accepted.
   - Spaces-only password accepted on log in.
   - `rulesUnmet`, `INVALID_CHARACTER` (tab, unpaired surrogate) and `TOO_LONG` (129) on register.
+  - The password error order: `abc\tdef` → `INVALID_CHARACTER`; 129 lowercase letters → `rulesUnmet`; 120 ASCII + eight U+1F600 accepted.
   - Mismatch and empty repeat.
+  - Mismatch reported together with an invalid email, and together with `rulesUnmet`.
   - One error per field.
-- [ ] 3.4 Add `retryAfterText` and `fieldErrorText` (code → translation key, `rulesUnmet` → no text, unknown field or code → banner fallback). Add the `auth` namespace `en.json` with every Figma, D5, D6, D15, D16 and D18 string, registered with i18next and typed. Verify with unit tests: 1, 12, 59, 60, 61 and 3600 seconds; each field code including the two D15 texts; an unknown field; and the typecheck failing on a misspelled key.
+- [ ] 3.4 Add `retryAfterText` and `fieldErrorText` (code → translation key, `rulesUnmet` → no text, unknown field or code → banner fallback). Add the `auth` namespace `en.json` with every Figma, D5, D6, D15, D16 and D18 string, registered with i18next and typed. Verify with unit tests: 1, 12, 59, 60, 61 and 3600 seconds; each field code including the two D15 texts; server `TOO_SHORT` and `PASSWORD_TOO_WEAK` on the password and an unknown password code → no text; an unknown email code → "Enter a valid email address."; an unknown field; and the typecheck failing on a misspelled key.
 
 ## 4. Request state and view-models
 
@@ -42,7 +44,7 @@ Every group ends with all five gates passing (`typecheck`, `lint`, `format:check
   - Each failure kind maps to its banner or to no banner.
   - `rateLimited` with `retryAfterSeconds: null` maps to the generic banner.
   - `edited` clears only `invalidCredentials`.
-- [ ] 4.2 Add `useLoginViewModel` and `useRegisterViewModel`: the double-submit guard, calling the injected function, routing `emailUsed` and `invalidFields` to the form and the other failures to the reducer, and calling `onLoggedIn` or `onRegistered`. Verify with tests on fake injected functions, including a second submit while the first is pending that makes no second call.
+- [ ] 4.2 Add `useLoginViewModel` and `useRegisterViewModel`: the double-submit guard, calling the injected function, routing `emailUsed` and `invalidFields` to the form and the other failures to the reducer, and calling `onLoggedIn` or `onRegistered`. Verify with tests on fake injected functions, including a second submit event while the first is pending that makes no second call, and a success after the Root unmounted that still calls `onLoggedIn` or `onRegistered`.
 
 ## 5. Screens
 
@@ -54,19 +56,20 @@ Every group ends with all five gates passing (`typecheck`, `lint`, `format:check
   - Wrong credentials (values kept, password border, cleared on edit).
   - Rate limited, including the correct password over the limit and a 429 without a usable `Retry-After`.
   - The generic banner.
-  - The session expired banner kept while typing and replaced on submit.
+  - The session expired banner kept while typing, kept on a submit that field errors block, and replaced on a submit that sends a request.
   - `onLoggedIn` on success.
   - The `autocomplete` values.
 - [ ] 5.3 Add `PasswordRules`, `RegisterForm`, `RegisterScreen` and `RegisterRoot`. Verify with screen and Root tests (fakes) for each `web-auth` scenario on register:
   - Live rules before blur, with the screen reader state text.
   - Errors after blur and then live.
   - Mismatch updating when the password changes.
+  - Leaving or editing the password with the repeat field untouched shows no repeat error.
   - The weak password submit with no message.
   - The D15 messages: 129 code points and a tab, each with all four rules met.
   - Creating account….
   - The used email cleared on edit.
-  - Server `INVALID_FORMAT` on email.
-  - An unknown server field → the generic banner.
+  - Server `INVALID_FORMAT` on email, `PASSWORD_TOO_WEAK` on the password (invalid, no text, no banner) and an unknown code on email ("Enter a valid email address.").
+  - An unknown server field, alone and together with a known one → only the generic banner.
   - `onRegistered` on success.
 - [ ] 5.4 Check keyboard-only use and the D18 labels on both screens: tab order, Enter submits, the banner is announced (`role="alert"` for errors, `role="status"` for session expired), the forms are named by their titles, and the rules are a list named "Password requirements" with "Met" or "Not met" before each rule. Verify with screen tests that query by role and name, and with a manual keyboard pass on the preview page.
 
@@ -78,11 +81,12 @@ Every group ends with all five gates passing (`typecheck`, `lint`, `format:check
   - A `Sidebar` account row fed by `createFakeSession`.
 
   Verify by opening the preview page and going through every scenario in light and dark mode at 390, 834 and 1440 px.
-- [ ] 6.2 Update `CLAUDE.md` as described in `design.md` → Docs. Verify by reading the section against `api-auth-tokens` and `api-errors`.
+- [ ] 6.2 Update `AGENTS.md` (which `CLAUDE.md` includes) as described in `design.md` → Docs. Verify by reading the section against `api-auth-tokens` and `api-errors`.
 - [ ] 6.3 After the last commit, run the five gates on a clean working tree. Verify that all of them pass.
 
 ## Workflow follow-up
 
 - Tell the coordinator (cardiganapp-18) when the session interface is in, so the web board list change can read it.
 - `web-auth-connect` mounts `LoginRoot` and `RegisterRoot` on routes, implements `LogIn`, `Register` and the real session, fills `email` from `/users/me` after a reload (D11), and opens the app as signed in when the restore fails with a network error or a 5xx (D17).
+- `web-auth-connect` specifies and tests the session behavior listed in `design.md` → Session interface: no email in browser storage; log out ignores a failed server response and lands on log in without a banner (D7); the pending log out marker, including a reload after a failed log out that restores no session; a log out (in this or another tab) never shown as session expired; the session expired state ending when the user leaves log in.
 - Archive only when the user says so.
