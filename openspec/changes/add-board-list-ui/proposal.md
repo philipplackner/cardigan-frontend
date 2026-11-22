@@ -10,19 +10,20 @@ The board list is the home screen after login (chunk 20, `web-board-list-ui`), a
   - Tablet and desktop: a grid of board tiles (columns adapt to a ~260 px tile minimum, D20) under a "Boards {n boards}" header with Refresh, Import and New board.
   - Phone: a list of board rows under a large "Boards" title that moves into the pinned app bar on scroll. The app bar has + and ⋯; there is no refresh control on web phones (D12, a deliberate deviation from Figma). The list ends with the board count.
   - Tiles and rows show name, key, card count and the relative last-update time. Boards are listed in server order (most recently updated first).
-- **States** (D11): loading skeleton tiles, "No boards yet" empty state with New board and Import, "Couldn't load your boards" with Try again. Refresh keeps the list and spins the icon; a failed refresh keeps the list and shows a toast.
+- **States** (D11): loading skeleton tiles, "No boards yet" empty state with New board and Import, "Couldn’t load your boards" with Try again. Refresh keeps the list and spins the icon; a failed refresh keeps the list and shows a toast.
 - **New board dialog** (D4–D8, D9, D10, D19): Name and Key. The key is prefilled from the name until the user edits it. Name and key are checked on the client, including a local key clash check. After success the dialog closes and the new board opens through a callback.
 - **Rename board dialog** (D6, D10, D14): Name plus the read-only key. An unchanged name closes without a request.
 - **Delete board dialog** (D1, D2, D10): "Delete board “{name}”?" with the card count.
 - **Reuse by the board view** (D17, D22): Rename and Delete report renamed, deleted or unchanged to the screen that opened them.
 - **Tile and row menu**: Rename, Delete board. Icon-only controls get accessible names in the agreed style (D21).
-- **Sidebar and phone menu** (D15): "All boards", the sidebar's BOARDS list and "+ New board"; the phone ⋯ menu with "Signed in as {email}", Import board, Labels and Log out. Email and logout come from auth's `useSession()`; the email is hidden while it's unknown.
+- **Sidebar and phone menu** (D15): "All boards", the sidebar's BOARDS list and "+ New board"; the phone ⋯ menu with "Signed in as {email}", Import board, Labels and Log out. The sidebar's account footer (email, avatar initial, Log out) is filled by this change. Email and logout come from auth's `useSession()`; the email and the initial are hidden while the email is unknown.
 - **No route yet** (D23): the foundation's empty `/` route stays. The board list shows on the dev preview page; `web-boards-connect` mounts it at `/` with the real data access.
 - **Copy without a design** (D6, D10, D11, D13). Shared with the mobile app:
   - Name errors: "Enter a name.", "Use at most {n} characters.", "Use a single line without control characters."
-  - Toasts: "Couldn't create the board.", "Couldn't save the board.", "Couldn't delete “{name}”." (each + " Check your connection and try again."), "“{name}” no longer exists.", "Couldn't refresh your boards. Check your connection and try again."
-  - Relative time: "Just now", "N minutes ago", "N hours ago", "Yesterday", "Oct 9", "Oct 9, 2025".
-- **Shared key check** (D7): the board key check and its error strings move from `transfer` to `core/utils` and the `common` translations; `transfer` uses them.
+  - Toasts: "Couldn’t create the board.", "Couldn’t save the board.", "Couldn’t delete “{name}”." (each + " Check your connection and try again."), "“{name}” no longer exists.", "Couldn’t refresh your boards. Check your connection and try again."
+  - Relative time: "Just now", "N minutes ago", "N hours ago" (whole units rounded down), "Yesterday", "Oct 9", "Oct 9, 2025".
+  - Key hint while the key is empty: "2–5 uppercase letters. The key can’t be changed later."
+- **Shared key check** (D7): the board key check and its error strings move from `transfer` to `core/utils` and the `common` translations; `transfer` uses them. Name checks use the foundation's `checkText`. `transfer`'s `ImportTrigger` is removed; the board list renders the Import entry points from `useImportFlow`.
 - **Data access** (D16, D17): a `BoardsDataAccess` interface and board summary type, with test doubles for tests and the dev preview page.
 
 Not breaking. The import key clash dialog keeps the same behavior and copy after the key check moves.
@@ -54,8 +55,8 @@ This change implements or depends on these `cardigan-shared-specs` requirements:
 
 - **Code**:
   - `src/features/boards/` (api interface, components, hooks, utils, types, translations).
-  - `src/core/utils/` (board key check, key prefill), `src/core/i18n/` (common key error and name error strings).
-  - `src/features/transfer/` (switch to the shared key check and strings).
+  - `src/core/utils/` (board key check), `src/core/i18n/` (common key error and name error strings), `src/core/ui/` (`Sidebar.account` accepts a `null` email and initial).
+  - `src/features/transfer/` (switch to the shared key check and strings; remove `ImportTrigger`).
   - `src/preview/` (board list section with an in-memory data access).
 - **Depends on**: the web foundation change (TanStack Router, TanStack Query, React Hook Form, Zod, shell layout, text normalize helper). It must land first.
 - **Other changes**: the web board view change adds files in `src/features/boards/` and reuses the Rename and Delete dialogs and `BoardsDataAccess`; it rebases onto this change. The web auth change provides `useSession()` with the email and logout action.
