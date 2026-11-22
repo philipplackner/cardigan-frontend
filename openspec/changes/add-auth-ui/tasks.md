@@ -4,7 +4,7 @@ Every group ends with all five gates passing (`typecheck`, `lint`, `format:check
 
 ## 1. Prerequisites
 
-- [ ] 1.1 Check that the web foundation change has landed: `core/utils` exports the text normalize-and-count helper (text and password variants), `react-hook-form`, `zod` and `@hookform/resolvers` are installed, and TanStack Router and Query are set up. If any of them is missing, stop and tell the user instead of adding a copy. Verify by reading the helper's exports and its tests, and with `npm ls react-hook-form zod @hookform/resolvers`.
+- [x] 1.1 Check that the web foundation change has landed: `core/utils` exports the text normalize-and-count helper (text and password variants), `react-hook-form`, `zod` and `@hookform/resolvers` are installed, and TanStack Router and Query are set up. If any of them is missing, stop and tell the user instead of adding a copy. Verify by reading the helper's exports and its tests, and with `npm ls react-hook-form zod @hookform/resolvers`.
 
 ## 2. Session interface in `core/auth`
 
