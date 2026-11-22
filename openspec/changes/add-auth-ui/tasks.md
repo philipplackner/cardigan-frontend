@@ -16,17 +16,17 @@ Every group ends with all five gates passing (`typecheck`, `lint`, `format:check
 
 ## 3. Rules, texts and error mapping
 
-- [ ] 3.1 Add `isAddrSpec` in `features/auth/utils/emailFormat.ts`. Verify with adversarial unit tests:
+- [x] 3.1 Add `isAddrSpec` in `features/auth/utils/emailFormat.ts`. Verify with adversarial unit tests:
   - The `domain-user` scenarios: plus address, `ann@`, `jürgen@münchen.de`, `ann(work)@example.com`.
   - A quoted local part, a domain literal, leading, trailing and double dots, a missing local part, a tab, a NUL.
   - A 250 KB near-match that finishes within 100 ms.
-- [ ] 3.2 Add `passwordRules(value)` in `utils/passwordRules.ts`, returning the four booleans on the NFC form. Verify with unit tests:
+- [x] 3.2 Add `passwordRules(value)` in `utils/passwordRules.ts`, returning the four booleans on the NFC form. Verify with unit tests:
   - 11 and 12 code points, including a 12th character that is an emoji.
   - Each class missing.
   - `äöüÄÖÜ١٢٣ßßßß` passes all four.
   - A decomposed `é` counts once.
   - Leading and trailing spaces count.
-- [ ] 3.3 Add the log in and register Zod schemas in `utils/loginForm.ts` and `utils/registerForm.ts`, with the rule order from `design.md` and translation keys as messages. Verify with unit tests for every case in the spec's field check requirements:
+- [x] 3.3 Add the log in and register Zod schemas in `utils/loginForm.ts` and `utils/registerForm.ts`, with the rule order from `design.md` and translation keys as messages. Verify with unit tests for every case in the spec's field check requirements:
   - Whitespace email; 254/255 code points; `  Ann@Example.com ` accepted.
   - Spaces-only password accepted on log in.
   - `rulesUnmet`, `INVALID_CHARACTER` (tab, unpaired surrogate) and `TOO_LONG` (129) on register.
@@ -34,7 +34,7 @@ Every group ends with all five gates passing (`typecheck`, `lint`, `format:check
   - Mismatch and empty repeat.
   - Mismatch reported together with an invalid email, and together with `rulesUnmet`.
   - One error per field.
-- [ ] 3.4 Add `retryAfterText` and `fieldErrorText` (code → translation key, `rulesUnmet` → no text, unknown field or code → banner fallback). Add the `auth` namespace `en.json` with every Figma, D5, D6, D15, D16 and D18 string, registered with i18next and typed. Verify with unit tests: 1, 12, 59, 60, 61 and 3600 seconds; each field code including the two D15 texts; server `TOO_SHORT` and `PASSWORD_TOO_WEAK` on the password and an unknown password code → no text; an unknown email code → "Enter a valid email address."; an unknown field; and the typecheck failing on a misspelled key.
+- [x] 3.4 Add `retryAfterText` and `fieldErrorText` (code → translation key, `rulesUnmet` → no text, unknown field or code → banner fallback). Add the `auth` namespace `en.json` with every Figma, D5, D6, D15, D16 and D18 string, registered with i18next and typed. Verify with unit tests: 1, 12, 59, 60, 61 and 3600 seconds; each field code including the two D15 texts; server `TOO_SHORT` and `PASSWORD_TOO_WEAK` on the password and an unknown password code → no text; an unknown email code → "Enter a valid email address."; an unknown field; and the typecheck failing on a misspelled key.
 
 ## 4. Request state and view-models
 
