@@ -38,7 +38,7 @@ export function EmptyState({
         {title}
       </h2>
       {description && (
-        <p className="type-sans-13.5-regular-145 text-text-muted">
+        <p className="max-w-[322px] type-sans-13.5-regular-145 text-text-muted">
           {description}
         </p>
       )}
