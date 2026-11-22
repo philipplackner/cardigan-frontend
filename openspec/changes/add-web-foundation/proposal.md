@@ -8,7 +8,7 @@ Web auth, web board list and web board view all need a router, a query cache, an
 
 - **Routing** (D1, D2, D5, D6, D9): TanStack Router with file-based routes in `src/app/routes` and the Vite plugin. A root route, a pathless `_authenticated` layout route that renders the shell, and a temporary empty index route at `/`. Login and register (added by web auth) sit outside the shell. `_authenticated` has no guard yet; auth-connect adds it. Not-found, pending and route errors show a blank area; errors log to the console in development only.
 - **App shell** (D3, D4): the `_authenticated` route renders `AppLayout` with an empty sidebar frame (brand only) and a phone top-bar slot that each page fills with its own `AppBar`. `Sidebar`'s `mainNav`, `boards` and `account` become optional so feature changes can fill them one by one.
-- **Server state** (D7): TanStack Query with one QueryClient. Data stays fresh until an intentional refresh, the user's own change or a reload. No refetch on focus, reconnect or mount. No automatic retries for now.
+- **Server state** (D7): TanStack Query with one QueryClient. Data stays fresh until an intentional refresh, the user's own change or a reload. No refetch on focus, reconnect or mount. No automatic retries for now. Requests made offline fail at once instead of being held until the network returns.
 - **Providers** (D10): `App` mounts `QueryClientProvider`, `ToastProvider` and `RouterProvider`. A `renderAppAt` helper renders the whole router at a URL for route tests.
 - **Text helper** (D8): one helper in `core/utils` that normalizes, counts code points and checks characters per the shared text-length rule, for single-line, multi-line and password fields.
 - **Form libraries** (D11): React Hook Form, Zod and `@hookform/resolvers` are installed for web auth and board list.
@@ -25,6 +25,7 @@ From `cardigan-shared-specs`:
 - `text-length`, "Invalid characters are rejected" — implemented on the client by the character check.
 - `text-length`, "Clients validate with the same rule" — the helper is the web's single place for this rule.
 - `text-length`, "Backend stores and returns normalized text" — depended on: features send the normalized value and show what the backend returns.
+- `api-errors`, "One field error per field" — depended on: `checkText` reports the first broken rule in this order.
 
 ## Capabilities
 
@@ -39,5 +40,5 @@ None. The shell uses the regions from `web-design-system` "Layout regions per br
 ## Impact
 
 - **Dependencies**: `@tanstack/react-router`, `@tanstack/react-query`, `react-hook-form`, `zod`, `@hookform/resolvers`; dev: `@tanstack/router-plugin`.
-- **Code**: `vite.config.ts` (router plugin), `src/app/App.tsx`, new `src/app/router.ts`, `src/app/routes/`, committed `src/app/routeTree.gen.ts`, `src/core/api/queryClient.ts`, `src/core/utils/text.ts`, `src/core/ui/Sidebar.tsx` (optional slots), a top-bar slot in `src/core/ui/layout`, test helpers in `src/app`.
+- **Code**: `vite.config.ts` (router plugin), `src/main.tsx` (dev-only error logging), `src/app/App.tsx`, new `src/app/router.ts`, `src/app/routes/`, committed `src/app/routeTree.gen.ts`, `src/core/api/queryClient.ts`, `src/core/utils/text.ts`, `src/core/ui/Sidebar.tsx` (optional slots), a top-bar slot in `src/core/ui/layout`, test helpers in `src/app`.
 - **Later changes**: web auth adds `/login`, `/register` and the account footer; board list replaces the index route and fills the sidebar's board parts; board view adds `/boards/$boardId`; labels adds `/labels` and its nav item; auth-connect adds the guard; web-api-client adds the retry rule.

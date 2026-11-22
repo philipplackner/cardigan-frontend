@@ -47,7 +47,7 @@ While a page inside the shell is still loading, and when it fails to load or ren
 
 #### Scenario: Page fails to render
 - **WHEN** a page inside the shell throws while rendering
-- **THEN** its main area is blank and the sidebar still works
+- **THEN** the `main` element is empty, the sidebar with the brand is still rendered, and navigating to `/` afterwards renders the index page inside the same shell
 
 #### Scenario: Failure in development
 - **WHEN** a page fails in a development build
@@ -69,8 +69,12 @@ Server data the web app has loaded SHALL stay on screen until the user refreshes
 - **THEN** the data is loaded again
 
 ### Requirement: Failed requests are not retried automatically
-A request for server data or a change that fails SHALL NOT be repeated automatically.
+A request for server data or a change that fails SHALL NOT be repeated automatically. A request made while the browser is offline SHALL be sent at once and SHALL NOT be held to be sent when the network returns.
 
 #### Scenario: Load fails
 - **WHEN** loading a page's data fails
 - **THEN** exactly one request was sent
+
+#### Scenario: Change made offline
+- **WHEN** the browser is offline and the user starts a change
+- **THEN** the request fails at once, and no request is sent when the network comes back

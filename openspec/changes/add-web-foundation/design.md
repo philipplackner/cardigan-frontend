@@ -32,11 +32,13 @@ src/app/
   shell/
     AppShell.tsx        AppLayout + Sidebar frame + top-bar slot + Outlet
   BlankPage.tsx         default pending, error and not-found component
+  rootErrorHandlers.ts  dev-only onCaughtError/onUncaughtError for createRoot
   renderAppAt.tsx       test helper
 ```
 
 - Plugin in `vite.config.ts` before `react()`: `tanstackRouter({ target: 'react', routesDirectory: './src/app/routes', generatedRouteTree: './src/app/routeTree.gen.ts', autoCodeSplitting: true })`. `routeTree.gen.ts` is also added to `.prettierignore`.
-- `createAppRouter` sets `context: { queryClient }`, `defaultPreload: 'intent'`, `defaultPreloadStaleTime: 0`, and `BlankPage` as default pending and error component (D6). The error component logs with `console.error` only when `import.meta.env.DEV`.
+- `createAppRouter` sets `context: { queryClient }`, `defaultPreload: 'intent'`, `defaultPreloadStaleTime: 0`, and `BlankPage` as default pending and error component (D6). `BlankPage` doesn't log.
+- Route errors are caught by TanStack Router's React error boundary, and React 19's default `onCaughtError` and `onUncaughtError` log to the console in production too. So `src/main.tsx` passes `onCaughtError` and `onUncaughtError` to `createRoot`, built by `createRootErrorHandlers(isDev)` in `src/app/rootErrorHandlers.ts`. Both log with `console.error` only when `import.meta.env.DEV` and do nothing otherwise.
 - Later changes add files only: `routes/login.tsx`, `routes/register.tsx` (web auth), `routes/_authenticated/index.tsx` replaced (board list), `routes/_authenticated/boards/$boardId.tsx` (board view), `routes/_authenticated/labels.tsx` (labels). auth-connect adds `beforeLoad` to `_authenticated.tsx` (D2).
 - `__root.tsx` renders `Outlet` only, so not-found outside the shell is a blank page. A `notFound()` thrown inside `_authenticated` renders blank inside the shell.
 - Alternative: code-based routes. Rejected: CLAUDE.md and the routing skill set file-based routes.
@@ -67,8 +69,8 @@ Alternatives: sticky bar in the main area (scrolls with the content and breaks t
 export function createQueryClient() {
   return new QueryClient({
     defaultOptions: {
-      queries: { staleTime: Infinity, refetchOnWindowFocus: false, refetchOnReconnect: false, refetchOnMount: false, retry: false },
-      mutations: { retry: false },
+      queries: { staleTime: Infinity, refetchOnWindowFocus: false, refetchOnReconnect: false, refetchOnMount: false, retry: false, networkMode: 'always' },
+      mutations: { retry: false, networkMode: 'always' },
     },
   })
 }
@@ -76,6 +78,8 @@ export const queryClient = createQueryClient()
 ```
 
 `gcTime` stays at the library default of 5 minutes, so data no mounted page uses is dropped after 5 minutes and loaded again on the next visit (spec "Server data reloads only on intent"). Keeping it forever would grow memory with every board opened in a long session. web-api-client replaces `retry: false` for queries with its DataError rule.
+
+`networkMode: 'always'` so a request made offline fails at once and is never held for later. The library default (`'online'`) pauses requests while the browser is offline and sends them when the network returns, which would run a change minutes after the user gave up on it and reload data on reconnect.
 
 `createTestQueryClient()` lives next to it with the same defaults and `gcTime: Infinity` so tests don't leave timers.
 
@@ -96,7 +100,7 @@ export function checkText(value: string, rule: { kind: TextKind; min?: number; m
 - `normalizeText`: for non-passwords `\r\n` and lone `\r` → `\n`, then `normalize('NFC')`, then trim with `/^\p{White_Space}+|\p{White_Space}+$/gu`. Passwords: `normalize('NFC')` only. Not `trim()`: it differs from White_Space on U+FEFF and U+0085.
 - `countCodePoints`: iterate the string (`for…of` steps by code point). Lone surrogates count as one each.
 - `checkText` normalizes first, then checks in this order: unpaired surrogate or forbidden control character → `INVALID_CHARACTER`; length 0 → `EMPTY`; below `min` → `TOO_SHORT`; above `max` → `TOO_LONG`. Forbidden: U+0000–U+001F, except tab, LF and CR in `multiLine`. `isWellFormed()` detects unpaired surrogates (supported in all target browsers).
-- The order puts invalid characters before length, so a single tab in a single-line field is reported as invalid, not as empty after trimming would hide it. Because trimming removes a leading or trailing tab, the character check runs on the normalized value: a tab only fails when it is inside the text, which matches the backend, which also checks after normalizing.
+- The character check runs on the normalized value, like the backend. A tab or line break at the edge of a single-line value is trimmed away and never fails. A single tab on its own normalizes to `""` and returns `EMPTY`. A tab inside the text returns `INVALID_CHARACTER`. Empty text can't contain an invalid character, so the order of `EMPTY` and `INVALID_CHARACTER` never matters. `INVALID_CHARACTER` before `TOO_SHORT` and `TOO_LONG` follows shared `api-errors` › One field error per field.
 - It returns the normalized `value`, which features send to the backend.
 - `EMPTY` is returned for empty text even when `min` is unset; a feature with an optional field skips the check for empty input.
 - Alternative: a Zod refinement in core. Rejected: the helper must also be usable outside forms (import key clash, quick add), and features can wrap it in their Zod schemas.
@@ -108,8 +112,9 @@ export function checkText(value: string, rule: { kind: TextKind; min?: number; m
 ### Tests
 
 - `text.test.ts` (unit, node): break vectors from shared `text-length` scenarios plus U+FEFF/U+0085, ZWJ emoji, lone high/low surrogate, NUL in multi-line, tab inside vs. at the edge of a single-line field, CRLF counting, password keeping spaces, decomposed é.
-- `queryClient.test.ts` (unit): defaults as decided.
-- Route tests in `src/app` with `renderAppAt(path)` (memory history, fresh test QueryClient, `ToastProvider`): `/` renders the shell; an unknown path renders blank and keeps the URL; a route that throws renders blank inside the shell and logs in dev; `AppBarSlot` content appears in the bar region. Test-only routes are not added to the real tree; the error case uses a test router built from the real root plus a throwing child.
+- `queryClient.test.ts` (unit): defaults as decided, including `networkMode: 'always'`.
+- `rootErrorHandlers.test.ts` (unit): both handlers log with `isDev` true and stay silent with `isDev` false.
+- Route tests in `src/app` with `renderAppAt(path)` (memory history, fresh test QueryClient, `ToastProvider`): `/` renders the shell; an unknown path renders blank and keeps the URL; a route that throws leaves `main` empty, keeps the sidebar, and navigating to `/` afterwards renders inside the same shell; `AppBarSlot` content appears in the bar region. Test-only routes are not added to the real tree; the error case uses a test router built from the real root plus a throwing child.
 - `Sidebar` test for the optional slots; `AppBarSlot` test.
 
 ## Risks / Trade-offs
