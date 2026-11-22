@@ -75,4 +75,24 @@ describe('Sidebar', () => {
 
     expect(screen.getByRole('heading', { name: 'Boards' })).toBeInTheDocument()
   })
+
+  it('hides the email and the avatar initial while they are unknown', () => {
+    render(
+      <Sidebar
+        brandName="Cardigan"
+        navLabel="Main navigation"
+        account={{
+          initial: null,
+          email: null,
+          logOutLabel: 'Log out',
+          onLogOut: vi.fn(),
+        }}
+      />,
+    )
+
+    const logOut = screen.getByRole('button', { name: 'Log out' })
+    const footer = logOut.parentElement!
+    expect(footer).toHaveTextContent(/^$/)
+    expect(logOut).toBeInTheDocument()
+  })
 })

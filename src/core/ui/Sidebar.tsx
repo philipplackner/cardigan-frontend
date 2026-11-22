@@ -21,10 +21,10 @@ type SidebarProps = {
   navLabel: string
   /** Top-level `NavItem`s, such as all boards and labels. */
   mainNav?: ReactNode
-  /** The account footer. Omitted when not given. */
+  /** The account footer. Omitted when not given. `initial` and `email` are `null` while unknown. */
   account?: {
-    initial: string
-    email: string
+    initial: string | null
+    email: string | null
     logOutLabel: string
     onLogOut: () => void
   }
@@ -72,9 +72,9 @@ export function Sidebar({
       {account && (
         <div className="border-t border-border pt-8">
           <div className="flex min-w-[0] items-center gap-9 py-4 pr-4 pl-8">
-            <Avatar initial={account.initial} />
+            <Avatar initial={account.initial ?? ''} />
             <span className="min-w-[0] flex-1 truncate type-sans-13-regular-145 text-text-primary">
-              {account.email}
+              {account.email ?? ''}
             </span>
             <IconButton
               icon={LogOutIcon}
