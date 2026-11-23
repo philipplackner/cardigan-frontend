@@ -23,8 +23,16 @@ function errors(overrides: Partial<Values>) {
   return byField
 }
 
+/** A domain whose labels stay within 63 characters, so `ann@` plus it has [length] code points. */
 function domainOfLength(length: number) {
-  return `${'a'.repeat(length - 'ann@.com'.length)}.com`
+  const labels: string[] = []
+  let remaining = length - 'ann@.com'.length
+  while (remaining > 63) {
+    labels.push('a'.repeat(49))
+    remaining -= 50
+  }
+  labels.push('a'.repeat(remaining))
+  return `${labels.join('.')}.com`
 }
 
 describe('registerFormSchema email', () => {
@@ -60,14 +68,37 @@ describe('registerFormSchema email', () => {
     })
   })
 
-  it.each(['ann@', 'jürgen@münchen.de', 'ann(work)@example.com', 'a\tb@x.de'])(
-    'reports %s as invalid',
-    (email) => {
-      expect(errors({ email })).toEqual({
-        email: [FIELD_ERROR_KEYS.emailInvalid],
-      })
-    },
-  )
+  it('accepts several subdomains', () => {
+    expect(errors({ email: 'ann@a.b.example.co.uk' })).toEqual({})
+  })
+
+  it('reports a tab before the length', () => {
+    const email = `ann\t@${domainOfLength(254)}`
+    expect(email).toHaveLength(255)
+    expect(errors({ email })).toEqual({
+      email: [FIELD_ERROR_KEYS.emailInvalid],
+    })
+  })
+
+  it('reports the length before a missing @', () => {
+    expect(errors({ email: 'a'.repeat(255) })).toEqual({
+      email: [FIELD_ERROR_KEYS.emailTooLong],
+    })
+  })
+
+  it.each([
+    'ann@',
+    'mail@pl-coding',
+    '"ann lee"@example.com',
+    'ann@[192.168.0.1]',
+    'jürgen@münchen.de',
+    'ann(work)@example.com',
+    'a\tb@x.de',
+  ])('reports %s as invalid', (email) => {
+    expect(errors({ email })).toEqual({
+      email: [FIELD_ERROR_KEYS.emailInvalid],
+    })
+  })
 })
 
 describe('registerFormSchema password', () => {
