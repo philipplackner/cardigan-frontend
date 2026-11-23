@@ -1,0 +1,59 @@
+{
+  "login": {
+    "title": "Log in to Cardigan",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "Your password",
+    "submit": "Log in",
+    "submitting": "Logging in…",
+    "noAccount": "No account yet? <action>Create one</action>"
+  },
+  "register": {
+    "title": "Create your account",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "Create a password",
+    "repeatPassword": "Repeat password",
+    "repeatPasswordPlaceholder": "Type it again",
+    "submit": "Create account",
+    "submitting": "Creating account…",
+    "haveAccount": "Already have an account? <action>Log in</action>"
+  },
+  "rules": {
+    "label": "Password requirements",
+    "met": "Met",
+    "notMet": "Not met",
+    "minLength": "12+ characters",
+    "lowercase": "Lowercase letter",
+    "uppercase": "Uppercase letter",
+    "digit": "Digit"
+  },
+  "fieldErrors": {
+    "emailRequired": "Enter your email.",
+    "emailInvalid": "Enter a valid email address.",
+    "emailTooLong": "Email can't be longer than 254 characters.",
+    "emailUsed": "An account with this email already exists.",
+    "passwordRequired": "Enter your password.",
+    "passwordInvalidCharacter": "Password can't contain tabs or line breaks.",
+    "passwordTooLong": "Password can't be longer than 128 characters.",
+    "repeatRequired": "Repeat your password.",
+    "mismatch": "Passwords don’t match."
+  },
+  "banners": {
+    "invalidCredentials": "Email or password is incorrect.",
+    "sessionExpired": "Your session has expired. Log in again to continue.",
+    "rateLimited": "Too many attempts. Try again in {{time}}.",
+    "other": "Couldn't reach Cardigan. Check your connection and try again."
+  },
+  "retryAfter": {
+    "seconds_one": "{{count}} second",
+    "seconds_other": "{{count}} seconds",
+    "minutes_one": "{{count}} minute",
+    "minutes_other": "{{count}} minutes"
+  },
+  "session": {
+    "logOut": "Log out"
+  }
+}

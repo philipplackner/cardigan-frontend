@@ -225,6 +225,7 @@
   --spacing-panel-desktop: 452px;
   /* Board list grid: as many columns as tiles of at least this width fit. */
   --spacing-board-tile-min: 260px;
+  --spacing-auth-card: 380px;
 
   --radius-1: 1px;
   --radius-2: 2px;

@@ -1,6 +1,7 @@
 import { PreviewSection } from './PreviewSection'
 import type { ComponentType } from 'react'
 import { ActionsSection } from './sections/ActionsSection'
+import { AuthSection } from './sections/AuthSection'
 import { FeedbackSection } from './sections/FeedbackSection'
 import { DataDisplaySection } from './sections/DataDisplaySection'
 import { LabelsSection } from './sections/LabelsSection'
@@ -31,6 +32,7 @@ const BUILT_SECTIONS: Record<string, ComponentType> = {
   'Card detail': CardDetailSection,
   'Import & export': ImportExportSection,
   'Board list': BoardListSection,
+  Auth: AuthSection,
 }
 
 const DESIGN_SYSTEM_SECTIONS = [
@@ -48,6 +50,7 @@ const DESIGN_SYSTEM_SECTIONS = [
   'Card detail',
   'Import & export',
   'Board list',
+  'Auth',
 ]
 
 export function PreviewApp() {
