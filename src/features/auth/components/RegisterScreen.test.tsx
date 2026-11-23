@@ -147,6 +147,30 @@ describe('RegisterRoot', () => {
     expect(email()).toHaveFocus()
   })
 
+  it.each(['mail@pl-coding', '"ann lee"@example.com'])(
+    'shows the format error for %s after leaving and sends nothing',
+    async (value) => {
+      const { user, register } = renderRegister()
+
+      await typeInto(user, email(), value)
+      await user.tab()
+      expect(
+        screen.getByText('Enter a valid email address.'),
+      ).toBeInTheDocument()
+
+      await fillAndSubmit(user, {
+        email: '',
+        password: VALID_PASSWORD,
+        repeat: VALID_PASSWORD,
+      })
+
+      expect(register).not.toHaveBeenCalled()
+      expect(
+        screen.getByText('Enter a valid email address.'),
+      ).toBeInTheDocument()
+    },
+  )
+
   it('updates the mismatch when the password changes', async () => {
     const { user } = renderRegister()
 

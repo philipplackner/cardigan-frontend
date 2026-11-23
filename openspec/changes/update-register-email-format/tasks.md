@@ -21,7 +21,7 @@ Each group ends with all five gates passing (`typecheck`, `lint`, `format:check`
   - `  Ann@Example.com ` still passes.
 
   Verify the tests pass.
-- [ ] 2.2 Add a `RegisterScreen` test for each new spec scenario: `mail@pl-coding` and `"ann lee"@example.com` show "Enter a valid email address." after blur and send no request on submit. Verify the tests pass, and that the existing log in tests pass unchanged.
+- [x] 2.2 Add a `RegisterScreen` test for each new spec scenario: `mail@pl-coding` and `"ann lee"@example.com` show "Enter a valid email address." after blur and send no request on submit. Verify the tests pass, and that the existing log in tests pass unchanged.
 
 ## 3. Final check
 
