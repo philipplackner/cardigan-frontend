@@ -143,7 +143,7 @@ The success toast's 4-second timer SHALL pause while the pointer is over the toa
 - **THEN** it closes
 
 ### Requirement: Modal overlays and keyboard
-Dialogs and bottom sheets SHALL keep keyboard focus inside while open, close on Escape or on a click on the scrim (except Progress dialogs, see below), and return focus to the element that opened them. Menus and popovers SHALL close on Escape or an outside click and return focus to their trigger.
+Dialogs and bottom sheets SHALL keep keyboard focus inside while open, close on Escape or on a click on the scrim (except Progress dialogs, see below), and return focus to the element that opened them. A dialog MAY opt out of returning focus when the screen moves focus to another element itself, as the board view's discard dialog does. Menus and popovers SHALL close on Escape or an outside click and return focus to their trigger.
 
 #### Scenario: Escape in a dialog
 - **WHEN** a dialog is open and the user presses Escape
@@ -152,6 +152,10 @@ Dialogs and bottom sheets SHALL keep keyboard focus inside while open, close on 
 #### Scenario: Tab inside a dialog
 - **WHEN** focus is on the last control of an open dialog and the user presses Tab
 - **THEN** focus moves to the first control of the dialog
+
+#### Scenario: Dialog that opts out of returning focus
+- **WHEN** a dialog that opts out of returning focus closes and the screen focuses another field
+- **THEN** focus stays on that field and does not move to the control that opened the dialog
 
 ### Requirement: Progress dialog cannot be dismissed
 A dialog in its Progress type SHALL NOT close on Escape, on a click on the scrim, or through a close control. It SHALL close only when the screen that opened it ends the progress.
