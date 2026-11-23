@@ -207,13 +207,29 @@ All test types are expected. See `react-unit-testing` and `react-integration-tes
 
 ### Commands
 
-| Command                | What it does                                                                                             |
-| ---------------------- | -------------------------------------------------------------------------------------------------------- |
-| `npm run api:sync`     | Copy the OpenAPI spec from `/Users/philipplackner/IdeaProjects/cardigan/app/src/test/resources/openapi/` |
-| `npm run api:generate` | Generate schemas and types from `api/openapi.json`                                                       |
-| `npm run e2e`          | Playwright against the local backend (it must be running on `localhost:8080`)                            |
+| Command                 | What it does                                                                                                                             |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run api:sync`      | Copy the OpenAPI spec from `/Users/philipplackner/IdeaProjects/cardigan/app/src/test/resources/openapi/`                                 |
+| `npm run api:generate`  | Generate schemas and types from `api/openapi.json`                                                                                       |
+| `npm run e2e`           | Playwright against the local backend (it must be running on `localhost:8080`)                                                            |
+| `npm run coverage`      | Run all Vitest tests with coverage. Prints a summary and writes Cobertura and HTML reports to `coverage/` (open `coverage/index.html`)   |
+| `npm run coverage:diff` | Run coverage, then show coverage for only the lines changed since the merge base with `origin/master`. Writes `coverage/diff-cover.html` |
 
 Scripts that don't exist yet get added in the change that sets up the tool.
+
+Coverage arguments, the same for both commands:
+
+- Directories limit the run to the tests in them and the report to their files: `npm run coverage -- src/features/boards src/core/ui`. Paths are relative to the repository root.
+- `--lines <pct>` and `--branches <pct>` make the command fail when the result is below that minimum, for example `npm run coverage -- --lines 80`. Nothing passes them by default. They are not a gate.
+- `npm run coverage:diff -- --compare-branch=<ref>` compares against another ref, for example `--compare-branch=master`.
+
+Notes on `coverage:diff`:
+
+- It runs the tests itself, so the report is never stale. It counts committed, staged, unstaged and untracked changes.
+- It needs [uv](https://docs.astral.sh/uv/) on the `PATH`. It runs a pinned diff-cover through `uvx`. The first run downloads it and needs network access.
+- `origin/master` is only as fresh as your last fetch. Run `git fetch` first, or pass `--compare-branch`.
+- With directories, changed files outside them don't show up. Run it without directories to see every changed file.
+- It only reports. It doesn't fail on uncovered lines unless a `--lines` or `--branches` minimum is missed.
 
 **The gates:** `typecheck`, `lint` (including import boundaries), `format:check`, `test` and `build` must all pass before a commit.
 

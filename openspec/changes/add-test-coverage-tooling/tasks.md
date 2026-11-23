@@ -22,4 +22,4 @@
 
 ## 4. Documentation
 
-- [ ] 4.1 Add `coverage` and `coverage:diff` to the Commands table in AGENTS.md, with: the directory and `--lines`/`--branches` arguments for both, that `coverage:diff` runs the tests itself and counts untracked files, that `uv` is needed for `coverage:diff`, to `git fetch` first or pass `--compare-branch`, and that a scoped diff hides changed files outside the scope. Leave the gates line unchanged. Verify every documented command runs as written
+- [x] 4.1 Add `coverage` and `coverage:diff` to the Commands table in AGENTS.md, with: the directory and `--lines`/`--branches` arguments for both, that `coverage:diff` runs the tests itself and counts untracked files, that `uv` is needed for `coverage:diff`, to `git fetch` first or pass `--compare-branch`, and that a scoped diff hides changed files outside the scope. Leave the gates line unchanged. Verify every documented command runs as written
