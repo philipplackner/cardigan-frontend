@@ -38,8 +38,11 @@ export function boardViewQueryOptions(
   })
 }
 
-export function useBoardDetail(boardId: string) {
-  return useQuery(boardViewQueryOptions(useBoardViewDataAccess(), boardId))
+export function useBoardDetail(boardId: string, { enabled = true } = {}) {
+  return useQuery({
+    ...boardViewQueryOptions(useBoardViewDataAccess(), boardId),
+    enabled,
+  })
 }
 
 /** The failure kind of a rejected board view call. Anything that isn't a `BoardViewError` counts as `other`. */

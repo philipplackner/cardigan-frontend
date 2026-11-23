@@ -50,3 +50,5 @@ export {
   type BoardViewMethod,
   type InMemoryBoardViewDataAccess,
 } from './boardView/testing/createInMemoryBoardViewDataAccess'
+export { BoardViewRoot } from './boardView/components/BoardViewRoot'
+export type { BoardViewCallbacks } from './boardView/hooks/useBoardViewModel'

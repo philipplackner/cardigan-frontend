@@ -62,7 +62,19 @@ export function PreviewApp() {
         <a href="?transfer" className="text-accent">
           the transfer page
         </a>
-        .
+        , and the board view on{' '}
+        <a href="?boardView" className="text-accent">
+          the board view playground
+        </a>{' '}
+        (also{' '}
+        <a href="?boardView&holdLoad" className="text-accent">
+          loading
+        </a>{' '}
+        and{' '}
+        <a href="?boardView&failLoad" className="text-accent">
+          a load error
+        </a>
+        ).
       </p>
       <nav aria-label="Sections" className="flex flex-wrap gap-12 py-16">
         {['Foundations', ...DESIGN_SYSTEM_SECTIONS].map((title) => (

@@ -32,7 +32,7 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 3. Board screen and states
 
-- [ ] 3.1 Add `BoardViewScreen`, `BoardHeader`, `BoardAppBarContent`, `BoardColumns`, `BoardColumn`, `CardTile` and `BoardSkeleton` from `core/ui` components. Write screen tests:
+- [x] 3.1 Add `BoardViewScreen`, `BoardHeader`, `BoardAppBarContent`, `BoardColumns`, `BoardColumn`, `CardTile` and `BoardSkeleton` from `core/ui` components. Write screen tests:
   - Columns and cards in position order.
   - Tile content with sorted labels.
   - Header and subtitle plurals with 0, 1 and 12 cards.
@@ -40,7 +40,7 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
   - The no-columns empty state.
   - The loading state with and without a known name.
   - The load error state.
-- [ ] 3.2 Add `useBoardViewModel` and `BoardViewRoot` with the board query, the `onOpenCard`, `onBack`, `onBoardGone` and `onNotFound` callbacks, "Try again", and the board-gone toast. `BoardViewScreen` renders `BoardAppBarContent` inside `<AppBarSlot>`. Write feature tests with the harness from design.md › Tests (both providers over a shared in-memory store, `AppBarSlotProvider`, a real `QueryClient`) and spy callbacks:
+- [x] 3.2 Add `useBoardViewModel` and `BoardViewRoot` with the board query, the `onOpenCard`, `onBack`, `onBoardGone` and `onNotFound` callbacks, "Try again", and the board-gone toast. `BoardViewScreen` renders `BoardAppBarContent` inside `<AppBarSlot>`. Write feature tests with the harness from design.md › Tests (both providers over a shared in-memory store, `AppBarSlotProvider`, a real `QueryClient`) and spy callbacks:
   - Load success and load failure.
   - "Try again".
   - Enter on a tile calls `onOpenCard` with the card ID.
@@ -50,7 +50,7 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
   - The phone app bar content contains no button named "Refresh".
   - Re-render with another `boardId` while a create is held; release it; the second board's cache and screen are unchanged.
   - The accessible names from spec › Accessible names: "Back", "Board actions", "Actions for column “{name}”", "Add card to “{name}”", "Add column", and tile names with and without labels.
-- [ ] 3.3 Add a board view playground to the preview page: `BoardViewRoot` in `AppBarSlotProvider`, `BoardsDataAccessProvider` and `BoardViewDataAccessProvider` over one shared in-memory store, a board picker over `sampleBoards`, and callbacks that log navigation. Don't mount anything in the app (F6). Check Board (390, 834, 1440), Loading, Couldn’t load the board and New board with default columns against Figma
+- [x] 3.3 Add a board view playground to the preview page: `BoardViewRoot` in `AppBarSlotProvider`, `BoardsDataAccessProvider` and `BoardViewDataAccessProvider` over one shared in-memory store, a board picker over `sampleBoards`, and callbacks that log navigation. Don't mount anything in the app (F6). Check Board (390, 834, 1440), Loading, Couldn’t load the board and New board with default columns against Figma
 
 ## 4. Quick add
 
