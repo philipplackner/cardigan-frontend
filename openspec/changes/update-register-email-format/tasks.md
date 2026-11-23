@@ -13,7 +13,7 @@ Each group ends with all five gates passing (`typecheck`, `lint`, `format:check`
 
 ## 2. Register email check
 
-- [ ] 2.1 Change `registerEmailError` in `utils/registerForm.ts` to use `checkText(value, { kind: 'singleLine', max: EMAIL_MAX_LENGTH })` and then `isValidEmail`, in the order from design.md. Add unit tests in `registerForm.test.ts`:
+- [x] 2.1 Change `registerEmailError` in `utils/registerForm.ts` to use `checkText(value, { kind: 'singleLine', max: EMAIL_MAX_LENGTH })` and then `isValidEmail`, in the order from design.md. Add unit tests in `registerForm.test.ts`:
   - `mail@pl-coding` → invalid.
   - `ann@a.b.example.co.uk` → valid.
   - A 255-code-point email with a tab → "Enter a valid email address."

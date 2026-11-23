@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { checkText, countCodePoints, normalizeText } from '@/core/utils/text'
+import { checkText } from '@/core/utils/text'
 import { isValidEmail } from './emailFormat'
 import {
   FIELD_ERROR_KEYS,
@@ -16,11 +16,13 @@ export const EMAIL_MAX_LENGTH = 254
 
 /** The first broken email rule, in the order of shared `api-errors` › One field error per field. */
 export function registerEmailError(value: string): FieldMessage | null {
-  const email = normalizeText(value, 'singleLine')
-  if (email === '') return FIELD_ERROR_KEYS.emailRequired
-  if (countCodePoints(email) > EMAIL_MAX_LENGTH) {
-    return FIELD_ERROR_KEYS.emailTooLong
-  }
+  const { value: email, error } = checkText(value, {
+    kind: 'singleLine',
+    max: EMAIL_MAX_LENGTH,
+  })
+  if (error === 'EMPTY') return FIELD_ERROR_KEYS.emailRequired
+  if (error === 'INVALID_CHARACTER') return FIELD_ERROR_KEYS.emailInvalid
+  if (error === 'TOO_LONG') return FIELD_ERROR_KEYS.emailTooLong
   if (!isValidEmail(email)) return FIELD_ERROR_KEYS.emailInvalid
   return null
 }
