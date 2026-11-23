@@ -1,14 +1,11 @@
 import { useReducer, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useToast } from '@/core/ui'
+import { checkBoardKey, normalizeKeyInput } from '@/core/utils/boardKey'
 import type { ImportScreenAction } from '../components/ImportScreen'
 import type { ImportBoard, ImportResult } from '../types'
 import { checkExportFile } from '../utils/checkExportFile'
-import {
-  importReducer,
-  initialImportState,
-  type KeyFieldError,
-} from './importReducer'
+import { importReducer, initialImportState } from './importReducer'
 
 export type ImportFlowParams = {
   importBoard: ImportBoard
@@ -16,16 +13,6 @@ export type ImportFlowParams = {
   findBoardNameByKey: (key: string) => string | undefined
   /** Called after an upload that may have changed the board list: a success or a failed upload. */
   onBoardsChanged: () => void
-}
-
-const KEY_PATTERN = /^[A-Z]{2,5}$/
-
-function localKeyError(key: string): KeyFieldError | null {
-  if (KEY_PATTERN.test(key)) return null
-  if (key.length === 0) return { code: 'REQUIRED' }
-  if (key.length < 2) return { code: 'TOO_SHORT', min: 2 }
-  if (key.length > 5) return { code: 'TOO_LONG', max: 5 }
-  return { code: 'INVALID_FORMAT' }
 }
 
 export function useImportViewModel({
@@ -111,18 +98,16 @@ export function useImportViewModel({
       case 'keyChange':
         dispatch({
           type: 'keyChange',
-          value: action.value.replace(/[a-z]/g, (letter) =>
-            letter.toUpperCase(),
-          ),
+          value: normalizeKeyInput(action.value),
         })
         break
       case 'clashSubmit': {
         if (state.step !== 'clash') break
         const key = state.keyValue
         if (state.usedKeys.includes(key)) break
-        const error = localKeyError(key)
-        if (error) {
-          dispatch({ type: 'clashKeyReject', error })
+        const code = checkBoardKey(key)
+        if (code) {
+          dispatch({ type: 'clashKeyReject', error: { code } })
           break
         }
         dispatch({ type: 'clashSubmit', key })

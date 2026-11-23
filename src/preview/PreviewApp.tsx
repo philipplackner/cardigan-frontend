@@ -6,6 +6,7 @@ import { DataDisplaySection } from './sections/DataDisplaySection'
 import { LabelsSection } from './sections/LabelsSection'
 import { BoardSection } from './sections/BoardSection'
 import { BoardsSection } from './sections/BoardsSection'
+import { BoardListSection } from './sections/BoardListSection'
 import { CardDetailSection } from './sections/CardDetailSection'
 import { ImportExportSection } from './sections/ImportExportSection'
 import { NavigationSection } from './sections/NavigationSection'
@@ -29,6 +30,7 @@ const BUILT_SECTIONS: Record<string, ComponentType> = {
   Boards: BoardsSection,
   'Card detail': CardDetailSection,
   'Import & export': ImportExportSection,
+  'Board list': BoardListSection,
 }
 
 const DESIGN_SYSTEM_SECTIONS = [
@@ -45,6 +47,7 @@ const DESIGN_SYSTEM_SECTIONS = [
   'Boards',
   'Card detail',
   'Import & export',
+  'Board list',
 ]
 
 export function PreviewApp() {

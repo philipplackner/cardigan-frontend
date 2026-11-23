@@ -7,11 +7,14 @@ import '@/app/i18n'
 import { ToastProvider } from '@/core/ui'
 import { LayoutPreview } from './LayoutPreview'
 import { PreviewApp } from './PreviewApp'
+import { BoardListPlayground } from './sections/BoardListSection'
 import { TransferPlayground } from './TransferPlayground'
 
 const params = new URLSearchParams(location.search)
 const page = params.has('layout') ? (
   <LayoutPreview />
+) : params.has('boardList') ? (
+  <BoardListPlayground />
 ) : params.has('transfer') ? (
   <TransferPlayground />
 ) : (

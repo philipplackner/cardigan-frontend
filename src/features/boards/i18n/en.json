@@ -1,0 +1,69 @@
+{
+  "title": "Boards",
+  "boardCount_one": "{{count, number}} board",
+  "boardCount_other": "{{count, number}} boards",
+  "cardCount_one": "{{count, number}} card",
+  "cardCount_other": "{{count, number}} cards",
+  "updated": "Updated {{time}}",
+  "relativeTime": {
+    "justNow": "Just now",
+    "minutes_one": "{{count}} minute ago",
+    "minutes_other": "{{count}} minutes ago",
+    "hours_one": "{{count}} hour ago",
+    "hours_other": "{{count}} hours ago",
+    "yesterday": "Yesterday"
+  },
+  "refresh": "Refresh",
+  "newBoard": "New board",
+  "importButton": "Import",
+  "importMenuItem": "Import board",
+  "boardActions": "Actions for board “{{name}}”",
+  "rename": "Rename",
+  "deleteBoard": "Delete board",
+  "nameLabel": "Name",
+  "keyLabel": "Key",
+  "logOut": "Log out",
+  "empty": {
+    "title": "No boards yet",
+    "description": "Create a board to start adding cards, or import a board from a JSON export."
+  },
+  "loadError": {
+    "title": "Couldn’t load your boards",
+    "description": "Check your connection and try again.",
+    "tryAgain": "Try again"
+  },
+  "refreshFailed": "Couldn’t refresh your boards. Check your connection and try again.",
+  "phoneMenu": {
+    "label": "Menu",
+    "signedInAs": "Signed in as {{email}}",
+    "labels": "Labels"
+  },
+  "sidebar": {
+    "allBoards": "All boards",
+    "boardsHeading": "Boards",
+    "newBoard": "New board"
+  },
+  "newBoardDialog": {
+    "title": "New board",
+    "keyHint": "2–5 uppercase letters. Card IDs will look like {{key}}-1. The key can’t be changed later.",
+    "keyHintEmpty": "2–5 uppercase letters. The key can’t be changed later.",
+    "columnsNote": "New boards start with the columns To do, In progress and Done.",
+    "submit": "Create board",
+    "failed": "Couldn’t create the board. Check your connection and try again."
+  },
+  "renameDialog": {
+    "title": "Rename board",
+    "keyHint": "The key can’t be changed.",
+    "submit": "Save",
+    "failed": "Couldn’t save the board. Check your connection and try again.",
+    "notFound": "“{{name}}” no longer exists."
+  },
+  "deleteDialog": {
+    "title": "Delete board “{{name}}”?",
+    "body_zero": "This can’t be undone.",
+    "body_one": "Its {{count, number}} card will be deleted too. This can’t be undone.",
+    "body_other": "Its {{count, number}} cards will be deleted too. This can’t be undone.",
+    "submit": "Delete board",
+    "failed": "Couldn’t delete “{{name}}”. Check your connection and try again."
+  }
+}

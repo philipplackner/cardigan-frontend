@@ -11,7 +11,11 @@ import {
 } from '@/core/ui'
 import { PreviewGroup, PreviewSection } from '../PreviewSection'
 
-export function PreviewSidebar() {
+export function PreviewSidebar({
+  email = 'philipp@example.com',
+}: {
+  email?: string | null
+}) {
   return (
     <Sidebar
       brandName="Cardigan"
@@ -56,8 +60,8 @@ export function PreviewSidebar() {
         </NavItem>
       }
       account={{
-        initial: 'P',
-        email: 'philipp@example.com',
+        initial: email ? 'P' : null,
+        email,
         logOutLabel: 'Log out',
         onLogOut: () => {},
       }}
@@ -107,6 +111,11 @@ export function NavigationSection() {
       <PreviewGroup title="Sidebar">
         <div className="h-[640px] w-sidebar-desktop">
           <PreviewSidebar />
+        </div>
+      </PreviewGroup>
+      <PreviewGroup title="Sidebar · email still loading">
+        <div className="h-[640px] w-sidebar-desktop">
+          <PreviewSidebar email={null} />
         </div>
       </PreviewGroup>
       <PreviewGroup title="Page header · title, key, meta, actions">
