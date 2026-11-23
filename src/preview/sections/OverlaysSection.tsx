@@ -31,6 +31,7 @@ export function OverlaysSection() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [progressOpen, setProgressOpen] = useState(false)
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [noReturnOpen, setNoReturnOpen] = useState(false)
 
   const toggle = (name: string, checked: boolean) =>
     setSelected((current) =>
@@ -133,6 +134,36 @@ export function OverlaysSection() {
           type="progress"
           title="Importing board"
           description="This can take a few seconds."
+        />
+      </PreviewGroup>
+      <PreviewGroup title="Dialog · returnFocus={false}: closing focuses the field, not the button">
+        <Button variant="secondary" onClick={() => setNoReturnOpen(true)}>
+          Open dialog
+        </Button>
+        <Input
+          id="preview-kept-field"
+          aria-label="Kept field"
+          defaultValue="Focus lands here"
+        />
+        <Dialog
+          open={noReturnOpen}
+          onOpenChange={(open) => {
+            setNoReturnOpen(open)
+            if (!open) document.getElementById('preview-kept-field')?.focus()
+          }}
+          returnFocus={false}
+          title="Discard changes?"
+          actions={
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setNoReturnOpen(false)
+                document.getElementById('preview-kept-field')?.focus()
+              }}
+            >
+              Keep editing
+            </Button>
+          }
         />
       </PreviewGroup>
       <PreviewGroup title="Bottom sheet · phone only, scrim tap and Escape close">

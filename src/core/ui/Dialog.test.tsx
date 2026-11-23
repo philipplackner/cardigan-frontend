@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { describe, expect, it } from 'vitest'
 import { Button } from './Button'
 import { Dialog } from './Dialog'
@@ -95,5 +95,52 @@ describe('Dialog', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Open' })).toHaveFocus(),
     )
+  })
+})
+
+describe('Dialog with returnFocus={false}', () => {
+  it('leaves focus where the screen put it after closing', async () => {
+    const user = userEvent.setup()
+    function ScreenMovesFocus() {
+      const [open, setOpen] = useState(false)
+      const [wasClosed, setWasClosed] = useState(false)
+      useEffect(() => {
+        if (wasClosed) document.getElementById('kept')?.focus()
+      }, [wasClosed])
+      return (
+        <>
+          <Button onClick={() => setOpen(true)}>Open</Button>
+          <input aria-label="Kept field" id="kept" />
+          <Dialog
+            open={open}
+            onOpenChange={setOpen}
+            returnFocus={false}
+            title="Title"
+            actions={
+              <Button
+                onClick={() => {
+                  setOpen(false)
+                  setWasClosed(true)
+                }}
+              >
+                Keep editing
+              </Button>
+            }
+          />
+        </>
+      )
+    }
+    render(<ScreenMovesFocus />)
+
+    await user.click(screen.getByRole('button', { name: 'Open' }))
+    await user.click(
+      await screen.findByRole('button', { name: 'Keep editing' }),
+    )
+
+    await waitFor(() =>
+      expect(screen.getByRole('textbox', { name: 'Kept field' })).toHaveFocus(),
+    )
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(screen.getByRole('textbox', { name: 'Kept field' })).toHaveFocus()
   })
 })
