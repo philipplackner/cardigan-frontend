@@ -13,22 +13,22 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 2. Types, in-memory data access, pure logic and translations
 
-- [ ] 2.1 Add `features/boards/boardView/types.ts` (`BoardDetail`, `BoardColumn`, `BoardColumnInfo`, `BoardCard`, `BoardViewError`, `BoardViewDataAccess`, `BoardViewDataAccessProvider`) as in design.md, and verify `npm run typecheck` passes
-- [ ] 2.2 Add `createInMemoryBoardViewDataAccess` in `boardView/testing/`, seeded by default from `sampleBoards` (same IDs, names and keys, card counts matching, "Cardigan v1" with the Figma columns and cards), with dense positions, rejecting with `outOfRange` for out-of-range moves and `notFound` for unknown IDs, and options to fail the next call, apply the next call and then reject with `other`, hang the next call, or change the stored board between calls. It shares one store with a `createInMemoryBoardsDataAccess` instance (design.md › Mounting and data source). Add unit tests:
+- [x] 2.1 Add `features/boards/boardView/types.ts` (`BoardDetail`, `BoardColumn`, `BoardColumnInfo`, `BoardCard`, `BoardViewError`, `BoardViewDataAccess`, `BoardViewDataAccessProvider`) as in design.md, and verify `npm run typecheck` passes
+- [x] 2.2 Add `createInMemoryBoardViewDataAccess` in `boardView/testing/`, seeded by default from `sampleBoards` (same IDs, names and keys, card counts matching, "Cardigan v1" with the Figma columns and cards), with dense positions, rejecting with `outOfRange` for out-of-range moves and `notFound` for unknown IDs, and options to fail the next call, apply the next call and then reject with `other`, hang the next call, or change the stored board between calls. It shares one store with a `createInMemoryBoardsDataAccess` instance (design.md › Mounting and data source). Add unit tests:
   - Positions stay 0..n-1 after create, move and delete.
   - Moving to n rejects with `outOfRange`.
   - A forced failure rejects with the given error once.
   - A card added through the board view fake raises `cardCount` in the boards fake's `listBoards`, and a board rename through the boards fake shows in `loadBoard`.
-- [ ] 2.3 Verify the name checks through `checkText(value, { kind: 'singleLine', max })` and the `nameErrors.*` mapping cover 30/31 and 200/201 code points; add those cases to the tests if missing
-- [ ] 2.4 Add the `applyChanges` updaters (`addColumn`, `renameColumn`, `applyColumnPositions`, `removeColumn`, `addCard`) with unit tests. They must not mutate the input. Column order must follow the returned positions. A response whose ID set differs from the cache returns the board unchanged and signals a reload. `removeColumn` renumbers the remaining columns 0..n-1. An updater called with no cached board leaves the cache empty (feature test: clear the `QueryClient` while a create is held by the in-memory "hang" option, release it, and check that `getQueryData(boardViewKeys.detail(id))` is `undefined`). Verify they pass
-- [ ] 2.5 Add `handleBoardViewError` with unit tests for every row of the table in design.md › Error handling, including `notFound` on delete counting as deleted and an unknown field code mapping to the control-character message
-- [ ] 2.6 Add `boardViewReducer` (quick add, add column, dialogs, moving column) with unit tests:
+- [x] 2.3 Verify the name checks through `checkText(value, { kind: 'singleLine', max })` and the `nameErrors.*` mapping cover 30/31 and 200/201 code points; add those cases to the tests if missing
+- [x] 2.4 Add the `applyChanges` updaters (`addColumn`, `renameColumn`, `applyColumnPositions`, `removeColumn`, `addCard`) with unit tests. They must not mutate the input. Column order must follow the returned positions. A response whose ID set differs from the cache returns the board unchanged and signals a reload. `removeColumn` renumbers the remaining columns 0..n-1. An updater called with no cached board leaves the cache empty (feature test: clear the `QueryClient` while a create is held by the in-memory "hang" option, release it, and check that `getQueryData(boardViewKeys.detail(id))` is `undefined`). Verify they pass
+- [x] 2.5 Add `handleBoardViewError` with unit tests for every row of the table in design.md › Error handling, including `notFound` on delete counting as deleted and an unknown field code mapping to the control-character message
+- [x] 2.6 Add `boardViewReducer` (quick add, add column, dialogs, moving column) with unit tests:
   - Quick add and add column are never open together.
   - Opening another inline form replaces an empty one, and sets `discardInline` when the open one has text.
   - "Discard" opens the target form empty, and "Keep editing" keeps the first form and its text.
   - Submitted flags drive errors.
   - A column removed by a refetch clears the quick add and dialog state that point to it.
-- [ ] 2.7 Add the `boardView` namespace (`features/boards/i18n/boardView.json`) and register it in `src/app/i18n.ts`. It holds every string from page `9:6` that this change uses, the proposal copy and plural keys for cards. The name and title error messages come from `common` `nameErrors.*` and are not copied here. Verify each string matches Figma or the proposal character for character, including curly quotes and apostrophes
+- [x] 2.7 Add the `boardView` namespace (`features/boards/i18n/boardView.json`) and register it in `src/app/i18n.ts`. It holds every string from page `9:6` that this change uses, the proposal copy and plural keys for cards. The name and title error messages come from `common` `nameErrors.*` and are not copied here. Verify each string matches Figma or the proposal character for character, including curly quotes and apostrophes
 
 ## 3. Board screen and states
 
