@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   type CoverageOptions,
   parseCoverageArgs,
+  toDiffCoverArgs,
   toVitestArgs,
 } from './coverageArgs.ts'
 
@@ -145,9 +146,91 @@ describe('parseCoverageArgs', () => {
       ['--watch'],
       ['--lines80'],
       ['--compare-branch=master'],
-      ['--diff'],
+      ['--diff=true'],
     ])('rejects %s and names it', (arg) => {
       expect(error([arg])).toContain(`"${arg}"`)
+    })
+  })
+
+  describe('diff mode', () => {
+    it('is off without --diff', () => {
+      expect(options(['src/core']).compareBranch).toBeUndefined()
+    })
+
+    it('compares against origin/master by default', () => {
+      expect(options(['--diff']).compareBranch).toBe('origin/master')
+    })
+
+    it.each([
+      [['--diff', '--compare-branch', 'master']],
+      [['--diff', '--compare-branch=master']],
+      [['--compare-branch=master', '--diff']],
+      [['--compare-branch', 'master', '--diff']],
+    ])('takes the ref from %j', (argv) => {
+      expect(options(argv).compareBranch).toBe('master')
+    })
+
+    it.each([
+      ['origin/release/1.2'],
+      ['HEAD~3'],
+      ['a1b2c3d'],
+      ['v1.0^{commit}'],
+    ])('keeps the ref %s as given', (ref) => {
+      expect(options(['--diff', `--compare-branch=${ref}`]).compareBranch).toBe(
+        ref,
+      )
+    })
+
+    it('keeps directories and thresholds', () => {
+      expect(
+        options(['--diff', 'src/core/', '--lines=80', '--branches', '70']),
+      ).toEqual({
+        dirs: ['src/core'],
+        lines: 80,
+        branches: 70,
+        compareBranch: 'origin/master',
+      })
+    })
+
+    it.each([
+      [['--diff', '--compare-branch']],
+      [['--diff', '--compare-branch=']],
+      [['--compare-branch', '--diff']],
+    ])('rejects a missing ref in %j', (argv) => {
+      expect(error(argv)).toMatch(
+        /--compare-branch (needs a git ref|must be a git ref, got "--diff")/,
+      )
+    })
+
+    it('rejects a ref that looks like an option', () => {
+      expect(error(['--diff', '--compare-branch', '--lines'])).toContain(
+        '"--lines"',
+      )
+    })
+
+    it('does not take a directory after --diff as its value', () => {
+      expect(options(['--diff', 'src/core'])).toMatchObject({
+        dirs: ['src/core'],
+        compareBranch: 'origin/master',
+      })
+    })
+
+    it('rejects --compare-branch given twice', () => {
+      expect(
+        error(['--diff', '--compare-branch=a', '--compare-branch=b']),
+      ).toContain('--compare-branch')
+    })
+
+    it('rejects --diff given twice', () => {
+      expect(error(['--diff', '--diff'])).toContain('--diff')
+    })
+
+    it.each([
+      [['--compare-branch=master']],
+      [['--compare-branch', 'master']],
+      [['src/core', '--compare-branch=master', '--lines', '50']],
+    ])('rejects --compare-branch without --diff as unknown in %j', (argv) => {
+      expect(error(argv)).toMatch(/^Unknown option "--compare-branch/)
     })
   })
 })
@@ -189,5 +272,30 @@ describe('toVitestArgs', () => {
       '--coverage.thresholds.lines=85.5',
       '--coverage.thresholds.branches=0',
     ])
+  })
+})
+
+describe('toDiffCoverArgs', () => {
+  it('runs the pinned diff-cover on the Cobertura report, report-only', () => {
+    expect(toDiffCoverArgs('origin/master')).toEqual([
+      '--exclude-newer',
+      '2026-11-23',
+      'diff-cover==11.0.4',
+      'coverage/cobertura-coverage.xml',
+      '--compare-branch=origin/master',
+      '--include-untracked',
+      '--format',
+      'html:coverage/diff-cover.html',
+    ])
+  })
+
+  it('passes the ref as one argument', () => {
+    expect(toDiffCoverArgs('feature branch')).toContain(
+      '--compare-branch=feature branch',
+    )
+  })
+
+  it('never passes --fail-under', () => {
+    expect(toDiffCoverArgs('master').join(' ')).not.toContain('--fail-under')
   })
 })

@@ -4,6 +4,8 @@ export type CoverageOptions = {
   dirs: string[]
   lines?: number
   branches?: number
+  /** Set in diff mode (`--diff`): the ref diff-cover compares against. */
+  compareBranch?: string
 }
 
 export type ParseResult =
@@ -13,6 +15,15 @@ const THRESHOLD_OPTIONS = ['--lines', '--branches'] as const
 type ThresholdOption = (typeof THRESHOLD_OPTIONS)[number]
 
 const PERCENT = /^\d+(\.\d+)?$/
+
+export const DEFAULT_COMPARE_BRANCH = 'origin/master'
+
+// Update both together: the date pins diff-cover's own dependencies.
+export const DIFF_COVER_VERSION = '11.0.4'
+export const DIFF_COVER_EXCLUDE_NEWER = '2026-11-23'
+
+export const COBERTURA_REPORT = 'coverage/cobertura-coverage.xml'
+export const DIFF_COVER_HTML_REPORT = 'coverage/diff-cover.html'
 
 /**
  * Turns a directory argument into a path relative to `repoRoot`, using `/` as
@@ -52,7 +63,7 @@ function parsePercent(
 }
 
 /**
- * Parses the arguments of `npm run coverage`. Doesn't touch the file system:
+ * Parses the arguments of `npm run coverage` and `npm run coverage:diff`. Doesn't touch the file system:
  * the caller checks that the directories exist.
  */
 export function parseCoverageArgs(
@@ -61,11 +72,36 @@ export function parseCoverageArgs(
 ): ParseResult {
   const dirs: string[] = []
   const thresholds: Partial<Record<ThresholdOption, number>> = {}
+  let diff = false
+  let compareBranch: { arg: string; ref: string } | undefined
 
   const args = argv[Symbol.iterator]()
   for (const arg of args) {
+    if (arg === '--diff') {
+      if (diff) return { ok: false, error: '--diff is given more than once.' }
+      diff = true
+      continue
+    }
+
     if (arg.startsWith('-')) {
       const [name, inlineValue] = splitOption(arg)
+      if (name === '--compare-branch') {
+        if (compareBranch !== undefined) {
+          return { ok: false, error: `${name} is given more than once.` }
+        }
+        const ref = inlineValue ?? args.next().value
+        if (ref === undefined || ref === '') {
+          return { ok: false, error: `${name} needs a git ref.` }
+        }
+        if (ref.startsWith('-')) {
+          return {
+            ok: false,
+            error: `${name} must be a git ref, got "${ref}".`,
+          }
+        }
+        compareBranch = { arg, ref }
+        continue
+      }
       if (!isThresholdOption(name)) {
         return { ok: false, error: `Unknown option "${arg}".` }
       }
@@ -89,14 +125,17 @@ export function parseCoverageArgs(
     if (!dirs.includes(dir)) dirs.push(dir)
   }
 
-  return {
-    ok: true,
-    options: {
-      dirs,
-      lines: thresholds['--lines'],
-      branches: thresholds['--branches'],
-    },
+  if (!diff && compareBranch !== undefined) {
+    return { ok: false, error: `Unknown option "${compareBranch.arg}".` }
   }
+
+  const options: CoverageOptions = {
+    dirs,
+    lines: thresholds['--lines'],
+    branches: thresholds['--branches'],
+  }
+  if (diff) options.compareBranch = compareBranch?.ref ?? DEFAULT_COMPARE_BRANCH
+  return { ok: true, options }
 }
 
 function splitOption(arg: string): [string, string | undefined] {
@@ -126,4 +165,18 @@ export function toVitestArgs(options: CoverageOptions): string[] {
     args.push(`--coverage.thresholds.branches=${options.branches}`)
   }
   return args
+}
+
+/** The arguments for `uvx` that run diff-cover on the Cobertura report. */
+export function toDiffCoverArgs(compareBranch: string): string[] {
+  return [
+    '--exclude-newer',
+    DIFF_COVER_EXCLUDE_NEWER,
+    `diff-cover==${DIFF_COVER_VERSION}`,
+    COBERTURA_REPORT,
+    `--compare-branch=${compareBranch}`,
+    '--include-untracked',
+    '--format',
+    `html:${DIFF_COVER_HTML_REPORT}`,
+  ]
 }
