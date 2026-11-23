@@ -1,7 +1,7 @@
-import { useId, type ReactNode } from 'react'
+import { useId, type ComponentProps, type ReactNode } from 'react'
 import { cn } from './cn'
 
-type ColumnProps = {
+type ColumnProps = Omit<ComponentProps<'section'>, 'children'> & {
   name: string
   count: number | string
   /** Column menu trigger, usually a small `IconButton` inside a `Menu`. */
@@ -20,6 +20,7 @@ export function Column({
   children,
   footer,
   className,
+  ...props
 }: ColumnProps) {
   const headingId = useId()
   return (
@@ -29,6 +30,7 @@ export function Column({
         'flex w-[276px] shrink-0 flex-col gap-8 rounded-10 border border-border bg-background-column p-8 phone:w-[300px]',
         className,
       )}
+      {...props}
     >
       <div className="flex min-h-[32px] min-w-[0] items-center gap-8 py-2 pr-2 pl-6">
         <h2

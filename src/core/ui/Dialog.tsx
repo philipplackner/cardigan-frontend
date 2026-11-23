@@ -18,6 +18,11 @@ type DialogProps = {
   children?: ReactNode
   /** Buttons, right-aligned. */
   actions?: ReactNode
+  /**
+   * With `false`, closing leaves focus alone instead of returning it to the control that opened the
+   * dialog. Use it when the screen moves focus itself after the dialog closes.
+   */
+  returnFocus?: boolean
   className?: string
 }
 
@@ -29,6 +34,7 @@ export function Dialog({
   type = 'default',
   children,
   actions,
+  returnFocus: shouldReturnFocus = true,
   className,
 }: DialogProps) {
   const isProgress = type === 'progress'
@@ -45,6 +51,10 @@ export function Dialog({
           aria-busy={isProgress || undefined}
           {...(description ? {} : { 'aria-describedby': undefined })}
           {...returnFocus}
+          onCloseAutoFocus={(event) => {
+            if (shouldReturnFocus) returnFocus.onCloseAutoFocus(event)
+            else event.preventDefault()
+          }}
           onEscapeKeyDown={preventClose}
           onPointerDownOutside={preventClose}
           onInteractOutside={preventClose}

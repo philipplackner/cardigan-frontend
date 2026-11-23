@@ -1,0 +1,76 @@
+{
+  "cardCount_one": "{{count, number}} card",
+  "cardCount_other": "{{count, number}} cards",
+  "subtitle": "{{key}} · {{cards}}",
+  "back": "Back",
+  "refresh": "Refresh",
+  "boardActions": "Board actions",
+  "columnActions": "Actions for column “{{name}}”",
+  "addCard": "Add card",
+  "addCardTo": "Add card to “{{name}}”",
+  "addColumn": "Add column",
+  "noCards": "No cards yet",
+  "cardName": "{{displayId}}, {{title}}",
+  "cardNameWithLabels": "{{displayId}}, {{title}}, labels {{labels}}",
+  "loadError": {
+    "title": "Couldn’t load this board",
+    "description": "Check your connection and try again.",
+    "tryAgain": "Try again"
+  },
+  "noColumns": {
+    "title": "This board has no columns",
+    "description": "Add a column to start adding cards."
+  },
+  "quickAdd": {
+    "titleLabel": "Card title",
+    "submit": "Add card",
+    "hint": "Enter to add",
+    "failed": "Couldn't add the card. Check your connection and try again."
+  },
+  "addColumnForm": {
+    "nameLabel": "Name",
+    "submit": "Add column",
+    "failed": "Couldn't add the column. Check your connection and try again."
+  },
+  "columnMenu": {
+    "moveLeft": "Move left",
+    "moveRight": "Move right",
+    "rename": "Rename",
+    "delete": "Delete column"
+  },
+  "renameColumn": {
+    "title": "Rename column",
+    "nameLabel": "Name",
+    "submit": "Save",
+    "failed": "Couldn't rename “{{name}}”. Check your connection and try again."
+  },
+  "deleteColumn": {
+    "title": "Delete column “{{name}}”?",
+    "body_zero": "This can’t be undone.",
+    "body_one": "Its {{count, number}} card will be deleted too. This can’t be undone.",
+    "body_other": "Its {{count, number}} cards will be deleted too. This can’t be undone.",
+    "submit_zero": "Delete column",
+    "submit_one": "Delete column and {{count, number}} card",
+    "submit_other": "Delete column and {{count, number}} cards",
+    "failed": "Couldn't delete “{{name}}”. Check your connection and try again."
+  },
+  "moveColumn": {
+    "failed": "Couldn't move “{{name}}”. Check your connection and try again.",
+    "stale": "Couldn't move “{{name}}”. The board changed on another device, so it was reloaded."
+  },
+  "boardMenu": {
+    "rename": "Rename board",
+    "export": "Export as JSON",
+    "delete": "Delete board"
+  },
+  "discardInline": {
+    "title": "Discard changes?",
+    "cardBody": "The card you started in “{{column}}” hasn’t been added.",
+    "columnBody": "The column you started hasn’t been added.",
+    "keepEditing": "Keep editing",
+    "discard": "Discard"
+  },
+  "columnGone": "“{{name}}” no longer exists. The board was reloaded.",
+  "boardGone": "This board no longer exists.",
+  "refreshFailed": "Couldn't refresh the board. Check your connection and try again."
+}

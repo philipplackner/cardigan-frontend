@@ -34,6 +34,10 @@ export type InMemoryBoardsDataAccess = BoardsDataAccess & {
   applyThenFailNextCreate(): void
   /** The next call of `method` waits until the returned function is called. */
   holdNext(method: BoardsMethod): () => void
+  /** The stored board with this ID. Lets another in-memory fake share this store. */
+  stored(id: string): StoredBoard | undefined
+  /** Sets a board's card count and updated time, as a column or card change does on the server. */
+  touch(id: string, cardCount: number): void
 }
 
 const listOrder = (a: StoredBoard, b: StoredBoard) =>
@@ -107,6 +111,15 @@ export function createInMemoryBoardsDataAccess(
       let release!: () => void
       holds.set(method, new Promise<void>((resolve) => (release = resolve)))
       return () => release()
+    },
+    stored(id) {
+      const board = stored.find((candidate) => candidate.id === id)
+      return board && { ...board }
+    },
+    touch(id, cardCount) {
+      stored = stored.map((board) =>
+        board.id === id ? { ...board, cardCount, updatedAt: now() } : board,
+      )
     },
 
     async listBoards() {
