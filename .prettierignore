@@ -5,3 +5,4 @@ src/core/api/generated
 src/app/routeTree.gen.ts
 openspec
 .claude
+coverage

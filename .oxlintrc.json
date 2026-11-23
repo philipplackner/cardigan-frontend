@@ -4,7 +4,8 @@
   "ignorePatterns": [
     "src/core/api/generated/**",
     "src/app/routeTree.gen.ts",
-    "dist/**"
+    "dist/**",
+    "coverage/**"
   ],
   "rules": {
     "react/rules-of-hooks": "error",

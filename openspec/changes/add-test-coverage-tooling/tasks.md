@@ -2,10 +2,10 @@
 
 ## 1. Coverage for the whole codebase
 
-- [ ] 1.1 Add `@vitest/coverage-v8` as a dev dependency on the same version as `vitest`, and verify `npm ls @vitest/coverage-v8` shows it without peer warnings
-- [ ] 1.2 Add the `test.coverage` block to `vitest.config.ts` (provider, include, excludes, reporters, `coverage/` directory, disabled by default). Verify that `npx vitest run --coverage.enabled` prints the text summary, writes `coverage/cobertura-coverage.xml` and `coverage/index.html`, lists an untested `src/` file at 0%, and leaves out generated, preview, `testing/`, test and `main.tsx` files
-- [ ] 1.3 Add `coverage/` to `.gitignore` and `.prettierignore` and `coverage/**` to oxlint's `ignorePatterns`. Verify `git status` is clean and `npm run lint` and `npm run format:check` pass after a coverage run
-- [ ] 1.4 Verify `npm test` still collects no coverage: delete `coverage/`, run `npm test`, and check `coverage/` was not created
+- [x] 1.1 Add `@vitest/coverage-v8` as a dev dependency on the same version as `vitest`, and verify `npm ls @vitest/coverage-v8` shows it without peer warnings
+- [x] 1.2 Add the `test.coverage` block to `vitest.config.ts` (provider, include, excludes, reporters, `coverage/` directory, disabled by default). Verify that `npx vitest run --coverage.enabled` prints the text summary, writes `coverage/cobertura-coverage.xml` and `coverage/index.html`, lists an untested `src/` file at 0%, and leaves out generated, preview, `testing/`, test and `main.tsx` files
+- [x] 1.3 Add `coverage/` to `.gitignore` and `.prettierignore` and `coverage/**` to oxlint's `ignorePatterns`. Verify `git status` is clean and `npm run lint` and `npm run format:check` pass after a coverage run
+- [x] 1.4 Verify `npm test` still collects no coverage: delete `coverage/`, run `npm test`, and check `coverage/` was not created
 
 ## 2. Coverage script with directories and minimums
 

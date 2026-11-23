@@ -25,3 +25,6 @@ dist-ssr
 
 # TanStack Router generator temp files
 .tanstack
+
+# Test coverage reports
+coverage
