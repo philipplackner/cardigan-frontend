@@ -14,6 +14,15 @@ type BoardViewRootProps = BoardViewCallbacks & {
  * routing: the host maps the callbacks to navigation.
  */
 export function BoardViewRoot({ boardId, ...callbacks }: BoardViewRootProps) {
-  const { state, onAction } = useBoardViewModel(boardId, callbacks)
-  return <BoardViewScreen state={state} onAction={onAction} />
+  const { state, onAction, onRenameColumn } = useBoardViewModel(
+    boardId,
+    callbacks,
+  )
+  return (
+    <BoardViewScreen
+      state={state}
+      onAction={onAction}
+      onRenameColumn={onRenameColumn}
+    />
+  )
 }

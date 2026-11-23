@@ -91,7 +91,7 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 6. Column menu
 
-- [ ] 6.1 Add `ColumnMenu` with Move left/right and their disabled states. Moves wait for the server, apply all returned positions, and disable move items while one runs. Write feature tests:
+- [x] 6.1 Add `ColumnMenu` with Move left/right and their disabled states. Moves wait for the server, apply all returned positions, and disable move items while one runs. Write feature tests:
   - First, last and only column.
   - Move right applies the new order only after the in-memory move resolves.
   - Move right shows the order from the move response when another device reordered the columns in the fake first.
@@ -101,9 +101,9 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
   - Move failure keeps the order, shows the move toast and reloads the board in the background.
   - `outOfRange` reloads the board and shows the stale-move toast.
   - A reload returning 404 opens the board list, and only "This board no longer exists." shows.
-- [ ] 6.2 Add `RenameColumnDialog` (prefilled, D12/D13 validation, D19 unchanged close, saving state, field errors, failure toast). Use React Hook Form like the board list's `RenameBoardDialog`. Write feature tests for each, including " Review " closing without a call, Escape while saving, Enter with `isComposing: true`, and the failure toast naming the current name, not the typed one
-- [ ] 6.3 Add `DeleteColumnDialog` with the with-cards (plural) and empty copy, saving state, 404 counting as deleted, and the failure toast. Write feature tests for 2 cards, 1 card, 0 cards, a 404 and a 500
-- [ ] 6.4 Check Column menu (390, 1440), Rename column (1440) and Delete column with cards (390, 1440) against Figma
+- [x] 6.2 Add `RenameColumnDialog` (prefilled, D12/D13 validation, D19 unchanged close, saving state, field errors, failure toast). Use React Hook Form like the board list's `RenameBoardDialog`. Write feature tests for each, including " Review " closing without a call, Escape while saving, Enter with `isComposing: true`, and the failure toast naming the current name, not the typed one
+- [x] 6.3 Add `DeleteColumnDialog` with the with-cards (plural) and empty copy, saving state, 404 counting as deleted, and the failure toast. Write feature tests for 2 cards, 1 card, 0 cards, a 404 and a 500
+- [x] 6.4 Check Column menu (390, 1440), Rename column (1440) and Delete column with cards (390, 1440) against Figma
 
 ## 7. Board menu and refresh
 

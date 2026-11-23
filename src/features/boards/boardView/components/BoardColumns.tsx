@@ -4,7 +4,7 @@ import type { BoardColumn } from '../types'
 type BoardColumnsProps = {
   /** The columns to show. Search & filter can pass a filtered list. */
   columns: readonly BoardColumn[]
-  renderColumn: (column: BoardColumn) => ReactNode
+  renderColumn: (column: BoardColumn, index: number) => ReactNode
   /** After the last column: the Add column button or form. */
   trailing: ReactNode
 }

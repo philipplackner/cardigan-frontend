@@ -12,6 +12,9 @@ import {
   useBoardDetail,
   useCreateCard,
   useCreateColumn,
+  useDeleteColumn,
+  useMoveColumn,
+  useRenameColumn,
 } from '../api/boardViewQueries'
 import type { BoardDetail } from '../types'
 import {
@@ -63,6 +66,8 @@ export type BoardViewState = {
   addColumnError?: string
   /** True while a quick add or add column form saves. */
   isInlineSaving: boolean
+  isRenamingColumn: boolean
+  isDeletingColumn: boolean
 }
 
 export type BoardViewAction =
@@ -73,6 +78,8 @@ export type BoardViewAction =
   | { type: 'tryAgain' }
   /** A click or focus move outside the open inline form. */
   | { type: 'inlineOutside' }
+  | { type: 'moveColumn'; columnId: string; direction: 'left' | 'right' }
+  | { type: 'deleteColumnConfirm' }
 
 export function useBoardViewModel(
   boardId: string,
@@ -266,6 +273,99 @@ export function useBoardViewModel(
     }
   }
 
+  const moveColumn = useMoveColumn()
+  const renameColumn = useRenameColumn()
+  const deleteColumn = useDeleteColumn()
+  const isMovingNow = useRef(false)
+
+  const columnById = (columnId: string | undefined) =>
+    board?.columns.find((column) => column.id === columnId)
+
+  const submitMove = async (columnId: string, direction: 'left' | 'right') => {
+    const index = board?.columns.findIndex((column) => column.id === columnId)
+    const column = columnById(columnId)
+    if (!board || !column || index === undefined || isMovingNow.current) return
+    const position = direction === 'left' ? index - 1 : index + 1
+    if (position < 0 || position >= board.columns.length) return
+    isMovingNow.current = true
+    dispatch({ type: 'moveStart', columnId })
+    try {
+      const { isStale } = await moveColumn.mutateAsync({
+        boardId,
+        columnId,
+        position,
+      })
+      if (isStale && isMounted.current) void reloadBoard()
+    } catch (failure) {
+      handleFailure(
+        'moveColumn',
+        failure,
+        column.name,
+        t('moveColumn.failed', { name: column.name }),
+      )
+    } finally {
+      isMovingNow.current = false
+      if (isMounted.current) dispatch({ type: 'moveEnd' })
+    }
+  }
+
+  /** Saves a column's new name. Resolves with the error to show under the field, if any. */
+  const submitRename = async (name: string): Promise<string | undefined> => {
+    const dialog = ui.dialog
+    const column =
+      dialog?.kind === 'renameColumn' ? columnById(dialog.columnId) : undefined
+    if (!column) return undefined
+    if (name === column.name) {
+      dispatch({ type: 'dialogClose' })
+      return undefined
+    }
+    try {
+      await renameColumn.mutateAsync({ boardId, columnId: column.id, name })
+      if (isMounted.current) dispatch({ type: 'dialogClose' })
+      return undefined
+    } catch (failure) {
+      const outcome = handleFailure(
+        'renameColumn',
+        failure,
+        column.name,
+        t('renameColumn.failed', { name: column.name }),
+      )
+      const field = outcome.type === 'fieldErrors' ? outcome.fields[0] : null
+      return field
+        ? nameErrorText(field.code, field.max ?? COLUMN_NAME_MAX)
+        : undefined
+    }
+  }
+
+  /** After a delete, focus moves to the next column's menu, or to Add column when none follows. */
+  const focusAfterDelete = (columnId: string) => {
+    const index = board?.columns.findIndex((column) => column.id === columnId)
+    const next =
+      index === undefined || index < 0 ? undefined : board?.columns[index + 1]
+    return next
+      ? ({ kind: 'columnMenu', columnId: next.id } as const)
+      : ({ kind: 'addColumnButton' } as const)
+  }
+
+  const submitDelete = async () => {
+    const dialog = ui.dialog
+    const column =
+      dialog?.kind === 'deleteColumn' ? columnById(dialog.columnId) : undefined
+    if (!column || deleteColumn.isPending) return
+    const focus = focusAfterDelete(column.id)
+    try {
+      await deleteColumn.mutateAsync({ boardId, columnId: column.id })
+      if (isMounted.current) dispatch({ type: 'dialogClose', focus })
+    } catch (failure) {
+      handleFailure(
+        'deleteColumn',
+        failure,
+        column.name,
+        t('deleteColumn.failed', { name: column.name }),
+      )
+    }
+  }
+
   const nameError = (text: string) => {
     const { error: code } = checkColumnName(text)
     return code ? nameErrorText(code, COLUMN_NAME_MAX) : undefined
@@ -295,6 +395,12 @@ export function useBoardViewModel(
         break
       case 'addColumnSubmit':
         void submitAddColumn()
+        break
+      case 'moveColumn':
+        void submitMove(action.columnId, action.direction)
+        break
+      case 'deleteColumnConfirm':
+        void submitDelete()
         break
       case 'inlineOutside': {
         const text = ui.quickAdd?.text ?? ui.addColumn?.text
@@ -350,6 +456,8 @@ export function useBoardViewModel(
           ? nameError(ui.addColumn.text)
           : undefined,
     isInlineSaving,
+    isRenamingColumn: renameColumn.isPending,
+    isDeletingColumn: deleteColumn.isPending,
   }
-  return { state, onAction }
+  return { state, onAction, onRenameColumn: submitRename }
 }

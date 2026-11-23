@@ -42,6 +42,8 @@ function stateFor(
     isRefreshing: false,
     ui: initialBoardViewUiState,
     isInlineSaving: false,
+    isRenamingColumn: false,
+    isDeletingColumn: false,
   }
 }
 
@@ -52,7 +54,11 @@ function renderScreen(state: BoardViewState) {
       <div data-testid="app-bar">
         <AppBarSlotTarget />
       </div>
-      <BoardViewScreen state={state} onAction={onAction} />
+      <BoardViewScreen
+        state={state}
+        onAction={onAction}
+        onRenameColumn={vi.fn()}
+      />
     </AppBarSlotProvider>,
   )
   return {

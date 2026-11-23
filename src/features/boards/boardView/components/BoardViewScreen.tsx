@@ -17,7 +17,10 @@ import type {
 } from '../hooks/useBoardViewModel'
 import type { BoardDetail } from '../types'
 import { AddColumnForm } from './AddColumnForm'
+import { ColumnMenu } from './ColumnMenu'
+import { DeleteColumnDialog } from './DeleteColumnDialog'
 import { DiscardInlineDialog } from './DiscardInlineDialog'
+import { RenameColumnDialog } from './RenameColumnDialog'
 import { BoardAppBarContent } from './BoardAppBarContent'
 import { BoardColumn } from './BoardColumn'
 import { BoardColumns } from './BoardColumns'
@@ -29,17 +32,30 @@ import { useFocusRequest } from './useFocusRequest'
 type BoardViewScreenProps = {
   state: BoardViewState
   onAction: (action: BoardViewAction) => void
+  /** Saves a column's new name. Resolves with the error to show under the field, if any. */
+  onRenameColumn: (name: string) => Promise<string | undefined>
 }
 
 const countCards = (board: BoardDetail) =>
   board.columns.reduce((sum, column) => sum + column.cards.length, 0)
 
-export function BoardViewScreen({ state, onAction }: BoardViewScreenProps) {
+export function BoardViewScreen({
+  state,
+  onAction,
+  onRenameColumn,
+}: BoardViewScreenProps) {
   const { t } = useTranslation('boardView')
   const { status, header } = state
   const board = status.type === 'ready' ? status.board : null
   const cardCount = board ? countCards(board) : null
   useFocusRequest(state.ui.focusRequest)
+  const dialogColumn = (kind: 'renameColumn' | 'deleteColumn') => {
+    const dialog = state.ui.dialog
+    if (dialog?.kind !== kind) return null
+    return (
+      board?.columns.find((column) => column.id === dialog.columnId) ?? null
+    )
+  }
 
   const boardMenu = (size: 'medium' | 'large') =>
     board && (
@@ -115,16 +131,44 @@ export function BoardViewScreen({ state, onAction }: BoardViewScreenProps) {
       <BoardColumns
         columns={status.board.columns}
         trailing={addColumnForm || addColumnButton}
-        renderColumn={(column) => (
+        renderColumn={(column, index) => (
           <BoardColumn
             key={column.id}
             boardKey={status.board.key}
             column={column}
             menu={
-              <IconButton
-                size="small"
-                icon={MoreIcon}
-                label={t('columnActions', { name: column.name })}
+              <ColumnMenu
+                columnId={column.id}
+                columnName={column.name}
+                isFirst={index === 0}
+                isLast={index === status.board.columns.length - 1}
+                isMoving={state.ui.movingColumnId !== null}
+                onMoveLeft={() =>
+                  onAction({
+                    type: 'moveColumn',
+                    columnId: column.id,
+                    direction: 'left',
+                  })
+                }
+                onMoveRight={() =>
+                  onAction({
+                    type: 'moveColumn',
+                    columnId: column.id,
+                    direction: 'right',
+                  })
+                }
+                onRename={() =>
+                  onAction({
+                    type: 'dialogOpen',
+                    dialog: { kind: 'renameColumn', columnId: column.id },
+                  })
+                }
+                onDelete={() =>
+                  onAction({
+                    type: 'dialogOpen',
+                    dialog: { kind: 'deleteColumn', columnId: column.id },
+                  })
+                }
               />
             }
             isAddCardDisabled={state.isInlineSaving}
@@ -180,6 +224,21 @@ export function BoardViewScreen({ state, onAction }: BoardViewScreenProps) {
           {content}
         </div>
       </div>
+      <RenameColumnDialog
+        column={dialogColumn('renameColumn')}
+        isSaving={state.isRenamingColumn}
+        onSubmit={onRenameColumn}
+        onCancel={() => onAction({ type: 'dialogClose' })}
+      />
+      <DeleteColumnDialog
+        column={(() => {
+          const column = dialogColumn('deleteColumn')
+          return column && { ...column, cardCount: column.cards.length }
+        })()}
+        isDeleting={state.isDeletingColumn}
+        onConfirm={() => onAction({ type: 'deleteColumnConfirm' })}
+        onCancel={() => onAction({ type: 'dialogClose' })}
+      />
       <DiscardInlineDialog
         open={state.ui.dialog?.kind === 'discardInline'}
         quickAddColumnName={
