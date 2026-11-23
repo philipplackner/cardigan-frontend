@@ -214,6 +214,7 @@ All test types are expected. See `react-unit-testing` and `react-integration-tes
 | `npm run e2e`           | Playwright against the local backend (it must be running on `localhost:8080`)                                                            |
 | `npm run coverage`      | Run all Vitest tests with coverage. Prints a summary and writes Cobertura and HTML reports to `coverage/` (open `coverage/index.html`)   |
 | `npm run coverage:diff` | Run coverage, then show coverage for only the lines changed since the merge base with `origin/master`. Writes `coverage/diff-cover.html` |
+| `npm run mutation`      | Run Stryker mutation testing on the product code. Prints a per-file table and writes `reports/mutation/mutation.html`                    |
 
 Scripts that don't exist yet get added in the change that sets up the tool.
 
@@ -230,6 +231,15 @@ Notes on `coverage:diff`:
 - `origin/master` is only as fresh as your last fetch. Run `git fetch` first, or pass `--compare-branch`.
 - With directories, changed files outside them don't show up. Run it without directories to see every changed file.
 - It only reports. It doesn't fail on uncovered lines unless a `--lines` or `--branches` minimum is missed.
+
+Notes on `mutation`:
+
+- Run it by hand only. It is not a gate, and no hook or other command runs it.
+- A plain run is a full run. It mutates the product code with both Vitest projects and takes about 25 minutes on an 18-core machine.
+- `npm run mutation -- --incremental` reuses earlier results and retests only mutants whose code or tests changed. The state lives in `reports/mutation/stryker-incremental.json`. Add `--force` to retest everything once.
+- `MUTATION_MIN_SCORE=<pct> npm run mutation` fails the run when the mutation score is below that minimum (a number from 0 to 100). The report is still written. Nothing sets it by default.
+- `--mutate` limits the run to some files and replaces the configured file list, so repeat the excludes: `npm run mutation -- --mutate "src/features/boards/**/*.ts,src/features/boards/**/*.tsx,!src/**/*.test.ts,!src/**/*.test.tsx,!src/**/testing/**"`. Stryker splits `--mutate` on commas, so don't use `{ts,tsx}` braces there.
+- The `mutate` list in `stryker.config.mjs` mirrors `coverage.exclude` in `vitest.config.ts`, plus the icons. Change both together.
 
 **The gates:** `typecheck`, `lint` (including import boundaries), `format:check`, `test` and `build` must all pass before a commit.
 
