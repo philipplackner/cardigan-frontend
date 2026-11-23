@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { checkText, countCodePoints, normalizeText } from '@/core/utils/text'
-import { isAddrSpec } from './emailFormat'
+import { isValidEmail } from './emailFormat'
 import {
   FIELD_ERROR_KEYS,
   RULES_UNMET,
@@ -21,7 +21,7 @@ export function registerEmailError(value: string): FieldMessage | null {
   if (countCodePoints(email) > EMAIL_MAX_LENGTH) {
     return FIELD_ERROR_KEYS.emailTooLong
   }
-  if (!isAddrSpec(email)) return FIELD_ERROR_KEYS.emailInvalid
+  if (!isValidEmail(email)) return FIELD_ERROR_KEYS.emailInvalid
   return null
 }
 

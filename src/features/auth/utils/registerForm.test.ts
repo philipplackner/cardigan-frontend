@@ -23,8 +23,16 @@ function errors(overrides: Partial<Values>) {
   return byField
 }
 
+/** A domain whose labels stay within 63 characters, so `ann@` plus it has [length] code points. */
 function domainOfLength(length: number) {
-  return `${'a'.repeat(length - 'ann@.com'.length)}.com`
+  const labels: string[] = []
+  let remaining = length - 'ann@.com'.length
+  while (remaining > 63) {
+    labels.push('a'.repeat(49))
+    remaining -= 50
+  }
+  labels.push('a'.repeat(remaining))
+  return `${labels.join('.')}.com`
 }
 
 describe('registerFormSchema email', () => {

@@ -1,60 +1,66 @@
 import { describe, expect, it } from 'vitest'
-import { isAddrSpec } from './emailFormat'
+import { isValidEmail } from './emailFormat'
 
-describe('isAddrSpec', () => {
+describe('isValidEmail', () => {
   it.each([
     'ann@example.com',
     'ann.lee+cards@example.com',
     "o'brien!#$%&*/=?^_`{|}~-@example.com",
-    'ann@localhost',
-    '"ann\\ lee"@example.com',
-    '"ann@work"@example.com',
-    '"a\\"b"@example.com',
-    '""@example.com',
-    'ann@[192.168.0.1]',
-    'ann@[IPv6:2001:db8::1]',
+    'a@b.co',
+    'ann@mail.example.com',
+    'ann@a.b.example.co.uk',
+    'ann@xn--mnchen-3ya.de',
+    `${'a'.repeat(64)}@example.com`,
+    `ann@${'a'.repeat(63)}.com`,
+    `ann@example.${'a'.repeat(63)}`,
   ])('accepts %s', (email) => {
-    expect(isAddrSpec(email)).toBe(true)
+    expect(isValidEmail(email)).toBe(true)
   })
 
   it.each([
-    ['a missing domain', 'ann@'],
-    ['a missing local part', '@example.com'],
-    ['no @', 'ann.example.com'],
-    ['two @ outside quotes', 'ann@lee@example.com'],
-    ['non-ASCII letters', 'jürgen@münchen.de'],
+    ['a quoted local part', '"ann lee"@example.com'],
     ['a comment', 'ann(work)@example.com'],
     ['a leading dot in the local part', '.ann@example.com'],
     ['a trailing dot in the local part', 'ann.@example.com'],
-    ['a double dot in the local part', 'ann..lee@example.com'],
-    ['a leading dot in the domain', 'ann@.example.com'],
+    ['a double dot in the local part', 'an..n@example.com'],
+    ['a local part of 65 characters', `${'a'.repeat(65)}@example.com`],
+    ['two @ in a row', 'ann@@example.com'],
+    ['two @ apart', 'ann@lee@example.com'],
+    ['non-ASCII letters', 'jürgen@münchen.de'],
+    ['a single-label domain with a hyphen', 'mail@pl-coding'],
+    ['a single-label domain', 'ann@localhost'],
+    ['a missing domain', 'ann@'],
+    ['a missing local part', '@example.com'],
+    ['no @', 'ann.example.com'],
+    ['a domain literal', 'ann@[192.168.0.1]'],
     ['a trailing dot in the domain', 'ann@example.com.'],
+    ['a leading dot in the domain', 'ann@.example.com'],
     ['a double dot in the domain', 'ann@example..com'],
+    ['a hyphen at the start of a label', 'ann@-example.com'],
+    ['a hyphen at the end of a label', 'ann@example-.com'],
+    ['a one-letter top-level label', 'ann@example.c'],
+    ['a numeric top-level label', 'ann@example.123'],
+    ['a punycode top-level label', 'ann@example.xn--p1ai'],
+    ['a label of 64 characters', `ann@${'a'.repeat(64)}.com`],
+    ['a top-level label of 64 letters', `ann@example.${'a'.repeat(64)}`],
     ['a space', 'ann lee@example.com'],
-    ['an unescaped space in quotes', '"ann lee"@example.com'],
     ['a tab', 'ann\t@example.com'],
-    ['an escaped tab in quotes', '"ann\\\tlee"@example.com'],
     ['a NUL', 'ann\u0000@example.com'],
-    ['an unclosed quote', '"ann@example.com'],
-    ['text after the closing quote', '"ann"lee@example.com'],
-    ['a bracket inside a domain literal', 'ann@[1[2]'],
-    ['an unclosed domain literal', 'ann@[192.168.0.1'],
+    ['a trailing line break', 'ann@example.com\n'],
     ['an empty string', ''],
   ])('rejects %s', (_, email) => {
-    expect(isAddrSpec(email)).toBe(false)
+    expect(isValidEmail(email)).toBe(false)
   })
 
-  it('finishes a 250 KB near-match within 100 ms', () => {
-    const inputs = [
-      `${'a.'.repeat(125_000)}@example.com`,
-      `ann@${'a.'.repeat(125_000)}`,
-      `"${'\\a'.repeat(125_000)}`,
-      `ann@[${'1'.repeat(250_000)}`,
-    ]
-    for (const input of inputs) {
-      const start = performance.now()
-      expect(isAddrSpec(input)).toBe(false)
-      expect(performance.now() - start).toBeLessThan(100)
-    }
+  it.each([
+    ['the shared near-match', `a@${'a.'.repeat(125_000)}1`],
+    ['a long dotted local part', `${'a.'.repeat(125_000)}@example.com`],
+    ['a long dotted domain', `ann@${'a.'.repeat(125_000)}`],
+    ['a long quoted string', `"${'\\a'.repeat(125_000)}`],
+    ['a long domain literal', `ann@[${'1'.repeat(250_000)}`],
+  ])('rejects %s within 100 ms', (_, input) => {
+    const start = performance.now()
+    expect(isValidEmail(input)).toBe(false)
+    expect(performance.now() - start).toBeLessThan(100)
   })
 })

@@ -4,7 +4,7 @@ Each group ends with all five gates passing (`typecheck`, `lint`, `format:check`
 
 ## 1. Email format
 
-- [ ] 1.1 Replace `isAddrSpec` in `src/features/auth/utils/emailFormat.ts` with `isValidEmail`, using the shared reference regex from `domain-user` › *Email format has one reference pattern* copied exactly (read it with `openspec show domain-user --type spec --store cardigan-shared-specs`). Delete the quoted-string and domain-literal helpers. Rewrite `emailFormat.test.ts`:
+- [x] 1.1 Replace `isAddrSpec` in `src/features/auth/utils/emailFormat.ts` with `isValidEmail`, using the shared reference regex from `domain-user` › *Email format has one reference pattern* copied exactly (read it with `openspec show domain-user --type spec --store cardigan-shared-specs`). Delete the quoted-string and domain-literal helpers. Rewrite `emailFormat.test.ts`:
   - Every valid and invalid email in the shared *Email local part is a dot-atom* and *Email domain has at least two labels* scenarios.
   - Local parts of 64 and 65 characters.
   - The shared 250 KB near-match and the existing near-match inputs, each rejected within 100 ms.
