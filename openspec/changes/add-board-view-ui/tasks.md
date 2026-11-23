@@ -54,7 +54,7 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 4. Quick add
 
-- [ ] 4.1 Add `QuickAddForm` and wire it into `BoardColumn` and the view model. Write feature tests for every scenario in spec › Opening quick add, Adding a card, Closing quick add, Name and title validation (titles) and Saving state:
+- [x] 4.1 Add `QuickAddForm` and wire it into `BoardColumn` and the view model. Write feature tests for every scenario in spec › Opening quick add, Adding a card, Closing quick add, Name and title validation (titles) and Saving state:
   - Two cards in a row.
   - Whitespace only, with Enter and with the "Add card" button.
   - Enter with `isComposing: true` creates nothing.
@@ -64,7 +64,7 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
   - Disabled controls, Escape and a second Enter while saving.
   - The add-card failure toast with the text kept, and a background reload that shows a card the server created before the response was lost.
   - A 404 on create reloading the board with the "no longer exists" toast.
-- [ ] 4.2 Check Quick add card (390, 1440) against Figma, including the "Enter to add" hint only on desktop and tablet
+- [x] 4.2 Check Quick add card (390, 1440) against Figma, including the "Enter to add" hint only on desktop and tablet
 
 ## 5. Add column, the empty board and discarding started text
 

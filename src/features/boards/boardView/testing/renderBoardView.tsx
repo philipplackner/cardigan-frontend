@@ -9,6 +9,10 @@ import {
 import { BoardViewRoot } from '../components/BoardViewRoot'
 import { BoardViewTestProviders } from './BoardViewTestProviders'
 import {
+  installResizeObserverStub,
+  installScrollIntoViewStub,
+} from './domStubs'
+import {
   createInMemoryBoardViewDataAccess,
   type InMemoryBoardViewDataAccess,
 } from './createInMemoryBoardViewDataAccess'
@@ -31,6 +35,8 @@ export async function renderBoardView({
   prepare,
   withBoardList = false,
 }: Options = {}) {
+  installResizeObserverStub()
+  const scrollCalls = installScrollIntoViewStub()
   const boards = createInMemoryBoardsDataAccess()
   const boardView = createInMemoryBoardViewDataAccess(boards)
   const queryClient = createTestQueryClient()
@@ -62,6 +68,7 @@ export async function renderBoardView({
     within(content().getByRole('region', { name }))
   return {
     user,
+    scrollCalls,
     queryClient,
     boards,
     boardView,

@@ -36,7 +36,13 @@ function stateFor(
   status: BoardViewState['status'],
   header: BoardViewState['header'] = { name: 'Cardigan v1', key: 'CRD' },
 ): BoardViewState {
-  return { status, header, isRefreshing: false, ui: initialBoardViewUiState }
+  return {
+    status,
+    header,
+    isRefreshing: false,
+    ui: initialBoardViewUiState,
+    isInlineSaving: false,
+  }
 }
 
 function renderScreen(state: BoardViewState) {

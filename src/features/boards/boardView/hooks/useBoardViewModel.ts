@@ -2,14 +2,22 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useReducer, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useToast } from '@/core/ui'
+import { normalizeText } from '@/core/utils/text'
 import { useBoardsDataAccess } from '../../api/BoardsDataAccessContext'
 import { boardsQueryOptions } from '../../api/boardsQueries'
+import { nameErrorMessageKey } from '../../utils/boardName'
 import {
   boardViewErrorOf,
   boardViewKeys,
   useBoardDetail,
+  useCreateCard,
 } from '../api/boardViewQueries'
 import type { BoardDetail } from '../types'
+import {
+  handleBoardViewError,
+  type BoardViewChange,
+} from '../utils/handleBoardViewError'
+import { CARD_TITLE_MAX, checkCardTitle } from '../utils/limits'
 import {
   boardViewReducer,
   initialBoardViewUiState,
@@ -43,6 +51,10 @@ export type BoardViewState = {
   /** True while a load runs and a board or a load error is shown. */
   isRefreshing: boolean
   ui: BoardViewUiState
+  /** The error under the quick add field. */
+  quickAddError?: string
+  /** True while a quick add or add column form saves. */
+  isInlineSaving: boolean
 }
 
 export type BoardViewAction =
@@ -51,12 +63,15 @@ export type BoardViewAction =
   | { type: 'back' }
   | { type: 'refresh' }
   | { type: 'tryAgain' }
+  /** A click or focus move outside the open inline form. */
+  | { type: 'inlineOutside' }
 
 export function useBoardViewModel(
   boardId: string,
   { onOpenCard, onBack, onBoardGone, onNotFound }: BoardViewCallbacks,
 ) {
   const { t } = useTranslation('boardView')
+  const { t: tCommon } = useTranslation()
   const toast = useToast()
   const queryClient = useQueryClient()
   // After the board is gone the host navigates away; until then nothing loads it again.
@@ -122,6 +137,99 @@ export function useBoardViewModel(
     void query.refetch()
   }
 
+  const createCard = useCreateCard()
+  const isInlineSaving = createCard.isPending
+  // A ref as well, so a second Enter before the next render doesn't send another request.
+  const isInlineSavingNow = useRef(false)
+  const [serverError, setServerError] = useState<{
+    form: 'quickAdd' | 'addColumn'
+    message: string
+  } | null>(null)
+
+  const nameErrorText = (code: string, max: number) =>
+    tCommon(nameErrorMessageKey(code), { n: max })
+
+  /** Loads the board again. Shows `message` afterwards, unless the board itself is gone. */
+  const reloadBoard = async (message?: string) => {
+    const result = await query.refetch()
+    if (!isMounted.current) return
+    if (result.isError && boardViewErrorOf(result.error).kind === 'notFound') {
+      return
+    }
+    if (message) toast.show({ type: 'error', message })
+  }
+
+  /** Shows the toasts and reloads that follow a failed change. Returns the outcome for the caller. */
+  const handleFailure = (
+    change: BoardViewChange,
+    error: unknown,
+    columnName: string,
+    failedMessage: string,
+  ) => {
+    const outcome = handleBoardViewError(change, boardViewErrorOf(error))
+    if (!isMounted.current) return outcome
+    switch (outcome.type) {
+      case 'failed':
+        toast.show({ type: 'error', message: failedMessage })
+        if (outcome.reload) void reloadBoard()
+        break
+      case 'columnGone':
+        void reloadBoard(t('columnGone', { name: columnName }))
+        break
+      case 'staleMove':
+        void reloadBoard(t('moveColumn.stale', { name: columnName }))
+        break
+      case 'fieldErrors':
+      case 'deleted':
+        break
+    }
+    return outcome
+  }
+
+  const submitQuickAdd = async () => {
+    const quickAdd = ui.quickAdd
+    const column = board?.columns.find(
+      (candidate) => candidate.id === quickAdd?.columnId,
+    )
+    if (!quickAdd || !column || isInlineSavingNow.current) return
+    const check = checkCardTitle(quickAdd.text)
+    if (check.value === '') return
+    dispatch({ type: 'quickAddSubmit' })
+    if (check.error) return
+    isInlineSavingNow.current = true
+    try {
+      await createCard.mutateAsync({
+        boardId,
+        columnId: column.id,
+        title: check.value,
+      })
+      if (isMounted.current) dispatch({ type: 'quickAddAdded' })
+    } catch (failure) {
+      const outcome = handleFailure(
+        'createCard',
+        failure,
+        column.name,
+        t('quickAdd.failed'),
+      )
+      const field = outcome.type === 'fieldErrors' ? outcome.fields[0] : null
+      if (field && isMounted.current) {
+        setServerError({
+          form: 'quickAdd',
+          message: nameErrorText(field.code, field.max ?? CARD_TITLE_MAX),
+        })
+      }
+    } finally {
+      isInlineSavingNow.current = false
+    }
+  }
+
+  const titleError = (text: string) => {
+    const { error: code } = checkCardTitle(text)
+    return code && code !== 'EMPTY'
+      ? nameErrorText(code, CARD_TITLE_MAX)
+      : undefined
+  }
+
   const onAction = (action: BoardViewAction) => {
     switch (action.type) {
       case 'openCard':
@@ -133,6 +241,29 @@ export function useBoardViewModel(
       case 'refresh':
       case 'tryAgain':
         reload()
+        break
+      case 'quickAddSubmit':
+        void submitQuickAdd()
+        break
+      case 'inlineOutside': {
+        const text = ui.quickAdd?.text ?? ui.addColumn?.text
+        if (text !== undefined && normalizeText(text, 'singleLine') === '') {
+          setServerError(null)
+          dispatch({ type: 'inlineClose' })
+        }
+        break
+      }
+      case 'inlineOpen':
+        if (isInlineSaving) break
+        setServerError(null)
+        dispatch(action)
+        break
+      case 'quickAddChange':
+      case 'addColumnChange':
+      case 'inlineClose':
+      case 'discardConfirm':
+        setServerError(null)
+        dispatch(action)
         break
       default:
         dispatch(action)
@@ -155,6 +286,13 @@ export function useBoardViewModel(
     status,
     isRefreshing: isFetching && !isPending,
     ui,
+    quickAddError:
+      serverError?.form === 'quickAdd'
+        ? serverError.message
+        : ui.quickAdd?.submitted
+          ? titleError(ui.quickAdd.text)
+          : undefined,
+    isInlineSaving,
   }
   return { state, onAction }
 }

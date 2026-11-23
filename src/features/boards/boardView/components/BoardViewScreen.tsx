@@ -21,6 +21,8 @@ import { BoardColumn } from './BoardColumn'
 import { BoardColumns } from './BoardColumns'
 import { BoardHeader } from './BoardHeader'
 import { BoardSkeleton } from './BoardSkeleton'
+import { QuickAddForm } from './QuickAddForm'
+import { useFocusRequest } from './useFocusRequest'
 
 type BoardViewScreenProps = {
   state: BoardViewState
@@ -35,6 +37,7 @@ export function BoardViewScreen({ state, onAction }: BoardViewScreenProps) {
   const { status, header } = state
   const board = status.type === 'ready' ? status.board : null
   const cardCount = board ? countCards(board) : null
+  useFocusRequest(state.ui.focusRequest)
 
   const boardMenu = (size: 'medium' | 'large') =>
     board && (
@@ -46,7 +49,16 @@ export function BoardViewScreen({ state, onAction }: BoardViewScreenProps) {
       />
     )
 
-  const addColumnButton = <AddColumnButton label={t('addColumn')} />
+  const addColumnButton = (
+    <AddColumnButton
+      label={t('addColumn')}
+      data-add-column
+      disabled={state.isInlineSaving}
+      onClick={() =>
+        onAction({ type: 'inlineOpen', target: { kind: 'addColumn' } })
+      }
+    />
+  )
 
   const content =
     status.type === 'loading' ? (
@@ -95,6 +107,22 @@ export function BoardViewScreen({ state, onAction }: BoardViewScreenProps) {
                 icon={MoreIcon}
                 label={t('columnActions', { name: column.name })}
               />
+            }
+            isAddCardDisabled={state.isInlineSaving}
+            footer={
+              state.ui.quickAdd?.columnId === column.id ? (
+                <QuickAddForm
+                  text={state.ui.quickAdd.text}
+                  error={state.quickAddError}
+                  isSaving={state.isInlineSaving}
+                  onChange={(text) =>
+                    onAction({ type: 'quickAddChange', text })
+                  }
+                  onSubmit={() => onAction({ type: 'quickAddSubmit' })}
+                  onCancel={() => onAction({ type: 'inlineClose' })}
+                  onOutside={() => onAction({ type: 'inlineOutside' })}
+                />
+              ) : undefined
             }
             onAddCard={() =>
               onAction({
