@@ -28,3 +28,7 @@ dist-ssr
 
 # Test coverage reports
 coverage
+
+# Mutation testing reports and sandbox
+reports
+.stryker-tmp

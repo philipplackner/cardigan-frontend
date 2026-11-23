@@ -5,7 +5,9 @@
     "src/core/api/generated/**",
     "src/app/routeTree.gen.ts",
     "dist/**",
-    "coverage/**"
+    "coverage/**",
+    "reports/**",
+    ".stryker-tmp/**"
   ],
   "rules": {
     "react/rules-of-hooks": "error",
@@ -16,7 +18,7 @@
   },
   "overrides": [
     {
-      "files": ["*.config.ts"],
+      "files": ["*.config.{ts,mjs}"],
       "rules": {
         "import/no-default-export": "off"
       }

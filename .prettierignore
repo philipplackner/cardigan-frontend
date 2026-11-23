@@ -6,3 +6,5 @@ src/app/routeTree.gen.ts
 openspec
 .claude
 coverage
+reports
+.stryker-tmp
