@@ -13,6 +13,7 @@ import {
   BoardsNavItem,
   BoardsNavList,
   BoardViewDataAccessProvider,
+  BoardViewError,
   BoardViewRoot,
   ClockProvider,
   createInMemoryBoardsDataAccess,
@@ -21,6 +22,7 @@ import {
   sampleNow,
   sidebarAccount,
 } from '@/features/boards'
+import { useExportBoard } from '@/features/transfer'
 
 const DELAY_MS = 600
 
@@ -55,6 +57,41 @@ export function BoardViewPlayground() {
   const boardLink = (id: string) => (
     <button type="button" onClick={() => setBoardId(id)} />
   )
+  const { start: startExport, dialog: exportDialog } = useExportBoard({
+    exportBoard: async (id) => {
+      try {
+        const board = await boardView.loadBoard(id)
+        const file = new Blob(
+          [
+            JSON.stringify(
+              {
+                format: 'cardigan.board',
+                formatVersion: 1,
+                exportedAt: new Date().toISOString(),
+                board: { key: board.key, name: board.name, columns: [] },
+              },
+              null,
+              2,
+            ),
+          ],
+          { type: 'application/json' },
+        )
+        return {
+          ok: true,
+          file,
+          contentDisposition: `attachment; filename="${board.key}.json"`,
+        }
+      } catch (error) {
+        return {
+          ok: false,
+          error:
+            error instanceof BoardViewError && error.error.kind === 'notFound'
+              ? 'notFound'
+              : 'other',
+        }
+      }
+    },
+  })
   const account = {
     email: 'philipp@example.com',
     onLogOut: () => addLog('log out'),
@@ -98,12 +135,16 @@ export function BoardViewPlayground() {
                   key={boardId}
                   boardId={boardId}
                   onOpenCard={(cardId) => addLog(`open card ${cardId}`)}
-                  onExport={(board) => addLog(`export ${board.name}`)}
+                  onExport={(board) => {
+                    addLog(`export ${board.name}`)
+                    void startExport(board)
+                  }}
                   onBack={() => addLog('back to the board list')}
                   onBoardGone={() => addLog('board gone: open the board list')}
                   onNotFound={() => addLog('not found page')}
                 />
               </AppLayout>
+              {exportDialog}
             </AppBarSlotProvider>
           </ClockProvider>
         </BoardViewDataAccessProvider>

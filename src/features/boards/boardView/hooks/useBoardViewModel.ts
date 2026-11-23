@@ -1,14 +1,17 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useReducer, useRef, useState } from 'react'
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useToast } from '@/core/ui'
 import { normalizeText } from '@/core/utils/text'
 import { useBoardsDataAccess } from '../../api/BoardsDataAccessContext'
 import { boardsQueryOptions } from '../../api/boardsQueries'
+import type { BoardDialogResult } from '../../hooks/boardDialogResult'
+import type { BoardSummary } from '../../types'
 import { nameErrorMessageKey } from '../../utils/boardName'
 import {
   boardViewErrorOf,
   boardViewKeys,
+  updateCachedBoard,
   useBoardDetail,
   useCreateCard,
   useCreateColumn,
@@ -80,10 +83,12 @@ export type BoardViewAction =
   | { type: 'inlineOutside' }
   | { type: 'moveColumn'; columnId: string; direction: 'left' | 'right' }
   | { type: 'deleteColumnConfirm' }
+  | { type: 'export' }
+  | { type: 'boardDialogClose'; result: BoardDialogResult }
 
 export function useBoardViewModel(
   boardId: string,
-  { onOpenCard, onBack, onBoardGone, onNotFound }: BoardViewCallbacks,
+  { onOpenCard, onExport, onBack, onBoardGone, onNotFound }: BoardViewCallbacks,
 ) {
   const { t } = useTranslation('boardView')
   const { t: tCommon } = useTranslation()
@@ -114,12 +119,26 @@ export function useBoardViewModel(
     onNotFound()
   }
 
-  const boardGone = () => {
+  /** Leaves the board. Only a board that disappeared on its own gets the toast. */
+  const boardGone = ({ withToast = true } = {}) => {
     if (!isMounted.current) return
     setIsGone(true)
     queryClient.removeQueries({ queryKey: boardViewKeys.detail(boardId) })
-    toast.show({ type: 'error', message: t('boardGone') })
+    if (withToast) toast.show({ type: 'error', message: t('boardGone') })
     onBoardGone()
+  }
+
+  const closeBoardDialog = (result: BoardDialogResult) => {
+    dispatch({ type: 'dialogClose' })
+    if (result.kind === 'renamed') {
+      updateCachedBoard(queryClient, boardId, (cached) => ({
+        ...cached,
+        name: result.board.name,
+      }))
+    } else if (result.kind === 'deleted') {
+      // The rename dialog already says the board no longer exists, and a delete needs no toast (F3).
+      boardGone({ withToast: false })
+    }
   }
 
   useEffect(() => {
@@ -402,6 +421,12 @@ export function useBoardViewModel(
       case 'deleteColumnConfirm':
         void submitDelete()
         break
+      case 'export':
+        if (board) onExport({ id: board.id, name: board.name })
+        break
+      case 'boardDialogClose':
+        closeBoardDialog(action.result)
+        break
       case 'inlineOutside': {
         const text = ui.quickAdd?.text ?? ui.addColumn?.text
         if (text !== undefined && normalizeText(text, 'singleLine') === '') {
@@ -459,5 +484,23 @@ export function useBoardViewModel(
     isRenamingColumn: renameColumn.isPending,
     isDeletingColumn: deleteColumn.isPending,
   }
-  return { state, onAction, onRenameColumn: submitRename }
+  // The dialogs keep their last board in state, so the object must stay the same between renders.
+  const summaryUpdatedAt = summary?.updatedAt
+  const boardSummary = useMemo<BoardSummary | null>(
+    () =>
+      board
+        ? {
+            id: board.id,
+            name: board.name,
+            key: board.key,
+            cardCount: board.columns.reduce(
+              (sum, column) => sum + column.cards.length,
+              0,
+            ),
+            updatedAt: summaryUpdatedAt ?? new Date(0),
+          }
+        : null,
+    [board, summaryUpdatedAt],
+  )
+  return { state, onAction, onRenameColumn: submitRename, boardSummary }
 }

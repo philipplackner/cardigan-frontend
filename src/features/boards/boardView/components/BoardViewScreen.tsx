@@ -6,8 +6,6 @@ import {
   CloudOffIcon,
   ColumnsIcon,
   EmptyState,
-  IconButton,
-  MoreIcon,
   PlusIcon,
   RefreshIcon,
 } from '@/core/ui'
@@ -26,6 +24,7 @@ import { BoardColumn } from './BoardColumn'
 import { BoardColumns } from './BoardColumns'
 import { BoardHeader } from './BoardHeader'
 import { BoardSkeleton } from './BoardSkeleton'
+import { BoardViewMenu } from './BoardViewMenu'
 import { QuickAddForm } from './QuickAddForm'
 import { useFocusRequest } from './useFocusRequest'
 
@@ -57,13 +56,17 @@ export function BoardViewScreen({
     )
   }
 
-  const boardMenu = (size: 'medium' | 'large') =>
+  const boardMenu = (placement: 'header' | 'appBar') =>
     board && (
-      <IconButton
-        variant={size === 'medium' ? 'boxed' : undefined}
-        size={size}
-        icon={MoreIcon}
-        label={t('boardActions')}
+      <BoardViewMenu
+        placement={placement}
+        onRename={() =>
+          onAction({ type: 'dialogOpen', dialog: { kind: 'renameBoard' } })
+        }
+        onExport={() => onAction({ type: 'export' })}
+        onDelete={() =>
+          onAction({ type: 'dialogOpen', dialog: { kind: 'deleteBoard' } })
+        }
       />
     )
 
@@ -206,7 +209,7 @@ export function BoardViewScreen({
           header={header}
           cardCount={cardCount}
           onBack={() => onAction({ type: 'back' })}
-          menu={boardMenu('large')}
+          menu={boardMenu('appBar')}
         />
       </AppBarSlot>
       <div className="flex h-full min-h-[0] flex-col">
@@ -215,7 +218,7 @@ export function BoardViewScreen({
           cardCount={cardCount}
           isRefreshing={state.isRefreshing}
           onRefresh={() => onAction({ type: 'refresh' })}
-          menu={boardMenu('medium')}
+          menu={boardMenu('header')}
         />
         <div
           data-testid="board-content"
