@@ -68,7 +68,7 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 5. Add column, the empty board and discarding started text
 
-- [ ] 5.1 Add `AddColumnForm` after the last column and in place of the no-columns empty state. After success, scroll the new column into view and focus its "Add card". Write feature tests:
+- [x] 5.1 Add `AddColumnForm` after the last column and in place of the no-columns empty state. After success, scroll the new column into view and focus its "Add card". Write feature tests:
   - Add from the end and from the empty state.
   - Duplicate names allowed.
   - Empty, 31-character and control-character names with live updates after the first submit.
@@ -77,8 +77,8 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
   - A server field error under the field.
   - The add-column failure toast with the form kept open, and the background reload after the failure.
   - No board reload after success (the in-memory `loadBoard` is called once).
-- [ ] 5.2 Add an optional `returnFocus?: boolean` prop (default `true`) to `core/ui` `Dialog`. With `false` it prevents `onCloseAutoFocus`. Add a test that `false` leaves focus where the screen put it, and a preview entry
-- [ ] 5.3 Add `DiscardInlineDialog` ("Discard changes?", the card or column body, "Keep editing", "Discard") following the card detail's "Unsaved changes" pattern, and wire it for quick add → quick add, quick add → add column, and add column → quick add. Write feature tests:
+- [x] 5.2 Add an optional `returnFocus?: boolean` prop (default `true`) to `core/ui` `Dialog`. With `false` it prevents `onCloseAutoFocus`. Add a test that `false` leaves focus where the screen put it, and a preview entry
+- [x] 5.3 Add `DiscardInlineDialog` ("Discard changes?", the card or column body, "Keep editing", "Discard") following the card detail's "Unsaved changes" pattern, and wire it for quick add → quick add, quick add → add column, and add column → quick add. Write feature tests:
   - Each of the three switches with text asks, with the right body.
   - "Discard" opens the target form empty with focus.
   - "Keep editing", Escape and a backdrop click keep the first form with its text, scrolled into view (recording `scrollIntoView` stub) and focused, and open no new form.
@@ -87,7 +87,7 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
   - Cancel and Escape in a form still discard without asking.
 
   Compare the dialog with Figma "Unsaved changes · Desktop 1440" and "· Phone 390" on page `9:7`.
-- [ ] 5.4 Check Add column (1440) and All columns deleted (1440) against Figma, and the phone at 390 px against the desktop pattern (D20)
+- [x] 5.4 Check Add column (1440) and All columns deleted (1440) against Figma, and the phone at 390 px against the desktop pattern (D20)
 
 ## 6. Column menu
 

@@ -16,6 +16,8 @@ import type {
   BoardViewState,
 } from '../hooks/useBoardViewModel'
 import type { BoardDetail } from '../types'
+import { AddColumnForm } from './AddColumnForm'
+import { DiscardInlineDialog } from './DiscardInlineDialog'
 import { BoardAppBarContent } from './BoardAppBarContent'
 import { BoardColumn } from './BoardColumn'
 import { BoardColumns } from './BoardColumns'
@@ -49,14 +51,25 @@ export function BoardViewScreen({ state, onAction }: BoardViewScreenProps) {
       />
     )
 
+  const openAddColumn = () =>
+    onAction({ type: 'inlineOpen', target: { kind: 'addColumn' } })
+  const addColumnForm = state.ui.addColumn && (
+    <AddColumnForm
+      text={state.ui.addColumn.text}
+      error={state.addColumnError}
+      isSaving={state.isInlineSaving}
+      onChange={(text) => onAction({ type: 'addColumnChange', text })}
+      onSubmit={() => onAction({ type: 'addColumnSubmit' })}
+      onCancel={() => onAction({ type: 'inlineClose' })}
+      onOutside={() => onAction({ type: 'inlineOutside' })}
+    />
+  )
   const addColumnButton = (
     <AddColumnButton
       label={t('addColumn')}
       data-add-column
       disabled={state.isInlineSaving}
-      onClick={() =>
-        onAction({ type: 'inlineOpen', target: { kind: 'addColumn' } })
-      }
+      onClick={openAddColumn}
     />
   )
 
@@ -84,18 +97,24 @@ export function BoardViewScreen({ state, onAction }: BoardViewScreenProps) {
         />
       </div>
     ) : status.board.columns.length === 0 ? (
-      <div className="flex flex-1 flex-col justify-center">
-        <EmptyState
-          icon={ColumnsIcon}
-          title={t('noColumns.title')}
-          description={t('noColumns.description')}
-          actions={<Button icon={PlusIcon}>{t('addColumn')}</Button>}
-        />
-      </div>
+      addColumnForm || (
+        <div className="flex flex-1 flex-col justify-center">
+          <EmptyState
+            icon={ColumnsIcon}
+            title={t('noColumns.title')}
+            description={t('noColumns.description')}
+            actions={
+              <Button icon={PlusIcon} data-add-column onClick={openAddColumn}>
+                {t('addColumn')}
+              </Button>
+            }
+          />
+        </div>
+      )
     ) : (
       <BoardColumns
         columns={status.board.columns}
-        trailing={addColumnButton}
+        trailing={addColumnForm || addColumnButton}
         renderColumn={(column) => (
           <BoardColumn
             key={column.id}
@@ -161,6 +180,18 @@ export function BoardViewScreen({ state, onAction }: BoardViewScreenProps) {
           {content}
         </div>
       </div>
+      <DiscardInlineDialog
+        open={state.ui.dialog?.kind === 'discardInline'}
+        quickAddColumnName={
+          state.ui.quickAdd
+            ? (board?.columns.find(
+                (column) => column.id === state.ui.quickAdd?.columnId,
+              )?.name ?? '')
+            : null
+        }
+        onKeepEditing={() => onAction({ type: 'discardKeep' })}
+        onDiscard={() => onAction({ type: 'discardConfirm' })}
+      />
     </>
   )
 }

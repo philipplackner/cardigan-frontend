@@ -11,13 +11,19 @@ import {
   boardViewKeys,
   useBoardDetail,
   useCreateCard,
+  useCreateColumn,
 } from '../api/boardViewQueries'
 import type { BoardDetail } from '../types'
 import {
   handleBoardViewError,
   type BoardViewChange,
 } from '../utils/handleBoardViewError'
-import { CARD_TITLE_MAX, checkCardTitle } from '../utils/limits'
+import {
+  CARD_TITLE_MAX,
+  COLUMN_NAME_MAX,
+  checkCardTitle,
+  checkColumnName,
+} from '../utils/limits'
 import {
   boardViewReducer,
   initialBoardViewUiState,
@@ -53,6 +59,8 @@ export type BoardViewState = {
   ui: BoardViewUiState
   /** The error under the quick add field. */
   quickAddError?: string
+  /** The error under the add column field. */
+  addColumnError?: string
   /** True while a quick add or add column form saves. */
   isInlineSaving: boolean
 }
@@ -138,7 +146,8 @@ export function useBoardViewModel(
   }
 
   const createCard = useCreateCard()
-  const isInlineSaving = createCard.isPending
+  const createColumn = useCreateColumn()
+  const isInlineSaving = createCard.isPending || createColumn.isPending
   // A ref as well, so a second Enter before the next render doesn't send another request.
   const isInlineSavingNow = useRef(false)
   const [serverError, setServerError] = useState<{
@@ -223,6 +232,45 @@ export function useBoardViewModel(
     }
   }
 
+  const submitAddColumn = async () => {
+    const addColumn = ui.addColumn
+    if (!addColumn || isInlineSavingNow.current) return
+    dispatch({ type: 'addColumnSubmit' })
+    const check = checkColumnName(addColumn.text)
+    if (check.error) return
+    isInlineSavingNow.current = true
+    try {
+      const column = await createColumn.mutateAsync({
+        boardId,
+        name: check.value,
+      })
+      if (isMounted.current) {
+        dispatch({ type: 'addColumnAdded', columnId: column.id })
+      }
+    } catch (failure) {
+      const outcome = handleFailure(
+        'createColumn',
+        failure,
+        check.value,
+        t('addColumnForm.failed'),
+      )
+      const field = outcome.type === 'fieldErrors' ? outcome.fields[0] : null
+      if (field && isMounted.current) {
+        setServerError({
+          form: 'addColumn',
+          message: nameErrorText(field.code, field.max ?? COLUMN_NAME_MAX),
+        })
+      }
+    } finally {
+      isInlineSavingNow.current = false
+    }
+  }
+
+  const nameError = (text: string) => {
+    const { error: code } = checkColumnName(text)
+    return code ? nameErrorText(code, COLUMN_NAME_MAX) : undefined
+  }
+
   const titleError = (text: string) => {
     const { error: code } = checkCardTitle(text)
     return code && code !== 'EMPTY'
@@ -244,6 +292,9 @@ export function useBoardViewModel(
         break
       case 'quickAddSubmit':
         void submitQuickAdd()
+        break
+      case 'addColumnSubmit':
+        void submitAddColumn()
         break
       case 'inlineOutside': {
         const text = ui.quickAdd?.text ?? ui.addColumn?.text
@@ -291,6 +342,12 @@ export function useBoardViewModel(
         ? serverError.message
         : ui.quickAdd?.submitted
           ? titleError(ui.quickAdd.text)
+          : undefined,
+    addColumnError:
+      serverError?.form === 'addColumn'
+        ? serverError.message
+        : ui.addColumn?.submitted
+          ? nameError(ui.addColumn.text)
           : undefined,
     isInlineSaving,
   }

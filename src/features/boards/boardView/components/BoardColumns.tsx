@@ -16,9 +16,10 @@ export function BoardColumns({
   trailing,
 }: BoardColumnsProps) {
   return (
-    <div className="flex items-start gap-12 phone:gap-10">
+    // The row carries the end padding itself, because a scroll container ignores its own padding at the inline end.
+    <div className="flex w-max items-start gap-12 pr-20 phone:gap-10 phone:pr-12">
       {columns.map(renderColumn)}
-      <div className="w-[220px] shrink-0">{trailing}</div>
+      <div className="shrink-0 [&>button]:w-[220px]">{trailing}</div>
     </div>
   )
 }

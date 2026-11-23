@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import type { FocusTarget } from '../hooks/boardViewReducer'
 
 function selectorFor(target: FocusTarget) {
@@ -20,11 +20,14 @@ function selectorFor(target: FocusTarget) {
 export function useFocusRequest(
   request: { target: FocusTarget; id: number } | null,
 ) {
+  const handledId = useRef<number | null>(null)
+  // Runs after every render: the target may still be disabled while its save finishes.
   useEffect(() => {
-    if (!request) return
+    if (!request || request.id === handledId.current) return
     const { target } = request
     const element = document.querySelector<HTMLElement>(selectorFor(target))
-    if (!element) return
+    if (!element || element.matches(':disabled')) return
+    handledId.current = request.id
     if (target.kind === 'quickAdd' || target.kind === 'addColumn') {
       element.closest('form')?.scrollIntoView?.({
         block: 'nearest',
@@ -36,5 +39,5 @@ export function useFocusRequest(
         ?.scrollIntoView?.({ inline: 'nearest' })
     }
     element.focus()
-  }, [request])
+  })
 }

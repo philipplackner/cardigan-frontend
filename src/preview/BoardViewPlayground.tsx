@@ -140,6 +140,16 @@ export function BoardViewPlayground() {
           >
             Open a new board (default columns)
           </button>
+          <button
+            type="button"
+            className="text-accent"
+            onClick={() => {
+              boardView.changeBoard(boardId, () => [])
+              addLog('another device deleted every column: refresh')
+            }}
+          >
+            Delete every column elsewhere
+          </button>
           <pre className="type-mono-11-regular-100 whitespace-pre-wrap text-text-muted">
             {log.join('\n')}
           </pre>
