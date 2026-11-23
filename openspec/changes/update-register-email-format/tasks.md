@@ -25,7 +25,7 @@ Each group ends with all five gates passing (`typecheck`, `lint`, `format:check`
 
 ## 3. Final check
 
-- [ ] 3.1 Run the five gates on a clean working tree and verify all of them pass.
+- [x] 3.1 Run the five gates on a clean working tree and verify all of them pass.
 
 ## Workflow follow-up
 
