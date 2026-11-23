@@ -114,8 +114,8 @@ Each group ends in its own commit once all five gates pass (`typecheck`, `lint`,
 
 ## 8. Preview and integration checks
 
-- [ ] 8.1 Extend the board view playground with controls to make the next call fail (network, 404, `outOfRange`, field error) or hang. Verify every state from task groups 3–7 can be reached there
-- [ ] 8.2 Walk through the board with the keyboard only: open a card, quick add, add column, each column menu item, both dialogs, the board menu and refresh. Verify focus returns to the trigger after each dialog closes (the column's menu button for column menu items), except: the discard dialog focuses the kept or newly opened form (WBV-24); after Delete column focus lands on a defined element (the next column's menu button, or "Add column" when none is left); board delete and board-gone navigate away
+- [x] 8.1 Extend the board view playground with controls to make the next call fail (network, 404, `outOfRange`, field error) or hang. Verify every state from task groups 3–7 can be reached there
+- [x] 8.2 Walk through the board with the keyboard only: open a card, quick add, add column, each column menu item, both dialogs, the board menu and refresh. Verify focus returns to the trigger after each dialog closes (the column's menu button for column menu items), except: the discard dialog focuses the kept or newly opened form (WBV-24); after Delete column focus lands on a defined element (the next column's menu button, or "Add column" when none is left); board delete and board-gone navigate away
 - [ ] 8.3 Run all five gates on a clean checkout of the branch and verify they pass
 
 ## Workflow follow-up

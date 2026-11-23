@@ -21,12 +21,71 @@ import {
   sampleBoards,
   sampleNow,
   sidebarAccount,
+  type BoardViewErrorKind,
+  type BoardViewMethod,
 } from '@/features/boards'
 import { useExportBoard } from '@/features/transfer'
 
 const DELAY_MS = 600
 
 const params = () => new URLSearchParams(location.search)
+
+type Failure = {
+  label: string
+  method: BoardViewMethod
+  error: BoardViewErrorKind
+}
+
+const METHODS: BoardViewMethod[] = [
+  'loadBoard',
+  'createCard',
+  'createColumn',
+  'renameColumn',
+  'moveColumn',
+  'deleteColumn',
+]
+
+const FAILURES: Failure[] = [
+  ...METHODS.map((method): Failure => ({
+    label: `${method}: network`,
+    method,
+    error: { kind: 'other' },
+  })),
+  ...METHODS.map((method): Failure => ({
+    label: `${method}: 404`,
+    method,
+    error: { kind: 'notFound' },
+  })),
+  {
+    label: 'moveColumn: OUT_OF_RANGE',
+    method: 'moveColumn',
+    error: { kind: 'outOfRange' },
+  },
+  {
+    label: 'createCard: field error',
+    method: 'createCard',
+    error: {
+      kind: 'invalid',
+      fields: [{ field: 'title', code: 'TOO_LONG', max: 200 }],
+    },
+  },
+  {
+    label: 'createColumn: field error',
+    method: 'createColumn',
+    error: {
+      kind: 'invalid',
+      fields: [{ field: 'name', code: 'TOO_LONG', max: 30 }],
+    },
+  },
+  {
+    label: 'renameColumn: field error',
+    method: 'renameColumn',
+    error: {
+      kind: 'invalid',
+      fields: [{ field: 'name', code: 'INVALID_CHARACTER' }],
+    },
+  },
+]
 
 function createPlaygroundDataAccess() {
   const boards = createInMemoryBoardsDataAccess(sampleBoards, {
@@ -52,6 +111,7 @@ export function BoardViewPlayground() {
     () => params().get('board') ?? sampleBoards[0]!.id,
   )
   const [log, setLog] = useState<string[]>([])
+  const [releases, setReleases] = useState<(() => void)[]>([])
   const addLog = (line: string) =>
     setLog((lines) => [line, ...lines].slice(0, 8))
   const boardLink = (id: string) => (
@@ -180,6 +240,126 @@ export function BoardViewPlayground() {
             }}
           >
             Open a new board (default columns)
+          </button>
+          <p className="text-text-muted">Fail the next call</p>
+          {FAILURES.map(({ label, method, error }) => (
+            <button
+              key={label}
+              type="button"
+              className="text-accent"
+              onClick={() => {
+                boardView.failNext(method, error)
+                addLog(`next ${label}`)
+              }}
+            >
+              {label}
+            </button>
+          ))}
+          <p className="text-text-muted">
+            Apply the next call, then lose its response
+          </p>
+          {(['createCard', 'createColumn', 'moveColumn'] as const).map(
+            (method) => (
+              <button
+                key={method}
+                type="button"
+                className="text-accent"
+                onClick={() => {
+                  boardView.applyThenFailNext(method)
+                  addLog(`next ${method} applies, then its response is lost`)
+                }}
+              >
+                {method}
+              </button>
+            ),
+          )}
+          <p className="text-text-muted">Hold the next call</p>
+          {METHODS.map((method) => (
+            <button
+              key={method}
+              type="button"
+              className="text-accent"
+              onClick={() => {
+                const release = boardView.holdNext(method)
+                setReleases((current) => [...current, release])
+                addLog(`holding next ${method}`)
+              }}
+            >
+              {method}
+            </button>
+          ))}
+          <button
+            type="button"
+            className="text-accent"
+            onClick={() => {
+              for (const release of releases) release()
+              setReleases([])
+              addLog('released held calls')
+            }}
+          >
+            Release held calls ({releases.length})
+          </button>
+          <p className="text-text-muted">Another device</p>
+          <button
+            type="button"
+            className="text-accent"
+            onClick={() => {
+              boardView.changeBoard(boardId, (columns) =>
+                columns.map((column, index) =>
+                  index === 0
+                    ? {
+                        ...column,
+                        cards: [
+                          ...column.cards,
+                          {
+                            id: `elsewhere-${Date.now()}`,
+                            number: 900 + column.cards.length,
+                            title: 'Added on another device',
+                            position: column.cards.length,
+                            labels: [],
+                          },
+                        ],
+                      }
+                    : column,
+                ),
+              )
+              addLog('another device added a card to the first column')
+            }}
+          >
+            Add a card elsewhere
+          </button>
+          <button
+            type="button"
+            className="text-accent"
+            onClick={() => {
+              boardView.changeBoard(boardId, (columns) => columns.slice(1))
+              addLog('another device deleted the first column')
+            }}
+          >
+            Delete the first column elsewhere
+          </button>
+          <button
+            type="button"
+            className="text-accent"
+            onClick={() => {
+              boardView.changeBoard(boardId, (columns) => [
+                ...columns.slice(1),
+                ...columns.slice(0, 1),
+              ])
+              addLog('another device moved the first column to the end')
+            }}
+          >
+            Move the first column to the end elsewhere
+          </button>
+          <button
+            type="button"
+            className="text-accent"
+            onClick={() => {
+              void boards.deleteBoard(boardId)
+              addLog('another device deleted this board')
+            }}
+          >
+            Delete this board elsewhere
           </button>
           <button
             type="button"
