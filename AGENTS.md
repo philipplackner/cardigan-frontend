@@ -235,8 +235,12 @@ Notes on `coverage:diff`:
 Notes on `mutation`:
 
 - Run it by hand only. It is not a gate, and no hook or other command runs it.
-- A plain run is a full run. It mutates the product code with both Vitest projects and takes about 25 minutes on an 18-core machine.
-- `npm run mutation -- --incremental` reuses earlier results and retests only mutants whose code or tests changed. The state lives in `reports/mutation/stryker-incremental.json`. Add `--force` to retest everything once.
+- Runs are incremental. They reuse earlier results and retest only mutants whose code or tests changed. The state lives in `reports/mutation/stryker-incremental.json`. The first run, without that file, tests everything with both Vitest projects and takes about 25 minutes on an 18-core machine. A rerun with no changes takes under a minute.
+- `npm run mutation -- --force` retests everything and replaces the state file. Use it for a fresh baseline, for example when timeouts look flaky.
+- New worktrees start with a copy of the main worktree's state file:
+  - `git worktree add`: the husky hook `.husky/post-checkout` copies it. `npm install` installs the hook. It only fires when you create the worktree from the main worktree, or from a linked worktree that has run `npm install`.
+  - Claude Code worktrees: Claude Code copies it because `.worktreeinclude` lists it. These worktrees start from `origin/master` by default (`worktree.baseRef` `fresh`), so they reuse less until `master` has this setup. Until then, the copied file shows as untracked there. Don't commit it.
+- The hook only copies that file. It never overwrites an existing file, never copies back, and never runs mutation testing or other checks. husky owns `core.hooksPath`, so hooks in `.git/hooks` don't run. `HUSKY=0` turns hooks off for one command.
 - `MUTATION_MIN_SCORE=<pct> npm run mutation` fails the run when the mutation score is below that minimum (a number from 0 to 100). The report is still written. Nothing sets it by default.
 - `--mutate` limits the run to some files and replaces the configured file list, so repeat the excludes: `npm run mutation -- --mutate "src/features/boards/**/*.ts,src/features/boards/**/*.tsx,!src/**/*.test.ts,!src/**/*.test.tsx,!src/**/testing/**"`. Stryker splits `--mutate` on commas, so don't use `{ts,tsx}` braces there.
 - The `mutate` list in `stryker.config.mjs` mirrors `coverage.exclude` in `vitest.config.ts`, plus the icons. Change both together.
