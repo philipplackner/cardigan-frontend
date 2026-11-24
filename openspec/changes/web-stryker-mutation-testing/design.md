@@ -96,7 +96,7 @@ In `.oxlintrc.json`, widen the `import/no-default-export` override from `*.confi
 
 - [The Vitest runner may not handle Vitest 5 `projects` with two environments, or may run only one project] → Task 2.1 checks that a mutant only reached by a `*.test.tsx` test is killed, and one only reached by a `*.test.ts` test too. If not, stop and report before changing the Vitest config.
 - [Stryker instruments the source with Babel before Vite transforms it. The TanStack Router plugin or the `tsconfigPaths` resolver may not handle the instrumented files in the sandbox] → Task 2.1 runs a small `--mutate` run first. Failures go back to the user before any workaround.
-- [Full run time is unknown. Many component mutants, `dom` tests in jsdom. Full runs are the default (D7)] → Task 2.5 measures one full run and puts the time in AGENTS.md. `--mutate` and `--incremental` give shorter runs.
+- [Full run time is unknown. Many component mutants, `dom` tests in jsdom. Full runs are the default (D7)] → Task 2.5 measures one full run and reports the time to the user. `--mutate` and `--incremental` give shorter runs.
 - [Default mutators produce many surviving string mutants in components (class names, ARIA values)] → Accepted for an honest baseline (D5).
 - [Without the TypeScript checker, some type-invalid mutants survive] → Accepted (D8).
 - [A hand-written `--mutate` replaces the config's exclude list, so test files can get mutated] → AGENTS.md shows a full example with the negated patterns.

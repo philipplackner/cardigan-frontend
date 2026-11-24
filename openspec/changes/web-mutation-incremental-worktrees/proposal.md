@@ -2,7 +2,7 @@
 
 ## Why
 
-A full mutation run takes about 25 minutes. Incremental runs only retest what changed, but they were opt-in, and a new worktree starts with no state at all. Making incremental the default and seeding new worktrees with the main worktree's results makes everyday runs short.
+A full mutation run retests every mutant, which is slow for everyday use. Incremental runs only retest what changed, but they were opt-in, and a new worktree starts with no state at all. Making incremental the default and seeding new worktrees with the main worktree's results keeps everyday runs to the mutants a change affects.
 
 ## What Changes
 
