@@ -1,0 +1,10 @@
+# Copies the main worktree's Stryker results into a new worktree.
+# Must always exit 0: its exit code becomes the exit code of git worktree add.
+[ "$1" = 0000000000000000000000000000000000000000 ] && [ "$3" = 1 ] || exit 0
+file=reports/mutation/stryker-incremental.json
+common=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || exit 0
+main=$(dirname "$common")
+here=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+[ "$main" != "$here" ] && [ -f "$main/$file" ] && [ ! -e "$here/$file" ] || exit 0
+mkdir -p "$here/$(dirname "$file")" 2>/dev/null && cp "$main/$file" "$here/$file" 2>/dev/null || :
+exit 0
