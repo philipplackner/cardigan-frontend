@@ -9,9 +9,10 @@ A full mutation run takes about 25 minutes. Incremental runs only retest what ch
 - `npm run mutation` runs incrementally by default. `npm run mutation -- --force` retests everything. The state file stays at `reports/mutation/stryker-incremental.json`. This replaces the opt-in model from `web-stryker-mutation-testing` (its D7).
 - Add husky (9.1.7, exact version) as a dev dependency with `"prepare": "husky || true"`, so `npm install` and `npm ci` install the git hooks and `prepare` never fails where there is no `.git` or no husky.
 - Add `.husky/post-checkout`, a POSIX shell script that acts only when a new worktree is created. It copies the incremental file from the main worktree into the new worktree. It never overwrites, copies instead of linking, never copies back, does nothing if there's no source file and never fails the checkout.
-- Update AGENTS.md: incremental by default, `--force`, the worktree hook and its limits.
+- Add `.worktreeinclude` listing the incremental file, so Claude Code copies it into the worktrees it creates. Claude Code worktrees don't fire `post-checkout`, so the hook can't cover them.
+- Update AGENTS.md: incremental by default, `--force`, the worktree hook, `.worktreeinclude` and their limits.
 
-This is a narrow, user-approved exception to "no git hooks". The hook copies a file and never runs mutation testing. No CI job, no gate, no other hook.
+This is a narrow, user-approved exception to "no git hooks". The hook copies a file and never runs mutation testing. `.worktreeinclude` is a second, file-only mechanism next to it. No CI job, no gate, no other hook.
 
 ## Capabilities
 
@@ -27,7 +28,7 @@ None.
 
 - **Shared specs**: none. Web-only tooling.
 - **Dependencies**: new dev dependency `husky` 9.1.7 (approved).
-- **Files**: `stryker.config.mjs` (`incremental: true`), `package.json` and `package-lock.json` (husky, `prepare`), new `.husky/post-checkout`, `AGENTS.md`.
+- **Files**: `stryker.config.mjs` (`incremental: true`), `package.json` and `package-lock.json` (husky, `prepare`), new `.husky/post-checkout`, new `.worktreeinclude`, `AGENTS.md`.
 - **Git config**: husky sets `core.hooksPath` to `.husky/_` in the shared repository config. Hooks in `.git/hooks` stop running; there are none today.
 - **Unchanged**: everything else about mutation testing, `npm test`, coverage, the gates.
 - **Order**: archive `web-stryker-mutation-testing` before this change.

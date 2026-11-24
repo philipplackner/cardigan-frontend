@@ -21,6 +21,17 @@ When a new worktree is created with a checkout, a git hook SHALL copy `reports/m
 - **WHEN** the copy can't be written
 - **THEN** the worktree is still created and the command exits with success
 
+### Requirement: Claude Code worktrees start with the main worktree's results
+When Claude Code creates a worktree, it SHALL copy `reports/mutation/stryker-incremental.json` from the main worktree into the new worktree, as listed in `.worktreeinclude`. No other file under `reports/` SHALL be copied. No code SHALL run for this.
+
+#### Scenario: Claude Code worktree
+- **WHEN** the main worktree has `reports/mutation/stryker-incremental.json` and Claude Code creates a worktree
+- **THEN** the new worktree has an identical copy of that file, and no `reports/mutation/mutation.html`
+
+#### Scenario: No results in the main worktree
+- **WHEN** the main worktree has no incremental file and Claude Code creates a worktree
+- **THEN** the worktree is created without one
+
 ### Requirement: The hook never overwrites or shares results
 The hook SHALL NOT overwrite an existing incremental file in the new worktree, SHALL copy rather than link the file, and SHALL NOT copy results from a worktree back to the main worktree.
 

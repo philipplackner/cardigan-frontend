@@ -8,12 +8,15 @@ See proposal.md for why. Current state:
 - The repo has no git hook tooling: no husky, no lefthook, no `core.hooksPath`, no `prepare` script, and only sample hooks in `.git/hooks`.
 - Git 2.44. `git worktree add` fires `post-checkout` in the new worktree with `$1` = the null ref (40 zeros), `$2` = the new HEAD and `$3` = `1`, both for a new branch and for a detached HEAD. With `--no-checkout` it doesn't fire. Normal checkouts pass a real `$1`. The hook runs with the new worktree's root as its working directory.
 - `git rev-parse --path-format=absolute --git-common-dir` in a linked worktree returns the main repository's `.git` folder. Its parent is the main worktree.
-- The incremental file stores repo-relative paths. Its absolute `projectRoot` is written but never read by Stryker 10.1.1. A full-run file is about 5 MB.
+- The incremental file stores repo-relative paths. Its absolute `projectRoot` is written but never read by Stryker 10.1.1. A full-run file is about 28 MB.
 - husky 9.1.7 (latest), checked in its source and in a scratch repo:
   - `husky` (the `prepare` command) runs `git config core.hooksPath .husky/_` and generates `.husky/_/` with a `.gitignore` of `*`, so the folder is never committed.
   - Without a `.git` entry in the working directory it prints `.git can't be found` and exits 0. `HUSKY=0` skips it.
   - Hooks in `.husky/<name>` are run by the generated wrapper as `sh -e .husky/<name>`. A non-zero exit is reported as `husky - post-checkout script failed`.
   - Git resolves the relative `core.hooksPath` from the root of the worktree that runs the git command. `git worktree add` run from the main worktree (or a subfolder of it) fires the hook. Run from a linked worktree without `.husky/_/` (one that hasn't run `npm install`), it fires nothing.
+
+- Claude Code worktrees (`EnterWorktree`) don't fire `post-checkout`: Claude Code creates them without a checkout and then resets, and a reset runs no hook. Claude Code reads `.worktreeinclude` (`.gitignore` syntax) from the main worktree and copies the git-ignored files it lists into each new worktree. Checked: the incremental file arrived with the same SHA, and nothing else under `reports/`.
+- Claude Code worktrees start from `origin/master` by default (`worktree.baseRef` `fresh`). `origin/master` is still the initial commit, without `.gitignore` entries for `reports/`.
 
 ## Goals / Non-Goals
 
@@ -64,11 +67,18 @@ exit 0
 - Every failure path exits 0 and prints nothing. `post-checkout` can't stop a checkout, but its exit code becomes the exit code of `git worktree add`, and husky would print a failure message, so it must always exit 0.
 - If the main repository is bare, the parent of the common dir isn't a worktree, and the `-f` check fails silently.
 
+### `.worktreeinclude` for Claude Code worktrees
+
+`.worktreeinclude` at the repo root holds one line: `reports/mutation/stryker-incremental.json` (D9). It's a list of files, not code. Claude Code copies only the listed file, so the HTML report stays behind. It doesn't overwrite or link anything, and nothing flows back, which matches D3, D5 and D6. The husky hook stays for plain `git worktree add`. The two never act on the same worktree: Claude Code's creation doesn't fire the hook.
+
+Alternatives considered: a Claude Code `WorktreeCreate` hook (replaces Claude Code's worktree creation); a wrapper script around `stryker run` that copies the file on first run (covers every case, but changes the `npm run mutation` script; kept as the fallback).
+
 ### Documentation
 
 AGENTS.md's mutation notes change:
 - Plain runs are incremental. The first run, or a run with `--force`, tests everything. `--force` gives a fresh full run. The `--incremental` note goes away.
-- New worktrees get a copy of the main worktree's incremental file through `.husky/post-checkout`. `npm install` installs the hook. It only fires when the worktree is created from the main worktree, or from a linked worktree that has run `npm install`.
+- New worktrees get a copy of the main worktree's incremental file. For `git worktree add`, the husky hook `.husky/post-checkout` does it; `npm install` installs the hook, and it only fires when the worktree is created from the main worktree, or from a linked worktree that has run `npm install`. For Claude Code worktrees, `.worktreeinclude` does it.
+- Claude Code worktrees start from `origin/master` by default (`worktree.baseRef` `fresh`), so they reuse less until `master` has this setup. Until then the copied file shows as untracked there; don't commit it. Informational only; the setting stays as it is.
 - husky owns `core.hooksPath`, so hooks in `.git/hooks` don't run. `HUSKY=0` turns hooks off for one command.
 - The only hook copies a file. It never runs mutation testing, tests or other checks.
 
