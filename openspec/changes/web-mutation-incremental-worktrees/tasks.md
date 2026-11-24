@@ -2,7 +2,7 @@
 
 ## 1. Incremental by default
 
-- [ ] 1.1 Set `incremental: true` in `stryker.config.mjs`. With `--mutate src/core/utils/text.ts`, verify: the first run without a state file tests every mutant and writes `reports/mutation/stryker-incremental.json`; a second plain run tests no mutant and reports the same score; `-- --force` tests every mutant again. Verify `npm run lint` and `npm run format:check` pass
+- [x] 1.1 Set `incremental: true` in `stryker.config.mjs`. With `--mutate src/core/utils/text.ts`, verify: the first run without a state file tests every mutant and writes `reports/mutation/stryker-incremental.json`; a second plain run tests no mutant and reports the same score; `-- --force` tests every mutant again. Verify `npm run lint` and `npm run format:check` pass
 
 ## 2. Worktree hook
 

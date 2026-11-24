@@ -31,7 +31,7 @@ const config = {
     '!src/core/ui/icons/**',
   ],
   ignoreStatic: true,
-  incremental: false,
+  incremental: true,
   incrementalFile: 'reports/mutation/stryker-incremental.json',
   reporters: ['clear-text', 'progress', 'html'],
   htmlReporter: { fileName: 'reports/mutation/mutation.html' },
