@@ -55,7 +55,9 @@ export type BoardViewUiAction =
   | { type: 'moveEnd' }
   | { type: 'columnsChanged'; columnIds: readonly string[] }
 
-const isBlank = (text: string) => normalizeText(text, 'singleLine') === ''
+/** True when an inline form's text is empty after normalizing. */
+export const isBlank = (text: string) =>
+  normalizeText(text, 'singleLine') === ''
 
 function openText(state: BoardViewUiState) {
   return state.quickAdd?.text ?? state.addColumn?.text ?? ''

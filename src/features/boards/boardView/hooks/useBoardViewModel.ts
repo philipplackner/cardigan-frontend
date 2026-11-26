@@ -2,7 +2,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useToast } from '@/core/ui'
-import { normalizeText } from '@/core/utils/text'
 import { useBoardsDataAccess } from '../../api/BoardsDataAccessContext'
 import { boardsQueryOptions } from '../../api/boardsQueries'
 import type { BoardDialogResult } from '../../hooks/boardDialogResult'
@@ -19,7 +18,7 @@ import {
   useMoveColumn,
   useRenameColumn,
 } from '../api/boardViewQueries'
-import type { BoardDetail } from '../types'
+import type { BoardColumn, BoardDetail } from '../types'
 import {
   handleBoardViewError,
   type BoardViewChange,
@@ -33,7 +32,9 @@ import {
 import {
   boardViewReducer,
   initialBoardViewUiState,
+  isBlank,
   type BoardViewUiAction,
+  type FocusTarget,
   type BoardViewUiState,
 } from './boardViewReducer'
 
@@ -214,9 +215,6 @@ export function useBoardViewModel(
       case 'staleMove':
         void reloadBoard(t('moveColumn.stale', { name: columnName }))
         break
-      case 'fieldErrors':
-      case 'deleted':
-        break
     }
     return outcome
   }
@@ -238,7 +236,7 @@ export function useBoardViewModel(
         columnId: column.id,
         title: check.value,
       })
-      if (isMounted.current) dispatch({ type: 'quickAddAdded' })
+      dispatch({ type: 'quickAddAdded' })
     } catch (failure) {
       const outcome = handleFailure(
         'createCard',
@@ -270,9 +268,7 @@ export function useBoardViewModel(
         boardId,
         name: check.value,
       })
-      if (isMounted.current) {
-        dispatch({ type: 'addColumnAdded', columnId: column.id })
-      }
+      dispatch({ type: 'addColumnAdded', columnId: column.id })
     } catch (failure) {
       const outcome = handleFailure(
         'createColumn',
@@ -301,9 +297,10 @@ export function useBoardViewModel(
     board?.columns.find((column) => column.id === columnId)
 
   const submitMove = async (columnId: string, direction: 'left' | 'right') => {
-    const index = board?.columns.findIndex((column) => column.id === columnId)
-    const column = columnById(columnId)
-    if (!board || !column || index === undefined || isMovingNow.current) return
+    if (!board || isMovingNow.current) return
+    const index = board.columns.findIndex((column) => column.id === columnId)
+    const column = board.columns[index]
+    if (!column) return
     const position = direction === 'left' ? index - 1 : index + 1
     if (position < 0 || position >= board.columns.length) return
     isMovingNow.current = true
@@ -324,7 +321,7 @@ export function useBoardViewModel(
       )
     } finally {
       isMovingNow.current = false
-      if (isMounted.current) dispatch({ type: 'moveEnd' })
+      dispatch({ type: 'moveEnd' })
     }
   }
 
@@ -340,7 +337,7 @@ export function useBoardViewModel(
     }
     try {
       await renameColumn.mutateAsync({ boardId, columnId: column.id, name })
-      if (isMounted.current) dispatch({ type: 'dialogClose' })
+      dispatch({ type: 'dialogClose' })
       return undefined
     } catch (failure) {
       const outcome = handleFailure(
@@ -357,24 +354,25 @@ export function useBoardViewModel(
   }
 
   /** After a delete, focus moves to the next column's menu, or to Add column when none follows. */
-  const focusAfterDelete = (columnId: string) => {
-    const index = board?.columns.findIndex((column) => column.id === columnId)
-    const next =
-      index === undefined || index < 0 ? undefined : board?.columns[index + 1]
-    return next
-      ? ({ kind: 'columnMenu', columnId: next.id } as const)
-      : ({ kind: 'addColumnButton' } as const)
-  }
+  const focusAfterDelete = (next: BoardColumn | undefined): FocusTarget =>
+    next
+      ? { kind: 'columnMenu', columnId: next.id }
+      : { kind: 'addColumnButton' }
 
   const submitDelete = async () => {
     const dialog = ui.dialog
-    const column =
-      dialog?.kind === 'deleteColumn' ? columnById(dialog.columnId) : undefined
-    if (!column || deleteColumn.isPending) return
-    const focus = focusAfterDelete(column.id)
+    if (!board || dialog?.kind !== 'deleteColumn' || deleteColumn.isPending) {
+      return
+    }
+    const index = board.columns.findIndex(
+      (column) => column.id === dialog.columnId,
+    )
+    const column = board.columns[index]
+    if (!column) return
+    const focus = focusAfterDelete(board.columns[index + 1])
     try {
       await deleteColumn.mutateAsync({ boardId, columnId: column.id })
-      if (isMounted.current) dispatch({ type: 'dialogClose', focus })
+      dispatch({ type: 'dialogClose', focus })
     } catch (failure) {
       handleFailure(
         'deleteColumn',
@@ -429,7 +427,7 @@ export function useBoardViewModel(
         break
       case 'inlineOutside': {
         const text = ui.quickAdd?.text ?? ui.addColumn?.text
-        if (text !== undefined && normalizeText(text, 'singleLine') === '') {
+        if (text !== undefined && isBlank(text)) {
           setServerError(null)
           dispatch({ type: 'inlineClose' })
         }
@@ -443,7 +441,6 @@ export function useBoardViewModel(
       case 'quickAddChange':
       case 'addColumnChange':
       case 'inlineClose':
-      case 'discardConfirm':
         setServerError(null)
         dispatch(action)
         break
