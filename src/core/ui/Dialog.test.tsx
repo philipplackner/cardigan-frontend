@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useEffect, useState } from 'react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { Button } from './Button'
 import { Dialog } from './Dialog'
 import { MoreIcon } from './icons'
@@ -142,5 +142,60 @@ describe('Dialog with returnFocus={false}', () => {
     )
     await new Promise((resolve) => setTimeout(resolve, 50))
     expect(screen.getByRole('textbox', { name: 'Kept field' })).toHaveFocus()
+  })
+})
+
+describe('Dialog with type progress', () => {
+  it('stays open on Escape', async () => {
+    const user = userEvent.setup()
+    const onOpenChange = vi.fn()
+    render(
+      <Dialog
+        open
+        onOpenChange={onOpenChange}
+        type="progress"
+        title="Importing board"
+      />,
+    )
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Importing board',
+    })
+
+    await user.keyboard('{Escape}')
+
+    expect(onOpenChange).not.toHaveBeenCalled()
+    expect(dialog).toHaveAttribute('aria-busy', 'true')
+  })
+
+  it('closes on Escape when it is a default dialog', async () => {
+    const user = userEvent.setup()
+    const onOpenChange = vi.fn()
+    render(<Dialog open onOpenChange={onOpenChange} title="Rename board" />)
+    const dialog = await screen.findByRole('dialog')
+    expect(dialog).not.toHaveAttribute('aria-busy')
+
+    await user.keyboard('{Escape}')
+
+    expect(onOpenChange).toHaveBeenCalledWith(false)
+  })
+})
+
+describe('Dialog without description, content and actions', () => {
+  it('has no description reference', async () => {
+    render(<Dialog open onOpenChange={() => {}} title="Rename board" />)
+
+    expect(await screen.findByRole('dialog')).not.toHaveAttribute(
+      'aria-describedby',
+    )
+  })
+
+  // An empty wrapper would still take a flex gap below the title.
+  it('renders nothing after the title', async () => {
+    render(<Dialog open onOpenChange={() => {}} title="Rename board" />)
+    await screen.findByRole('dialog')
+
+    expect(
+      screen.getByRole('heading', { name: 'Rename board' }).nextElementSibling,
+    ).toBeNull()
   })
 })

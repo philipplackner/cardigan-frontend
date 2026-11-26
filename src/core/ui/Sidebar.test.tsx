@@ -95,4 +95,38 @@ describe('Sidebar', () => {
     expect(footer).toHaveTextContent(/^$/)
     expect(logOut).toBeInTheDocument()
   })
+
+  // An empty wrapper would still take a flex gap below the heading.
+  it('renders only the heading and the action when there are no boards', () => {
+    render(
+      <Sidebar
+        brandName="Cardigan"
+        navLabel="Main navigation"
+        boardsHeading="Boards"
+        boardsAction={
+          <NavItem label="New board" icon={PlusIcon} isDim asChild>
+            <button type="button" />
+          </NavItem>
+        }
+      />,
+    )
+
+    const heading = screen.getByRole('heading', { name: 'Boards' })
+    expect(heading.nextElementSibling).toBe(
+      screen.getByRole('button', { name: 'New board' }),
+    )
+  })
+
+  it('shows the Boards heading when only boards are given', () => {
+    render(
+      <Sidebar
+        brandName="Cardigan"
+        navLabel="Main navigation"
+        boardsHeading="Boards"
+        boards={<NavItem label="Roadmap" icon={BoardIcon} href="/boards/1" />}
+      />,
+    )
+
+    expect(screen.getByRole('heading', { name: 'Boards' })).toBeInTheDocument()
+  })
 })

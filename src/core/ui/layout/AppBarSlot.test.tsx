@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react'
 import type { ReactNode } from 'react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { AppBarSlot, AppBarSlotProvider, AppBarSlotTarget } from './AppBarSlot'
 
 function Shell({ children }: { children: ReactNode }) {
@@ -81,5 +81,17 @@ describe('AppBarSlot', () => {
     )
 
     expect(bar().firstElementChild).toBeEmptyDOMElement()
+  })
+
+  it('fails with a clear message outside the provider', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    expect(() =>
+      render(
+        <AppBarSlot>
+          <header>Boards bar</header>
+        </AppBarSlot>,
+      ),
+    ).toThrow('AppBarSlot parts must be used inside AppBarSlotProvider')
   })
 })
