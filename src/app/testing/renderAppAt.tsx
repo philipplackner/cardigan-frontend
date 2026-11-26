@@ -9,7 +9,7 @@ import {
 import { render } from '@testing-library/react'
 import { createTestQueryClient } from '@/core/api/queryClient'
 import { ToastProvider } from '@/core/ui'
-import { createAppRouter, routerDefaults } from './router'
+import { createAppRouter, routerDefaults } from '../router'
 
 function renderRouter(router: AnyRouter, queryClient: QueryClient) {
   return render(
