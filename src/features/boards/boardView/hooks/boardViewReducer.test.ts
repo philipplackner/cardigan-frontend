@@ -208,4 +208,144 @@ describe('boardViewReducer', () => {
       boardViewReducer(moving, { type: 'moveEnd' }).movingColumnId,
     ).toBeNull()
   })
+  it('opens add column empty and not submitted', () => {
+    expect(run(openAddColumn).addColumn).toEqual({
+      text: '',
+      submitted: false,
+    })
+  })
+
+  it.each([
+    ['quick add', openQuickAdd('a'), 'quickAddChange', 'quickAdd'],
+    ['add column', openAddColumn, 'addColumnChange', 'addColumn'],
+  ] as const)(
+    'refocuses the open %s form with its text instead of asking',
+    (_, openForm, change, kind) => {
+      const typed = run(openForm, { type: change, text: 'Write docs' })
+
+      const next = boardViewReducer(typed, openForm)
+
+      expect(next.dialog).toBeNull()
+      expect(next.quickAdd).toBe(typed.quickAdd)
+      expect(next.addColumn).toBe(typed.addColumn)
+      expect(next.focusRequest).toEqual({
+        target: { kind },
+        id: typed.focusRequest!.id + 1,
+      })
+    },
+  )
+
+  it('counts focus request ids up from 1', () => {
+    expect(run(openQuickAdd('a')).focusRequest?.id).toBe(1)
+  })
+
+  it('focuses the empty quick add after an add', () => {
+    const state = run(
+      openQuickAdd('a'),
+      { type: 'quickAddChange', text: 'Write docs' },
+      { type: 'quickAddAdded' },
+    )
+
+    expect(state.focusRequest?.target).toEqual({ kind: 'quickAdd' })
+  })
+
+  it('keeps the add column form on Keep editing and focuses it', () => {
+    const state = run(
+      openAddColumn,
+      { type: 'addColumnChange', text: 'Review' },
+      openQuickAdd('a'),
+      { type: 'discardKeep' },
+    )
+
+    expect(state.dialog).toBeNull()
+    expect(state.addColumn).toEqual({ text: 'Review', submitted: false })
+    expect(state.focusRequest?.target).toEqual({ kind: 'addColumn' })
+  })
+
+  it.each(['discardConfirm', 'discardKeep'] as const)(
+    'ignores %s without a discard dialog',
+    (type) => {
+      const none = run(openQuickAdd('a'))
+      const rename = run(openQuickAdd('a'), {
+        type: 'dialogOpen',
+        dialog: { kind: 'renameColumn', columnId: 'a' },
+      })
+
+      expect(boardViewReducer(none, { type })).toBe(none)
+      expect(boardViewReducer(rename, { type })).toBe(rename)
+    },
+  )
+
+  it('closes the delete dialog of a column a refetch removed', () => {
+    const state = run(
+      { type: 'dialogOpen', dialog: { kind: 'deleteColumn', columnId: 'a' } },
+      { type: 'columnsChanged', columnIds: ['b'] },
+    )
+
+    expect(state.dialog).toBeNull()
+  })
+
+  it.each([
+    { kind: 'renameColumn', columnId: 'b' },
+    { kind: 'deleteColumn', columnId: 'b' },
+    { kind: 'renameBoard' },
+    { kind: 'deleteBoard' },
+  ] as const)(
+    'keeps a %o dialog when the columns change around it',
+    (dialog) => {
+      const before = run({ type: 'dialogOpen', dialog })
+
+      expect(
+        boardViewReducer(before, { type: 'columnsChanged', columnIds: ['b'] }),
+      ).toBe(before)
+    },
+  )
+
+  it('drops the discard dialog when the quick add it would replace loses its column', () => {
+    const state = run(
+      openQuickAdd('a'),
+      { type: 'quickAddChange', text: 'Write docs' },
+      openAddColumn,
+      { type: 'columnsChanged', columnIds: ['b'] },
+    )
+
+    expect(state.quickAdd).toBeNull()
+    expect(state.dialog).toBeNull()
+  })
+
+  it('keeps the discard dialog for add column while the quick add column exists', () => {
+    const before = run(
+      openQuickAdd('a'),
+      { type: 'quickAddChange', text: 'Write docs' },
+      openAddColumn,
+    )
+
+    expect(
+      boardViewReducer(before, { type: 'columnsChanged', columnIds: ['a'] }),
+    ).toBe(before)
+  })
+
+  it('keeps the discard dialog for a quick add in an existing column while add column is open', () => {
+    const before = run(
+      openAddColumn,
+      { type: 'addColumnChange', text: 'Review' },
+      openQuickAdd('a'),
+    )
+
+    expect(
+      boardViewReducer(before, { type: 'columnsChanged', columnIds: ['a'] }),
+    ).toBe(before)
+  })
+
+  it('drops the discard dialog for a quick add whose target column is gone', () => {
+    const state = run(
+      openAddColumn,
+      { type: 'addColumnChange', text: 'Review' },
+      openQuickAdd('a'),
+      { type: 'columnsChanged', columnIds: ['b'] },
+    )
+
+    expect(state.dialog).toBeNull()
+    expect(state.addColumn).toEqual({ text: 'Review', submitted: false })
+  })
 })
