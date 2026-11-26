@@ -66,7 +66,7 @@ function firstError(value: string, { kind, min, max }: TextRule) {
   if (invalid.test(value)) return 'INVALID_CHARACTER'
   const length = countCodePoints(value)
   if (length === 0) return 'EMPTY'
-  if (min !== undefined && length < min) return 'TOO_SHORT'
-  if (max !== undefined && length > max) return 'TOO_LONG'
+  if (length < (min ?? 0)) return 'TOO_SHORT'
+  if (length > (max ?? Infinity)) return 'TOO_LONG'
   return null
 }
