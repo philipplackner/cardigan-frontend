@@ -237,6 +237,7 @@ Notes on `mutation`:
 - Run it by hand only. It is not a gate, and no hook or other command runs it.
 - Runs are incremental. A run only retests mutants whose code or tests changed since the last run, and reuses the earlier results for the rest. The state lives in `reports/mutation/stryker-incremental.json`. The first run, without that file, tests every mutant with both Vitest projects.
 - `npm run mutation -- --force` retests every mutant and replaces the state file, which gives a fresh full baseline. Use it for example when timeouts look flaky.
+- Stryker keeps the old results of files that are no longer in the `mutate` list, even with `--force`. After removing files from the list, delete `reports/mutation/stryker-incremental.json` before the next full run.
 - New worktrees start with a copy of the main worktree's state file:
   - `git worktree add`: the husky hook `.husky/post-checkout` copies it. `npm install` installs the hook. It only fires when you create the worktree from the main worktree, or from a linked worktree that has run `npm install`.
   - Claude Code worktrees: Claude Code copies it because `.worktreeinclude` lists it. These worktrees start from `origin/master` by default (`worktree.baseRef` `fresh`), so they reuse less until `master` has this setup. Until then, the copied file shows as untracked there. Don't commit it.
