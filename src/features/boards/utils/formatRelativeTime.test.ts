@@ -46,6 +46,28 @@ describe('formatRelativeTime', () => {
     ).toEqual({ kind: 'minutes', count: 20 })
   })
 
+  it('shows 1 hour at exactly 60 minutes', () => {
+    expect(formatRelativeTime(at('2026-10-14T14:00:00'), now)).toEqual({
+      kind: 'hours',
+      count: 1,
+    })
+  })
+
+  it('shows the date for the same day of an earlier month', () => {
+    const time = at('2026-09-14T18:00:00')
+
+    expect(formatRelativeTime(time, now)).toEqual({ kind: 'date', date: time })
+  })
+
+  it('shows the date with the year for the same day a year ago', () => {
+    const time = at('2025-10-14T18:00:00')
+
+    expect(formatRelativeTime(time, now)).toEqual({
+      kind: 'dateWithYear',
+      date: time,
+    })
+  })
+
   it('shows hours earlier the same day', () => {
     expect(formatRelativeTime(at('2026-10-14T12:40:00'), now)).toEqual({
       kind: 'hours',

@@ -34,6 +34,10 @@ describe('add column', () => {
 
     await openAddColumn()
     expect(nameField()).toHaveFocus()
+    expect(scrollCalls).toContainEqual({
+      element: nameField().closest('form'),
+      options: { block: 'nearest', inline: 'nearest' },
+    })
     await user.type(nameField(), 'Blocked{Enter}')
 
     await waitFor(() =>
@@ -55,6 +59,25 @@ describe('add column', () => {
       element: blocked,
       options: { inline: 'nearest' },
     })
+  })
+
+  it('leaves focus where the user moved it after the add', async () => {
+    const { user, openAddColumn, nameField, content, refreshButton } =
+      await setup()
+    await openAddColumn()
+    await user.type(nameField(), 'Blocked{Enter}')
+    await waitFor(() =>
+      expect(
+        content().getByRole('button', { name: 'Add card to “Blocked”' }),
+      ).toHaveFocus(),
+    )
+
+    await user.click(refreshButton())
+
+    await waitFor(() =>
+      expect(refreshButton()).not.toHaveAttribute('aria-busy'),
+    )
+    expect(refreshButton()).toHaveFocus()
   })
 
   it('does not reload the board after a successful add', async () => {
@@ -141,11 +164,37 @@ describe('add column', () => {
     await openAddColumn()
     await user.type(nameField(), 'かな')
 
-    fireEvent.keyDown(nameField(), { key: 'Enter', isComposing: true })
-    fireEvent.keyDown(nameField(), { key: 'Enter', keyCode: 229 })
+    const composingEnter = fireEvent.keyDown(nameField(), {
+      key: 'Enter',
+      isComposing: true,
+    })
+    const safariComposingEnter = fireEvent.keyDown(nameField(), {
+      key: 'Enter',
+      keyCode: 229,
+    })
 
+    expect(composingEnter).toBe(false)
+    expect(safariComposingEnter).toBe(false)
     expect(createColumn).not.toHaveBeenCalled()
     expect(nameField()).toHaveValue('かな')
+  })
+
+  it('leaves other keys and Escape to an IME composition', async () => {
+    const { openAddColumn, nameField } = await setup()
+    await openAddColumn()
+
+    const composingKey = fireEvent.keyDown(nameField(), {
+      key: 'a',
+      isComposing: true,
+    })
+    const composingEscape = fireEvent.keyDown(nameField(), {
+      key: 'Escape',
+      isComposing: true,
+    })
+
+    expect(composingKey).toBe(true)
+    expect(composingEscape).toBe(true)
+    expect(nameField()).toBeInTheDocument()
   })
 
   it('shows a server field error under the field', async () => {
@@ -184,7 +233,8 @@ describe('add column', () => {
   it('closes on Escape and on Cancel', async () => {
     const { user, openAddColumn, nameField, form } = await setup()
     await openAddColumn()
-    await user.type(nameField(), 'Blocked{Escape}')
+    await user.type(nameField(), 'Blocked')
+    expect(fireEvent.keyDown(nameField(), { key: 'Escape' })).toBe(false)
     expect(screen.queryByRole('textbox', { name: 'Name' })).toBeNull()
 
     await openAddColumn()
@@ -208,6 +258,20 @@ describe('add column', () => {
     expect(
       content().getByRole('button', { name: 'Add card to “To do”' }),
     ).toBeDisabled()
+    await act(async () => release())
+  })
+
+  it('sends one request when the form is submitted again while saving', async () => {
+    const { user, openAddColumn, nameField, boardView } = await setup()
+    const createColumn = vi.spyOn(boardView, 'createColumn')
+    await openAddColumn()
+    await user.type(nameField(), 'Blocked')
+    const release = boardView.holdNext('createColumn')
+
+    await user.keyboard('{Enter}')
+    fireEvent.submit(nameField().closest('form')!)
+
+    expect(createColumn).toHaveBeenCalledOnce()
     await act(async () => release())
   })
 })

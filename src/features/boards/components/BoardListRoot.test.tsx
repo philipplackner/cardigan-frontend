@@ -1,6 +1,14 @@
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  onTestFinished,
+  vi,
+} from 'vitest'
 import { createTestQueryClient } from '@/core/api/queryClient'
 import { BoardsTestProviders } from '../testing/BoardsTestProviders'
 import { installIntersectionObserverStub } from '../testing/intersectionObserverStub'
@@ -86,12 +94,16 @@ describe('BoardListRoot', () => {
     dataAccess.failNext('listBoards', { kind: 'other' })
     const { user, wide, refreshButton } = renderBoardList(dataAccess)
     await wide().findByRole('heading', { name: 'Couldn’t load your boards' })
+    const listBoards = vi.spyOn(dataAccess, 'listBoards')
     const release = dataAccess.holdNext('listBoards')
 
     await user.click(refreshButton())
+    await user.click(refreshButton())
 
     expect(isLoading(screen.getByTestId('board-list-wide'))).toBe(true)
+    expect(refreshButton()).not.toHaveAttribute('aria-busy')
     expect(wide().queryByText('Couldn’t load your boards')).toBeNull()
+    expect(listBoards).toHaveBeenCalledOnce()
     await act(async () => release())
     expect(await wide().findByText('Cardigan v1')).toBeInTheDocument()
   })
@@ -124,6 +136,20 @@ describe('BoardListRoot', () => {
     await act(async () => release())
 
     expect(listBoards).toHaveBeenCalledTimes(1)
+  })
+
+  it('refreshes again once the previous refresh finished', async () => {
+    const { user, dataAccess, wide, refreshButton } = renderBoardList()
+    await wide().findByText('Cardigan v1')
+    const listBoards = vi.spyOn(dataAccess, 'listBoards')
+
+    await user.click(refreshButton())
+    await vi.waitFor(() =>
+      expect(refreshButton()).not.toHaveAttribute('aria-busy'),
+    )
+    await user.click(refreshButton())
+
+    await vi.waitFor(() => expect(listBoards).toHaveBeenCalledTimes(2))
   })
 
   it('does not mark Refresh busy while the list reloads after a rename', async () => {
@@ -277,6 +303,29 @@ describe('BoardListRoot', () => {
         expect(document.activeElement).toHaveAccessibleName(
           'Actions for board “Raytracer”',
         ),
+      )
+    })
+
+    it('moves focus to the menu copy the current layout shows', async () => {
+      const shownInWide = vi
+        .spyOn(HTMLElement.prototype, 'getClientRects')
+        .mockImplementation(function (this: HTMLElement) {
+          const rects = this.closest('[data-testid="board-list-wide"]')
+            ? [new DOMRect(0, 0, 10, 10)]
+            : []
+          return rects as unknown as DOMRectList
+        })
+      onTestFinished(() => shownInWide.mockRestore())
+      const { user, wide } = renderBoardList(threeBoards())
+
+      await deleteBoard(user, 'Cardigan v1')
+
+      await vi.waitFor(() =>
+        expect(
+          wide().getByRole('button', {
+            name: 'Actions for board “Raytracer”',
+          }),
+        ).toHaveFocus(),
       )
     })
 

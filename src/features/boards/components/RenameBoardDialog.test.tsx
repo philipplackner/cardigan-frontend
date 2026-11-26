@@ -100,6 +100,7 @@ describe('RenameBoardDialog', () => {
 
     expect(onClose).toHaveBeenCalledWith({ kind: 'unchanged' })
     expect(renameBoard).not.toHaveBeenCalled()
+    expect(nameField()).not.toHaveAttribute('aria-invalid')
   })
 
   it('reports unchanged for Cancel', async () => {
@@ -126,6 +127,7 @@ describe('RenameBoardDialog', () => {
         }),
       }),
     )
+    expect(nameField()).not.toHaveAttribute('aria-invalid')
   })
 
   it('reports deleted and shows a toast when the board no longer exists', async () => {
@@ -140,6 +142,49 @@ describe('RenameBoardDialog', () => {
     expect(
       screen.getByText('“Cardigan v1” no longer exists.'),
     ).toBeInTheDocument()
+    expect(nameField()).not.toHaveAttribute('aria-invalid')
+  })
+
+  it('stays open without a toast when the session ended', async () => {
+    const { user, dataAccess, onClose, renameBoard } = renderOnItsOwn()
+    dataAccess.failNext('renameBoard', { kind: 'sessionEnded' })
+
+    await rename(user, 'Cardigan v2')
+
+    await vi.waitFor(() => expect(renameBoard).toHaveBeenCalled())
+    await vi.waitFor(() => expect(nameField()).toBeEnabled())
+    expect(screen.queryByText(/Couldn’t save the board/)).toBeNull()
+    expect(nameField()).not.toHaveAttribute('aria-invalid')
+    expect(onClose).not.toHaveBeenCalled()
+  })
+
+  it('shows a toast, not a name error, for a field error on another field', async () => {
+    const { user, dataAccess } = renderOnItsOwn()
+    dataAccess.failNext('renameBoard', {
+      kind: 'invalid',
+      fields: [{ field: 'key', code: 'ALREADY_USED' }],
+    })
+
+    await rename(user, 'Cardigan v2')
+
+    expect(
+      await screen.findByText(
+        'Couldn’t save the board. Check your connection and try again.',
+      ),
+    ).toBeInTheDocument()
+    expect(nameField()).not.toHaveAttribute('aria-invalid')
+  })
+
+  it('checks the name live after the first submit', async () => {
+    const { user } = renderOnItsOwn()
+
+    await user.clear(nameField())
+    await user.click(saveButton())
+    expect(dialog()).toHaveTextContent('Enter a name.')
+    await user.type(nameField(), 'C')
+
+    expect(dialog()).not.toHaveTextContent('Enter a name.')
+    expect(saveButton()).toBeEnabled()
   })
 
   it('checks the name like New board', async () => {
@@ -196,11 +241,12 @@ describe('RenameBoardDialog', () => {
       ),
     ).toBeInTheDocument()
     expect(nameField()).toHaveValue('Cardigan v2')
+    expect(nameField()).not.toHaveAttribute('aria-invalid')
     expect(onClose).not.toHaveBeenCalled()
   })
 
   it('disables the field and Cancel and ignores Escape while saving', async () => {
-    const { user, dataAccess } = renderOnItsOwn()
+    const { user, dataAccess, onClose } = renderOnItsOwn()
     const release = dataAccess.holdNext('renameBoard')
 
     await rename(user, 'Cardigan v2')
@@ -212,10 +258,28 @@ describe('RenameBoardDialog', () => {
     ).toBeDisabled()
     await user.keyboard('{Escape}')
     expect(dialog()).toBeInTheDocument()
+    expect(onClose).not.toHaveBeenCalled()
     await act(async () => release())
   })
 
   describe('in the board list', () => {
+    it('starts with the other board’s name when it opens for another board', async () => {
+      const { user, wide } = await renderInList()
+      await user.click(within(dialog()).getByRole('button', { name: 'Cancel' }))
+      await vi.waitFor(() =>
+        expect(
+          screen.queryByRole('dialog', { name: 'Rename board' }),
+        ).toBeNull(),
+      )
+
+      await user.click(
+        wide().getByRole('button', { name: 'Actions for board “Raytracer”' }),
+      )
+      await user.click(screen.getByRole('menuitem', { name: 'Rename' }))
+
+      expect(nameField()).toHaveValue('Raytracer')
+    })
+
     it('shows the new name and keeps the card count from the list', async () => {
       const dataAccess = createInMemoryBoardsDataAccess(sixBoards)
       const renameBoard = dataAccess.renameBoard

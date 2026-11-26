@@ -16,6 +16,13 @@ describe('focusTargetAfterRemoval', () => {
     })
   })
 
+  it('picks the next board, not the previous one, for a board in the middle', () => {
+    expect(focusTargetAfterRemoval(['a', 'b', 'c'], 'b', ['a', 'c'])).toEqual({
+      type: 'boardMenu',
+      boardId: 'c',
+    })
+  })
+
   it('picks the previous board when the last one is gone', () => {
     expect(focusTargetAfterRemoval(['a', 'b', 'c'], 'c', ['a', 'b'])).toEqual({
       type: 'boardMenu',
@@ -85,4 +92,21 @@ describe('boardListReducer', () => {
     })
     expect(second.focusRequest?.id).not.toBe(first.focusRequest?.id)
   })
+
+  it('ignores a dialog finish while no dialog is open', () => {
+    const state = boardListReducer(initialBoardListState, {
+      type: 'dialogFinish',
+      result: { kind: 'deleted' },
+      remainingIds: ['b'],
+    })
+
+    expect(state).toBe(initialBoardListState)
+  })
+
+  it.each(['renameClick', 'deleteClick'] as const)(
+    'leaves the state to the dialogOpen event on %s',
+    (type) => {
+      expect(boardListReducer(open, { type, board })).toBe(open)
+    },
+  )
 })

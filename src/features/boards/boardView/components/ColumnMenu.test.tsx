@@ -222,7 +222,7 @@ describe('column menu', () => {
     const nameField = () => screen.getByRole('textbox', { name: 'Name' })
 
     it('opens prefilled and renames the column without a toast', async () => {
-      const { user, openMenu, item, dialog, content, menuButton } =
+      const { user, openMenu, item, dialog, content, menuButton, scrollCalls } =
         await setup()
       await user.click(item(await openMenu('Review'), 'Rename'))
 
@@ -239,6 +239,9 @@ describe('column menu', () => {
       ).toBeInTheDocument()
       expect(screen.queryByText(/Couldn't/)).toBeNull()
       await waitFor(() => expect(menuButton('In review')).toHaveFocus())
+      expect(scrollCalls.map((call) => call.element)).not.toContain(
+        content().getByRole('region', { name: 'In review' }),
+      )
     })
 
     it('closes without a request when the name is unchanged after normalization', async () => {
@@ -292,10 +295,51 @@ describe('column menu', () => {
       await user.click(item(await openMenu('Review'), 'Rename'))
       await user.type(nameField(), 'かな')
 
-      fireEvent.keyDown(nameField(), { key: 'Enter', isComposing: true })
+      const composingEnter = fireEvent.keyDown(nameField(), {
+        key: 'Enter',
+        isComposing: true,
+      })
 
+      expect(composingEnter).toBe(false)
       expect(renameColumn).not.toHaveBeenCalled()
       expect(screen.getByRole('dialog')).toBeInTheDocument()
+    })
+
+    it('leaves Enter outside a composition and other composing keys alone', async () => {
+      const { user, openMenu, item } = await setup()
+      await user.click(item(await openMenu('Review'), 'Rename'))
+
+      const composingKey = fireEvent.keyDown(nameField(), {
+        key: 'a',
+        isComposing: true,
+      })
+      const plainEnter = fireEvent.keyDown(nameField(), { key: 'Enter' })
+
+      expect(composingKey).toBe(true)
+      expect(plainEnter).toBe(true)
+    })
+
+    it('closes on Cancel without a request', async () => {
+      const { user, openMenu, item, dialog, boardView } = await setup()
+      const renameColumn = vi.spyOn(boardView, 'renameColumn')
+      await user.click(item(await openMenu('Review'), 'Rename'))
+      await user.type(nameField(), ' later')
+
+      await user.click(dialog().getByRole('button', { name: 'Cancel' }))
+
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+      expect(renameColumn).not.toHaveBeenCalled()
+    })
+
+    it('starts with the other column’s name when it opens for another column', async () => {
+      const { user, openMenu, item, dialog } = await setup()
+      await user.click(item(await openMenu('Review'), 'Rename'))
+      await user.click(dialog().getByRole('button', { name: 'Cancel' }))
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+
+      await user.click(item(await openMenu('Done'), 'Rename'))
+
+      expect(nameField()).toHaveValue('Done')
     })
 
     it('shows a server field error under the field', async () => {

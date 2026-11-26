@@ -116,6 +116,16 @@ describe('BoardListScreen', () => {
     expect(row).not.toHaveTextContent('Updated')
   })
 
+  it('shows the phone list under the large title, not busy once loaded', () => {
+    const { phone } = renderScreen(ready(sixBoards))
+
+    expect(
+      phone().getByRole('heading', { level: 1, name: 'Boards' }),
+    ).toBeInTheDocument()
+    expect(phone().getByRole('list')).not.toHaveAttribute('aria-busy')
+    expect(phone().getAllByRole('listitem')).toHaveLength(6)
+  })
+
   it('shows "1 card" and groups large counts', () => {
     const { wide } = renderScreen(
       ready([
@@ -197,6 +207,8 @@ describe('BoardListScreen', () => {
 
     expect(wide().queryByRole('heading', { level: 3 })).toBeNull()
     expect(phone().queryByRole('heading', { level: 3 })).toBeNull()
+    expect(phone().getByRole('list')).toHaveAttribute('aria-busy', 'true')
+    expect(phone().getAllByRole('listitem', { hidden: true })).toHaveLength(5)
     expect(wide().getByRole('button', { name: 'New board' })).toBeEnabled()
   })
 

@@ -165,6 +165,27 @@ describe('NewBoardDialog', () => {
       expect(keyField()).toHaveValue('Cä')
     })
 
+    it('keeps the caret after a letter uppercased in the middle', async () => {
+      const { user, openWhenLoaded, keyField } = setup()
+      await openWhenLoaded()
+      await user.type(keyField(), 'cd')
+
+      await user.type(keyField(), 'r', {
+        initialSelectionStart: 1,
+        initialSelectionEnd: 1,
+      })
+
+      expect(keyField()).toHaveValue('CRD')
+      expect(keyField()).toHaveProperty('selectionStart', 2)
+    })
+
+    it('turns spell checking off', async () => {
+      const { openWhenLoaded, keyField } = setup()
+      await openWhenLoaded()
+
+      expect(keyField()).toHaveAttribute('spellcheck', 'false')
+    })
+
     it('rejects a digit without sending', async () => {
       const { user, openWhenLoaded, fill, createButton, dialog, createBoard } =
         setup()
@@ -227,6 +248,20 @@ describe('NewBoardDialog', () => {
 
       await user.type(keyField(), 'I')
       expect(dialog()).not.toHaveTextContent('Use at least 2 letters.')
+      expect(createButton()).toBeEnabled()
+    })
+  })
+
+  describe('derived key after the first submit', () => {
+    it('checks the key filled from the name at once', async () => {
+      const { user, openWhenLoaded, createButton, dialog, nameField } = setup()
+      await openWhenLoaded()
+      await user.click(createButton())
+      expect(dialog()).toHaveTextContent('Enter a key.')
+
+      await user.type(nameField(), 'Garden')
+
+      expect(dialog()).not.toHaveTextContent('Enter a key.')
       expect(createButton()).toBeEnabled()
     })
   })
