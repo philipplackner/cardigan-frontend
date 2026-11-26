@@ -39,7 +39,7 @@ export function IconButton({
   label,
   variant,
   isSelected,
-  size = 'medium',
+  size,
   className,
   type = 'button',
   ...props

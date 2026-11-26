@@ -21,6 +21,7 @@ const textAreaVariants = cva(
           'border-border-strong focus:border-accent focus:shadow-focus-accent',
       },
     },
+    defaultVariants: { type: 'multiLine' },
   },
 )
 
@@ -41,7 +42,7 @@ function assignRef<T>(ref: Ref<T> | undefined, value: T | null) {
 
 /** Grows with its content and never shows an inner scrollbar. In a scrolling panel body, the body scrolls instead. */
 export function TextArea({
-  type = 'multiLine',
+  type,
   isInvalid,
   className,
   onInput,
@@ -52,9 +53,9 @@ export function TextArea({
   const invalid = isInvalid ?? field?.['aria-invalid'] === true
 
   const measureRef = useCallback(
-    (element: HTMLTextAreaElement | null) => {
+    // React 19 calls the returned cleanup instead of passing null.
+    (element: HTMLTextAreaElement) => {
       assignRef(ref, element)
-      if (!element) return
       fitHeight(element)
       let width = element.offsetWidth
       const observer = new ResizeObserver(() => {

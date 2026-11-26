@@ -18,7 +18,7 @@ type FieldProps = {
 
 export function Field({
   label,
-  isLabelHidden = false,
+  isLabelHidden,
   description,
   error,
   children,

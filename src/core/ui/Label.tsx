@@ -11,6 +11,7 @@ const nameVariants = cva('truncate', {
       large: 'type-sans-15-medium-100 text-text-primary',
     },
   },
+  defaultVariants: { size: 'medium' },
 })
 
 type LabelProps = {
@@ -20,7 +21,7 @@ type LabelProps = {
   className?: string
 }
 
-export function Label({ name, color, size = 'medium', className }: LabelProps) {
+export function Label({ name, color, size, className }: LabelProps) {
   return (
     <span
       className={cn(

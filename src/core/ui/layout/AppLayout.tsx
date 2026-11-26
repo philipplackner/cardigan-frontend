@@ -29,7 +29,7 @@ export function AppLayout({
 
   useEffect(() => {
     const element = panelRef.current
-    if (!hasPanel || !element) {
+    if (!element) {
       setIsPanelOverlay(false)
       return
     }
