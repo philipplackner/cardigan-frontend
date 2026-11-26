@@ -242,8 +242,10 @@ Notes on `mutation`:
   - Claude Code worktrees: Claude Code copies it because `.worktreeinclude` lists it. These worktrees start from `origin/master` by default (`worktree.baseRef` `fresh`), so they reuse less until `master` has this setup. Until then, the copied file shows as untracked there. Don't commit it.
 - The hook only copies that file. It never overwrites an existing file, never copies back, and never runs mutation testing or other checks. husky owns `core.hooksPath`, so hooks in `.git/hooks` don't run. `HUSKY=0` turns hooks off for one command.
 - `MUTATION_MIN_SCORE=<pct> npm run mutation` fails the run when the mutation score is below that minimum (a number from 0 to 100). The report is still written. Nothing sets it by default.
-- `--mutate` limits the run to some files and replaces the configured file list, so repeat the excludes: `npm run mutation -- --mutate "src/features/boards/**/*.ts,src/features/boards/**/*.tsx,!src/**/*.test.ts,!src/**/*.test.tsx,!src/**/testing/**"`. Stryker splits `--mutate` on commas, so don't use `{ts,tsx}` braces there.
-- The `mutate` list in `stryker.config.mjs` mirrors `coverage.exclude` in `vitest.config.ts`, plus the icons. Change both together.
+- `--mutate` limits the run to some files and replaces the configured file list, so repeat the excludes, including the visual and preview-only components in that folder: `npm run mutation -- --mutate "src/features/boards/**/*.ts,src/features/boards/**/*.tsx,!src/**/*.test.ts,!src/**/*.test.tsx,!src/**/testing/**,!src/features/boards/components/BoardListSkeletons.tsx,!src/features/boards/boardView/components/BoardSkeleton.tsx"`. Stryker splits `--mutate` on commas, so don't use `{ts,tsx}` braces there.
+- The `mutate` list in `stryker.config.mjs` is the covered file list from `coverage.exclude` in `vitest.config.ts`, minus the purely visual components listed there and `src/app/App.tsx`. Change both together.
+- Mutants inside Tailwind class names (a `className` value, or `cn()` and `cva()` arguments) show as `Ignored` and don't count in the score. The local plugin `scripts/stryker/classNameIgnorer.mjs` does this.
+- Design components that only the preview playground uses are excluded by name in both lists. The change where a feature first uses one removes it from both lists and adds its tests.
 
 **The gates:** `typecheck`, `lint` (including import boundaries), `format:check`, `test` and `build` must all pass before a commit.
 
