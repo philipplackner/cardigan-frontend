@@ -31,7 +31,7 @@ export function Dialog({
   onOpenChange,
   title,
   description,
-  type = 'default',
+  type,
   children,
   actions,
   returnFocus: shouldReturnFocus = true,
@@ -49,7 +49,6 @@ export function Dialog({
         <DialogPrimitive.Overlay className="fixed inset-[0] z-50 bg-background-scrim motion-safe:data-[state=open]:animate-fade-in motion-safe:data-[state=closed]:animate-fade-out" />
         <DialogPrimitive.Content
           aria-busy={isProgress || undefined}
-          {...(description ? {} : { 'aria-describedby': undefined })}
           {...returnFocus}
           onCloseAutoFocus={(event) => {
             if (shouldReturnFocus) returnFocus.onCloseAutoFocus(event)
