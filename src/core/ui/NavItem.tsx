@@ -25,7 +25,7 @@ export function NavItem({
   icon,
   keyValue,
   isSelected = false,
-  isDim = false,
+  isDim,
   asChild = false,
   className,
   children,

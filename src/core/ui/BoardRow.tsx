@@ -25,7 +25,7 @@ export function BoardRow({
   updatedText,
   link,
   menu,
-  hasDivider = true,
+  hasDivider,
   className,
 }: BoardRowProps) {
   return (
@@ -33,7 +33,7 @@ export function BoardRow({
       className={cn(
         'relative flex w-full min-w-[0] items-center gap-10 pt-12 pr-6 pl-14',
         // Figma draws the divider inside the row height.
-        hasDivider ? 'border-b border-border pb-11' : 'pb-12',
+        hasDivider === false ? 'pb-12' : 'border-b border-border pb-11',
         className,
       )}
     >

@@ -17,7 +17,7 @@ export function EmptyState({
   title,
   description,
   actions,
-  type = 'default',
+  type,
   className,
 }: EmptyStateProps) {
   return (

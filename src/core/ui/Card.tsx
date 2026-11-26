@@ -21,8 +21,8 @@ export function Card({
   title,
   labels = [],
   isSelected = false,
-  isDragging = false,
-  isPlaceholder = false,
+  isDragging,
+  isPlaceholder,
   className,
   type = 'button',
   ...props

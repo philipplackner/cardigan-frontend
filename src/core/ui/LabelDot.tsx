@@ -7,7 +7,7 @@ type LabelDotProps = {
   className?: string
 }
 
-export function LabelDot({ color, size = 'medium', className }: LabelDotProps) {
+export function LabelDot({ color, size, className }: LabelDotProps) {
   return (
     <span
       aria-hidden

@@ -55,7 +55,7 @@ type MenuItemProps = Omit<
 export function MenuItem({
   label,
   icon,
-  variant = 'default',
+  variant,
   className,
   ...props
 }: MenuItemProps) {
