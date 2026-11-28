@@ -20,7 +20,8 @@ npm run dev
 | `npm run build`        | Type-check and build for production   |
 | `npm run preview`      | Serve the production build            |
 | `npm run typecheck`    | Type-check app, test and config files |
-| `npm run lint`         | oxlint, including import boundaries   |
+| `npm run lint`         | ESLint, including import boundaries   |
+| `npm run lint:fix`     | ESLint with automatic fixes applied   |
 | `npm run format`       | Format all files with Prettier        |
 | `npm run format:check` | Check formatting with Prettier        |
 | `npm test`             | Run the Vitest tests once             |

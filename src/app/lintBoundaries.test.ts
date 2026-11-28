@@ -1,20 +1,12 @@
-import { execFileSync } from 'node:child_process'
-import fs from 'node:fs'
-import os from 'node:os'
-import path from 'node:path'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-
-type Diagnostic = {
-  code: string
-  severity: string
-  filename: string
-}
+import { fileURLToPath } from 'node:url'
+import { ESLint, type Linter } from 'eslint'
+import { describe, expect, it } from 'vitest'
 
 const RULES = {
-  restrictedImports: 'eslint(no-restricted-imports)',
-  noDefaultExport: 'import(no-default-export)',
-  typeDefinitions: 'typescript(consistent-type-definitions)',
-  noExplicitAny: 'typescript(no-explicit-any)',
+  restrictedImports: 'no-restricted-imports',
+  noDefaultExport: 'import-x/no-default-export',
+  typeDefinitions: '@typescript-eslint/consistent-type-definitions',
+  noExplicitAny: '@typescript-eslint/no-explicit-any',
 }
 
 const RULES_UNDER_TEST = Object.values(RULES)
@@ -38,6 +30,11 @@ const FORBIDDEN: { file: string; source: string; rule: string }[] = [
   {
     file: 'src/core/coreImportsApp.ts',
     source: "export { App } from '@/app/App'",
+    rule: RULES.restrictedImports,
+  },
+  {
+    file: 'src/core/utils/coreClimbsIntoApp.ts',
+    source: "export { App } from '../../app/App'",
     rule: RULES.restrictedImports,
   },
   {
@@ -115,51 +112,33 @@ const ALLOWED: { file: string; source: string }[] = [
   },
 ]
 
-let diagnostics: Diagnostic[]
-let tempDir: string
-
-function runOxlint(cwd: string): string {
-  const oxlint = path.resolve('node_modules/.bin/oxlint')
-  try {
-    return execFileSync(oxlint, ['--format', 'json'], {
-      cwd,
-      encoding: 'utf8',
-    })
-  } catch (error) {
-    // oxlint exits non-zero when it reports errors, which the forbidden fixtures always do.
-    return (error as { stdout: string }).stdout
-  }
-}
-
-function diagnosticsFor(file: string): Diagnostic[] {
-  return diagnostics.filter((d) => path.normalize(d.filename) === file)
-}
-
-beforeAll(() => {
-  tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'lint-boundaries-'))
-  fs.copyFileSync('.oxlintrc.json', path.join(tempDir, '.oxlintrc.json'))
-  for (const { file, source } of [...FORBIDDEN, ...ALLOWED]) {
-    const target = path.join(tempDir, file)
-    fs.mkdirSync(path.dirname(target), { recursive: true })
-    fs.writeFileSync(target, `${source}\n`)
-  }
-  const output = JSON.parse(runOxlint(tempDir)) as { diagnostics: Diagnostic[] }
-  diagnostics = output.diagnostics
+const eslint = new ESLint({
+  cwd: fileURLToPath(new URL('../..', import.meta.url)),
+  overrideConfigFile: 'eslint.config.mjs',
 })
 
-afterAll(() => {
-  fs.rmSync(tempDir, { recursive: true, force: true })
-})
+async function messagesFor(
+  file: string,
+  source: string,
+): Promise<Linter.LintMessage[]> {
+  const results = await eslint.lintText(`${source}\n`, { filePath: file })
+  return results.flatMap((result) => result.messages)
+}
 
 describe('lint boundaries', () => {
-  it.each(FORBIDDEN)('$file reports $rule', ({ file, rule }) => {
-    expect(diagnosticsFor(file)).toContainEqual(
-      expect.objectContaining({ code: rule, severity: 'error' }),
+  it.each(FORBIDDEN)('$file reports $rule', async ({ file, source, rule }) => {
+    expect(await messagesFor(file, source)).toContainEqual(
+      expect.objectContaining({ ruleId: rule, severity: 2 }),
     )
   })
 
-  it.each(ALLOWED)('$file reports none of the rules under test', ({ file }) => {
-    const codes = diagnosticsFor(file).map((d) => d.code)
-    expect(codes.filter((code) => RULES_UNDER_TEST.includes(code))).toEqual([])
-  })
+  it.each(ALLOWED)(
+    '$file reports none of the rules under test',
+    async ({ file, source }) => {
+      const ruleIds = (await messagesFor(file, source)).map((m) => m.ruleId)
+      expect(
+        ruleIds.filter((id) => id !== null && RULES_UNDER_TEST.includes(id)),
+      ).toEqual([])
+    },
+  )
 })

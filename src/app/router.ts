@@ -30,7 +30,7 @@ export function createAppRouter(
 }
 
 declare module '@tanstack/react-router' {
-  // oxlint-disable-next-line typescript/consistent-type-definitions -- module augmentation only merges into an interface
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- module augmentation only merges into an interface
   interface Register {
     router: ReturnType<typeof createAppRouter>
   }

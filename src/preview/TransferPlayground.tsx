@@ -63,7 +63,7 @@ function exportFileFor(board: Board) {
 
 async function readBoard(file: File) {
   try {
-    const content = JSON.parse((await file.text()).replace(/^﻿/, '')) as {
+    const content = JSON.parse((await file.text()).replace(/^\uFEFF/, '')) as {
       board?: { name?: unknown; key?: unknown }
     }
     const name =

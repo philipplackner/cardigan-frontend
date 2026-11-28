@@ -20,9 +20,9 @@ export type TextCheck = {
 const LINE_BREAKS = /\r\n?/g
 const SURROUNDING_WHITE_SPACE = /^\p{White_Space}+|\p{White_Space}+$/gu
 // In Unicode mode \p{Cs} matches only surrogates that are not part of a pair.
-// oxlint-disable-next-line eslint/no-control-regex -- matching control characters is the rule
+// eslint-disable-next-line no-control-regex -- matching control characters is the rule
 const INVALID_SINGLE_LINE = /[\u0000-\u001F]|\p{Cs}/u
-// oxlint-disable-next-line eslint/no-control-regex -- matching control characters is the rule
+// eslint-disable-next-line no-control-regex -- matching control characters is the rule
 const INVALID_MULTI_LINE = /[\u0000-\u0008\u000B\u000C\u000E-\u001F]|\p{Cs}/u
 
 /**

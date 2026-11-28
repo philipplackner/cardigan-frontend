@@ -1,7 +1,7 @@
 ---
 name: react-project-structure
 description: |
-  Folder layout, dependency rules, lint-enforced import boundaries, file naming, code style, npm dependency handling, and verification gates for client-side React SPAs built with Vite and TypeScript (feature folders with api/components/hooks, a shared core, and src/app as the wiring layer). Use this skill whenever creating a new feature, deciding where a file belongs, adding a shared module to core, wiring an app-wide provider, adding or updating an npm package, changing lint boundaries, or making any project-level architecture decision. Trigger on phrases like "add a feature", "where does X live", "project structure", "folder structure", "how should I structure", "shared code", "core", "import boundary", "no-restricted-imports", "oxlint", "add a dependency", "npm install", "path alias", "provider", "barrel file", or "verification gates".
+  Folder layout, dependency rules, lint-enforced import boundaries, file naming, code style, npm dependency handling, and verification gates for client-side React SPAs built with Vite and TypeScript (feature folders with api/components/hooks, a shared core, and src/app as the wiring layer). Use this skill whenever creating a new feature, deciding where a file belongs, adding a shared module to core, wiring an app-wide provider, adding or updating an npm package, changing lint boundaries, or making any project-level architecture decision. Trigger on phrases like "add a feature", "where does X live", "project structure", "folder structure", "how should I structure", "shared code", "core", "import boundary", "no-restricted-imports", "ESLint", "add a dependency", "npm install", "path alias", "provider", "barrel file", or "verification gates".
 ---
 
 # React Project Structure
@@ -76,46 +76,42 @@ This direction is a convention, checked in review. The cross-feature and core ru
 - **No `@/app/...` import outside `src/app`.**
 - **Features use `@/core/ui` instead of the libraries it wraps** (`@radix-ui/*`). See **react-ui-components**.
 
-### Enforcing with oxlint
+### Enforcing with ESLint
 
-`.oxlintrc.json` uses `no-restricted-imports` in folder `overrides`:
+`eslint.config.mjs` uses `no-restricted-imports` in folder-scoped config blocks:
 
-```json
+```js
 {
-  "overrides": [
-    {
-      "files": ["src/core/**"],
-      "rules": {
-        "no-restricted-imports": ["error", { "patterns": [
-          { "group": ["@/app", "@/app/**", "@/features", "@/features/**"], "message": "core must not import from app or features." },
-          { "regex": "^(\\.\\./)+(app|features)(/|$)", "message": "core must not import from app or features." }
-        ] }]
-      }
-    },
-    {
-      "files": ["src/features/**"],
-      "rules": {
-        "no-restricted-imports": ["error", { "patterns": [
-          { "group": ["@/app", "@/app/**", "@/features", "@/features/**"], "message": "Features must not import from app or other features. Use relative imports inside a feature." },
-          { "regex": "^(\\.\\./)+app(/|$)", "message": "Features must not import from app." },
-          { "group": ["@radix-ui/*"], "message": "Use the components from @/core/ui instead." }
-        ] }]
-      }
-    }
-  ]
-}
+  files: ['src/core/**'],
+  rules: {
+    'no-restricted-imports': ['error', { patterns: [
+      { group: ['@/app', '@/app/**', '@/features', '@/features/**'], message: 'core must not import from app or features.' },
+      { regex: '^(\\.\\./)+(app|features)(/|$)', message: 'core must not import from app or features.' },
+    ] }],
+  },
+},
+{
+  files: ['src/features/**'],
+  rules: {
+    'no-restricted-imports': ['error', { patterns: [
+      { group: ['@/app', '@/app/**', '@/features', '@/features/**'], message: 'Features must not import from app or other features. Use relative imports inside a feature.' },
+      { regex: '^(\\.\\./)+app(/|$)', message: 'Features must not import from app.' },
+      { group: ['@radix-ui/*', 'radix-ui', 'radix-ui/*'], message: 'Use the components from @/core/ui instead.' },
+    ] }],
+  },
+},
 ```
 
-- oxlint overrides **replace** a rule's options for matching files instead of merging them. An override for a sub-folder must repeat every pattern of its parent folder.
+- In ESLint flat config, a later block that sets the same rule **replaces** its options for matching files instead of merging them. A block for a sub-folder must repeat every pattern of its parent folder.
 - A relative import that climbs into another feature (`../../other/api/x`) is not caught. Review catches it.
 
 ### Testing the lint rules
 
 The lint config is the only enforcement of the architecture, so it has a test (like a Konsist or ArchUnit test). `src/app/lintBoundaries.test.ts`:
 
-1. Copies `.oxlintrc.json` into a temp directory.
-2. Writes small fixture files at `src/...` paths, one per forbidden and one per allowed import.
-3. Runs `oxlint --format json` there and asserts each forbidden fixture reports the expected rule and each allowed one reports nothing.
+1. Creates an `ESLint` instance from ESLint's Node API with `eslint.config.mjs`.
+2. Lints small in-memory fixtures with `lintText(source, { filePath })` at virtual `src/...` paths, one per forbidden and one per allowed import. No files are written.
+3. Asserts each forbidden fixture reports the expected rule as an error, and each allowed one reports none of the rules under test.
 
 When you add or change a boundary rule, add a forbidden and an allowed fixture for it.
 
@@ -184,7 +180,7 @@ Every PR must pass:
 | Command | What it checks |
 |---|---|
 | `npm run typecheck` | `tsc -b` over app and test tsconfigs, including translation keys and route paths |
-| `npm run lint` | oxlint, including import boundaries |
+| `npm run lint` | ESLint, including import boundaries |
 | `npm run format:check` | Prettier |
 | `npm test` | Vitest unit and component tests |
 | `npm run build` | production build |

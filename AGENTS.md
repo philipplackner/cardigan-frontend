@@ -22,7 +22,7 @@ This file is the project's system prompt. The `react-*` skills in `.claude/skill
 | Fonts         | Geist and Geist Mono, self-hosted                                                                       |
 | Drag & drop   | dnd-kit, with its keyboard sensor and screen reader announcements                                       |
 | i18n          | react-i18next, English only for now                                                                     |
-| Lint / format | oxlint (with import boundaries), Prettier                                                               |
+| Lint / format | ESLint (with import boundaries), Prettier                                                               |
 | Tests         | Vitest, React Testing Library, user-event, MSW, Playwright                                              |
 
 **Current state:** the repo is still the Vite scaffold (`App.tsx` with a default export, no router, no Tailwind, no tests, no Prettier). Build the layout from `react-project-structure` before building features. Add each dependency in the change that first needs it, and ask before adding one that isn't in the table above.
@@ -48,7 +48,7 @@ src/
 ```
 
 - Features never import each other. Shared code moves to `core` when a second feature needs it.
-- Import boundaries are oxlint rules, and a test checks that the rules still catch violations.
+- Import boundaries are ESLint rules, and a test checks that the rules still catch violations.
 - Root/Screen split with view-model hooks, as in `react-presentation-mvi`.
 - Server data lives only in the TanStack Query cache. Shareable state lives in the URL.
 

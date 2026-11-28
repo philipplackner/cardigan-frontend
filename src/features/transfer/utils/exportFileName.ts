@@ -1,7 +1,7 @@
 const FALLBACK_NAME = 'board-export.json'
 
 function sanitize(name: string) {
-  // oxlint-disable-next-line no-control-regex -- control characters are exactly what gets removed
+  // eslint-disable-next-line no-control-regex -- control characters are exactly what gets removed
   return name.replace(/[/\\\u0000-\u001f\u007f]/g, '').trim()
 }
 

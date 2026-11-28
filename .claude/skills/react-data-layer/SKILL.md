@@ -49,7 +49,7 @@ The backend generates its OpenAPI spec from its controllers and DTOs and commits
 | Fix what no longer compiles | `npm run typecheck` | mappers and API functions follow the new contract |
 
 - `api/openapi.json` and the generated folder are committed. The spec change and the regenerated code go into one commit.
-- **Never edit generated files.** They are excluded from oxlint and Prettier. A wrong schema is fixed in the backend, synced and regenerated.
+- **Never edit generated files.** They are excluded from ESLint and Prettier. A wrong schema is fixed in the backend, synced and regenerated.
 - **Never invent an endpoint, field, enum value or error code.** If the spec doesn't contain what a screen needs, the backend doesn't offer it yet. Stop and say what's missing.
 - The generator is configured so that every component schema `X` in the spec becomes a Zod schema `xSchema` and a type `X`: `NoteDto` → `noteDtoSchema` + `NoteDto`, `CreateNoteRequest` → `createNoteRequestSchema` + `CreateNoteRequest`.
 - Generated object schemas strip unknown keys (`z.object`, not `z.strictObject`), so a new field in a response doesn't break the app.
@@ -69,7 +69,7 @@ The app and the API share one origin (see **react-routing**), so the API base is
 /// <reference types="vite/client" />
 
 // Module augmentation only works with an interface.
-// oxlint-disable-next-line typescript/consistent-type-definitions
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 interface ImportMetaEnv {
   readonly VITE_API_BASE_URL: string
 }
